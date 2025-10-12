@@ -31,4 +31,8 @@ void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+void AMonsterBase::SetCharacterState(ECharacterState NewState)
+{
+	CharacterState = NewState;
+}
 
