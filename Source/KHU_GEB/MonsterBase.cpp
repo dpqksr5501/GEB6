@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 // Sets default values
 AMonsterBase::AMonsterBase()
@@ -29,6 +30,14 @@ AMonsterBase::AMonsterBase()
 void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(InputMappingContext, 0);
+		}
+	}
 	
 }
 
@@ -43,45 +52,32 @@ void AMonsterBase::Tick(float DeltaTime)
 void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// InputActionMove가 유효하다면(블루프린트에서 지정되었다면),
-		// Triggered(눌리고 있을 때) 상태일 때 Move 함수를 호출하도록 바인딩합니다.
-		if (InputActionMove)
-		{
-			EnhancedInputComponent->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMonsterBase::Move);
-		}
-		if (InputActionLook)
-		{
-			EnhancedInputComponent->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMonsterBase::Look);
-		}
-		if (InputActionShift) // 변수 이름 변경
-		{
-			// 키를 처음 눌렀을 때(Started) StartShiftAction 함수를,
-			// 키에서 손을 떼었을 때(Completed) StopShiftAction 함수를 호출하도록 연결합니다.
-			EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Started, this, &AMonsterBase::StartShiftAction);
-			EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Completed, this, &AMonsterBase::StopShiftAction);
-		}
-	}
+		EnhancedInputComponent->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMonsterBase::Move);
+		EnhancedInputComponent->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMonsterBase::Look);
 
+		// 이제 C++ 함수 대신 블루프린트 이벤트를 직접 호출합니다.
+		EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Started, this, &AMonsterBase::StartShiftAction);
+		EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Completed, this, &AMonsterBase::StopShiftAction);
+
+		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Started, this, &AMonsterBase::JumpAction_Start);
+		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Triggered, this, &AMonsterBase::JumpAction_Triggered);
+		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Completed, this, &AMonsterBase::JumpAction_Stop);
+
+		EnhancedInputComponent->BindAction(InputActionCtrl, ETriggerEvent::Started, this, &AMonsterBase::CtrlAction_Start);
+	}
 }
+
 void AMonsterBase::SetCharacterState(ECharacterState NewState)
 {
 	CharacterState = NewState;
 }
 
 
-void AMonsterBase::StartShiftAction()
-{
-	// 기본 행동: 최대 걷기 속도를 달리기 속도(예: 600)로 변경합니다.
-	GetCharacterMovement()->MaxWalkSpeed = 900.f;
-}
 
-void AMonsterBase::StopShiftAction()
-{
-	// 기본 행동: 최대 걷기 속도를 다시 원래 걷기 속도(예: 200)로 되돌립니다.
-	GetCharacterMovement()->MaxWalkSpeed = 600.f;
-}
+
 
 
 void AMonsterBase::Look(const FInputActionValue& Value)
@@ -117,4 +113,13 @@ void AMonsterBase::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y); // W/S는 카메라의 앞/뒤로
 		AddMovementInput(RightDirection, MovementVector.X);   // A/D는 카메라의 좌/우로
 	}
+}
+
+
+
+
+void AMonsterBase::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	OnLandedEvent(Hit); // 블루프린트의 OnLandedEvent를 호출
 }
