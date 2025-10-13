@@ -43,6 +43,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputMappingContext* InputMappingContext;
 
+	// 블루프린트에서 IA_Jump 애셋을 지정할 변수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionJump;
+
+	// 블루프린트에서 IA_Ctrl 애셋을 지정할 변수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionCtrl;
+
 	
 	//IA_Move 입력 발생 시 호출되는 함수
 	void Move(const FInputActionValue& Value);
@@ -50,12 +58,28 @@ protected:
 	// IA_MouseLook 입력이 발생했을 때 호출될 함수
 	void Look(const FInputActionValue& Value);
 
-	// 쉬프트 액션을 시작할 때 호출될 함수 (자식 클래스가 재정의할 수 있도록 virtual 키워드 추가)
-	virtual void StartShiftAction();
+	// 쉬프트 액션을 시작할 때 호출될 함수 (에디터에서 재정의 가능)
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void StartShiftAction();
 
 	// 쉬프트 액션을 멈출 때 호출될 함수 (virtual 추가)
-	virtual void StopShiftAction();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void StopShiftAction();
 
+	// 점프 키 액션을 처리할 함수들 (에디터에서 재정의할 수 있도록)
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void JumpAction_Start();   // 처음 눌렀을 때
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void JumpAction_Triggered(); // 누르고 있을 때
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void JumpAction_Stop();    // 뗐을 때
+
+	// 컨트롤 키 액션을 처리할 함수
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void CtrlAction_Start();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")
+	void OnLandedEvent(const FHitResult& Hit);
 
 public:	
 	// Called every frame
@@ -65,5 +89,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void BeginPlay() override;
+
+	virtual void Landed(const FHitResult& Hit) override;
 
 };
