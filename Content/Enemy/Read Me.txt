@@ -1,0 +1,41 @@
+EnemyBP
+기본 모형입니다. 아무 내용도 없습니다.
+
+EnemyBT
+Behaviour Tree 입니다. 카톡의 그림 보시면 이해가 쉽습니다.
+
+EnemyAIBP
+초기값을 세팅하고 BT를 실행합니다.
+1) Melee Cooldown: 근접 공격 쿨타임입니다.
+2) Detection Distance: 적이 플레이어를 인지하는 거리 기준입니다.
+3) Attack Distance: 적이 플레이어를 근접 공격하는 거리 기준입니다.
+
+EnemyBlackboard
+Target(플레이어)
+LastMeleeTime(마지막으로 근접 공격한 시간)
+TargetDistance(현재 target과의 거리)
+
+TestAttack
+공격 동작의 구현이 들어와야 하는 노드입니다. 현재는 마지막 공격 시간 로그만 출력합니다.
+
+TestMessage
+이동 동작의 구현이 들어와야 하는 노드입니다. 현재는 현재 상태(Idle, Approach, Wait)를 출력합니다.
+
+Distance Service
+플레이어를 가져오고, BT에게 현재 플레이어와의 거리를 갱신해줍니다.
+로그에는 초록 글씨로 나타납니다.
+
+Decorator 폴더
+AttackType, DistanceType
+공격 방식, 거리 기준을 enum으로 구분해 놓았습니다.
+
+IsInRange
+현재 거리가 어느 정도인지 검사하는 데코레이터입니다.
+기준 거리보다 가까우면 참을 반환합니다.
+
+IsCooldown
+현재 쿨타임인지 검사하는 데코레이터입니다.
+현재 쿨타임이 아니면 참을 반환합니다.
+
+
+
