@@ -17,6 +17,28 @@ class KHU_GEB_API AMonsterBase : public ACharacter
 public:
 	AMonsterBase();
 
+	//// 체력관련
+	UFUNCTION()
+	void HandleAnyDamage(AActor* DamagedActor, float Damage,
+		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UHealthComponent* HealthComp;
+
+	/** 블루프린트에서 현재 체력 가져오기 */
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHealth() const;
+
+	/** 블루프린트에서 체력 회복하기 */
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Heal(float Amount);
+
+
+
+
+
+	///////////
+
 	// 상태를 안전하게 가져갈 수 있는 public 함수
 	UFUNCTION(BlueprintPure, Category = "State")
 	ECharacterState GetCharacterState() const { return CharacterState; }

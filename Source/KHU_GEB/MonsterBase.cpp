@@ -6,6 +6,7 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "HealthComponent.h"
 
 // Sets default values
 AMonsterBase::AMonsterBase()
@@ -24,6 +25,10 @@ AMonsterBase::AMonsterBase()
 	// 기본 걷기 속도를 설정합니다. (600)
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 
+
+	// 체력
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
 }
 
 // Called when the game starts or when spawned
@@ -38,8 +43,47 @@ void AMonsterBase::BeginPlay()
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
+
+
+	OnTakeAnyDamage.AddDynamic(this, &AMonsterBase::HandleAnyDamage);
 	
 }
+
+//// 체력
+
+float AMonsterBase::GetHealth() const
+{
+	return HealthComp ? HealthComp->Health : 0.f;
+}
+
+void AMonsterBase::Heal(float Amount)
+{
+	if (HealthComp)
+	{
+		HealthComp->AddHealth(Amount);
+	}
+}
+
+
+void  AMonsterBase::HandleAnyDamage(AActor* DamagedActor, float Damage,
+	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (HealthComp && Damage > 0.f)
+	{
+		HealthComp->ReduceHealth(Damage);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // Called every frame
 void AMonsterBase::Tick(float DeltaTime)
@@ -47,6 +91,11 @@ void AMonsterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+
+
+
+
 
 // Called to bind functionality to input
 void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
