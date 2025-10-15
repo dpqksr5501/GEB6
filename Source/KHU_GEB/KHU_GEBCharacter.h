@@ -31,6 +31,28 @@ class AKHU_GEBCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 	
+
+public:
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+	void HandleAnyDamage(AActor* DamagedActor, float Damage,
+		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UHealthComponent* HealthComp;
+
+	/** 블루프린트에서 현재 체력 가져오기 */
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHealth() const;
+
+	/** 블루프린트에서 체력 회복하기 */
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Heal(float Amount);
+
+
 protected:
 
 	/** Jump Input Action */

@@ -12,8 +12,14 @@
 #include "InputActionValue.h"
 #include "KHU_GEB.h"
 
+#include "HealthComponent.h"
+
+
 AKHU_GEBCharacter::AKHU_GEBCharacter()
-{
+{	
+
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -70,6 +76,47 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	{
 		UE_LOG(LogKHU_GEB, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+
+void  AKHU_GEBCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
+
+}
+
+float AKHU_GEBCharacter::GetHealth() const
+{
+	return HealthComp ? HealthComp->Health : 0.f;
+}
+
+
+void AKHU_GEBCharacter::Heal(float Amount)
+{
+	if (HealthComp)
+	{
+		HealthComp->AddHealth(Amount);
+	}
+}
+
+
+void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
+	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (HealthComp && Damage > 0.f)
+	{
+		HealthComp->ReduceHealth(Damage);
+	}
+}
+
+void AKHU_GEBCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+
+
 }
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
