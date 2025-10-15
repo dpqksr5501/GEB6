@@ -55,18 +55,33 @@ void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		EnhancedInputComponent->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMonsterBase::Move);
-		EnhancedInputComponent->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMonsterBase::Look);
-
-		// 이제 C++ 함수 대신 블루프린트 이벤트를 직접 호출합니다.
-		EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Started, this, &AMonsterBase::StartShiftAction);
-		EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Completed, this, &AMonsterBase::StopShiftAction);
-
-		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Started, this, &AMonsterBase::JumpAction_Start);
-		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Triggered, this, &AMonsterBase::JumpAction_Triggered);
-		EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Completed, this, &AMonsterBase::JumpAction_Stop);
-
-		EnhancedInputComponent->BindAction(InputActionCtrl, ETriggerEvent::Started, this, &AMonsterBase::CtrlAction_Start);
+		if (InputActionMove)
+		{
+			EnhancedInputComponent->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMonsterBase::Move);
+		}
+		if (InputActionLook)
+		{
+			EnhancedInputComponent->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMonsterBase::Look);
+		}
+		if (InputActionShift)
+		{
+			EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Started, this, &AMonsterBase::StartShiftAction);
+			EnhancedInputComponent->BindAction(InputActionShift, ETriggerEvent::Completed, this, &AMonsterBase::StopShiftAction);
+		}
+		if (InputActionJump)
+		{
+			EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Started, this, &AMonsterBase::JumpAction_Start);
+			EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Triggered, this, &AMonsterBase::JumpAction_Triggered);
+			EnhancedInputComponent->BindAction(InputActionJump, ETriggerEvent::Completed, this, &AMonsterBase::JumpAction_Stop);
+		}
+		if (InputActionCtrl)
+		{
+			EnhancedInputComponent->BindAction(InputActionCtrl, ETriggerEvent::Started, this, &AMonsterBase::CtrlAction_Start);
+		}
+		if (InputActionLAttack)
+		{
+			EnhancedInputComponent->BindAction(InputActionLAttack, ETriggerEvent::Started, this, &AMonsterBase::LAttackAction_Start);
+		}
 	}
 }
 

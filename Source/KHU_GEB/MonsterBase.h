@@ -51,6 +51,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionCtrl;
 
+	//에디터에서 IA_LAttack을 추적
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionLAttack;
+
+	///////////////////////////////////////////
+
 	
 	//IA_Move 입력 발생 시 호출되는 함수
 	void Move(const FInputActionValue& Value);
@@ -80,6 +86,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")
 	void OnLandedEvent(const FHitResult& Hit);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void LAttackAction_Start();
 
 public:	
 	// Called every frame
