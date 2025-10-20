@@ -10,16 +10,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "KHU_GEB.h"
-
+#include "FormManagerComponent.h"
 #include "HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "KHU_GEB.h"
 
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
-{	
-
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-
+{
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -52,8 +50,24 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
+	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_BASE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_BaseForm.IA_BaseForm'"));
+	if (FORM_BASE.Object) { BaseForm = FORM_BASE.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_RANGE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_RangeForm.IA_RangeForm'"));
+	if (FORM_RANGE.Object) { RangeForm = FORM_RANGE.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SPEED(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SpeedForm.IA_SpeedForm'"));
+	if (FORM_SPEED.Object) { SpeedForm = FORM_SPEED.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_DEFENSE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DefenseForm.IA_DefenseForm'"));
+	if (FORM_DEFENSE.Object) { DefenseForm = FORM_DEFENSE.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_DEBUFF(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DebuffForm.IA_DebuffForm'"));
+	if (FORM_DEBUFF.Object) { DebuffForm = FORM_DEBUFF.Object; }
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -71,6 +85,13 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
+
+		// 변신
+		EnhancedInputComponent->BindAction(BaseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
+		EnhancedInputComponent->BindAction(RangeForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToRange);
+		EnhancedInputComponent->BindAction(SpeedForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpeed);
+		EnhancedInputComponent->BindAction(DefenseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToDefense);
+		EnhancedInputComponent->BindAction(DebuffForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToDebuff);
 	}
 	else
 	{
@@ -78,20 +99,26 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-
-void  AKHU_GEBCharacter::BeginPlay()
+void AKHU_GEBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
+	if (FormManager) { FormManager->InitializeForms(FormManager->CurrentForm); }
 
+	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
+}
+
+void AKHU_GEBCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
 }
 
 float AKHU_GEBCharacter::GetHealth() const
 {
 	return HealthComp ? HealthComp->Health : 0.f;
 }
-
 
 void AKHU_GEBCharacter::Heal(float Amount)
 {
@@ -101,7 +128,6 @@ void AKHU_GEBCharacter::Heal(float Amount)
 	}
 }
 
-
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -109,14 +135,6 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	{
 		HealthComp->ReduceHealth(Damage);
 	}
-}
-
-void AKHU_GEBCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-
-
 }
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
@@ -135,6 +153,41 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
+{
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Base) return;	
+	FormManager->SwitchTo(EPlayerForm::Base);
+}
+
+void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
+{
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Range) return;
+	FormManager->SwitchTo(EPlayerForm::Range);
+}
+
+void AKHU_GEBCharacter::SwitchToSpeed(const FInputActionValue& Value)
+{
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Speed) return;
+	FormManager->SwitchTo(EPlayerForm::Speed);
+}
+
+void AKHU_GEBCharacter::SwitchToDefense(const FInputActionValue& Value)
+{
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Defense) return;
+	FormManager->SwitchTo(EPlayerForm::Defense);
+}
+
+void AKHU_GEBCharacter::SwitchToDebuff(const FInputActionValue& Value)
+{
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Debuff) return;
+	FormManager->SwitchTo(EPlayerForm::Debuff);
 }
 
 void AKHU_GEBCharacter::DoMove(float Right, float Forward)

@@ -11,6 +11,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
+class UPlayerStatsComponent;
+class UFormManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -30,31 +32,8 @@ class AKHU_GEBCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-
-public:
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void HandleAnyDamage(AActor* DamagedActor, float Damage,
-		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UHealthComponent* HealthComp;
-
-	/** ºí·çÇÁ¸°Æ®¿¡¼­ ÇöÀç Ã¼·Â °¡Á®¿À±â */
-	UFUNCTION(BlueprintPure, Category = "Health")
-	float GetHealth() const;
-
-	/** ºí·çÇÁ¸°Æ®¿¡¼­ Ã¼·Â È¸º¹ÇÏ±â */
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void Heal(float Amount);
-
 
 protected:
-
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* JumpAction;
@@ -71,26 +50,45 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
-public:
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* BaseForm;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* RangeForm;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* SpeedForm;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* DefenseForm;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* DebuffForm;
 
+public:
 	/** Constructor */
-	AKHU_GEBCharacter();	
+	AKHU_GEBCharacter();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UFormManagerComponent* FormManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UHealthComponent* HealthComp;
 
 protected:
-
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
+public:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
+protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-public:
+	/** Called for ë³€ì‹  */
+	void SwitchToBase(const FInputActionValue& Value);
+	void SwitchToRange(const FInputActionValue& Value);
+	void SwitchToSpeed(const FInputActionValue& Value);
+	void SwitchToDefense(const FInputActionValue& Value);
+	void SwitchToDebuff(const FInputActionValue& Value);
 
+public:
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
@@ -107,8 +105,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
-public:
+	UFUNCTION()
+	void HandleAnyDamage(AActor* DamagedActor, float Damage,
+		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Heal(float Amount);
+
+public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
