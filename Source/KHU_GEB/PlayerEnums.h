@@ -11,7 +11,7 @@
 UENUM(BlueprintType)
 enum class EPlayerForm : uint8
 {
-    None    UMETA(DisplayName = "None"),
+    Base    UMETA(DisplayName = "Base"),
     Range   UMETA(DisplayName = "Range"),
     Speed   UMETA(DisplayName = "Speed"),
     Defense UMETA(DisplayName = "Defense"),

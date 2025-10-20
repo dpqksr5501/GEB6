@@ -22,7 +22,7 @@ USTRUCT(BlueprintType)
 struct FFormStatProgressSave
 {
     GENERATED_BODY()
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) EPlayerForm Form = EPlayerForm::None;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite) EPlayerForm Form = EPlayerForm::Base;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 AttackLevel = 0;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 DefenseLevel = 0;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 MoveSpeedLevel = 0;

@@ -5,9 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "PlayerEnums.h"
-#include "FormStatsData.h"
-#include "PlayerStateBundle.h"
 #include "KHU_GEBCharacter.generated.h"
 
 class USpringArmComponent;
@@ -15,6 +12,7 @@ class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
 class UPlayerStatsComponent;
+class UFormManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -34,28 +32,6 @@ class AKHU_GEBCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-
-public:
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void HandleAnyDamage(AActor* DamagedActor, float Damage,
-		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UHealthComponent* HealthComp;
-
-	/** ��������Ʈ���� ���� ü�� �������� */
-	UFUNCTION(BlueprintPure, Category = "Health")
-	float GetHealth() const;
-
-	/** ��������Ʈ���� ü�� ȸ���ϱ� */
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void Heal(float Amount);
-
 
 protected:
 	/** Jump Input Action */
@@ -84,28 +60,21 @@ public:
 	/** Constructor */
 	AKHU_GEBCharacter();
 
-	// === 폼 상태 ===
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Forms")
-	EPlayerForm CurrentForm = EPlayerForm::None;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UFormManagerComponent* FormManager;
 
-	// 폼 → 폼용 블루프린트 클래스 (에디터에서 BP 지정)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
-	TMap<EPlayerForm, TSubclassOf<AKHU_GEBCharacter>> FormClasses;
-
-	// 폼 → 폼 스탯 DataAsset (에디터에서 4개 DataAsset 지정)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
-	TMap<EPlayerForm, TSoftObjectPtr<UFormStatsData>> DefaultFormStats;
-
-	// 스탯(공통 소유자)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-	UPlayerStatsComponent* Stats;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UHealthComponent* HealthComp;
 
 protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
+public:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
+protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -119,17 +88,7 @@ protected:
 	void SwitchToDefense(const FInputActionValue& Value);
 	void SwitchToDebuff(const FInputActionValue& Value);
 
-	// 전환 시 지면 안전 위치 찾기
-	FVector FindSafeGroundLocation(const FVector& Around) const;
-
-	// 짧은 페이드
-	void PlaySmallFade(APlayerController* PC, float Time = 0.08f) const;
-
-	// 현재 폼 스탯을 실제 플레이에 반영(이속/쿨타임 등)
-	void ApplyStatsForCurrentForm();
-
 public:
-
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
@@ -146,15 +105,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
-	// 폼 전환 API
-	UFUNCTION(BlueprintCallable, Category = "Forms") void SwitchTo(EPlayerForm NewForm);
+	UFUNCTION()
+	void HandleAnyDamage(AActor* DamagedActor, float Damage,
+		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
-	// 번들 직렬화/복원
-	UFUNCTION(BlueprintCallable, Category = "State") FPlayerStateBundle MakeStateBundle() const;
-	UFUNCTION(BlueprintCallable, Category = "State") void ApplyStateBundle(const FPlayerStateBundle& B);
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Heal(float Amount);
 
 public:
-
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 

@@ -10,17 +10,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "PlayerStatsComponent.h"
+#include "FormManagerComponent.h"
 #include "HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
-{	
-
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-
+{
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -53,8 +50,9 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// 스탯 컴포넌트 생성 (BeginPlay의 Stats 사용을 보장)
-	Stats = CreateDefaultSubobject<UPlayerStatsComponent>(TEXT("PlayerStats"));
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
+	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_BASE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_BaseForm.IA_BaseForm'"));
 	if (FORM_BASE.Object) { BaseForm = FORM_BASE.Object; }
@@ -89,7 +87,7 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
 		// 변신
-		EnhancedInputComponent->BindAction(RangeForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
+		EnhancedInputComponent->BindAction(BaseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
 		EnhancedInputComponent->BindAction(RangeForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToRange);
 		EnhancedInputComponent->BindAction(SpeedForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpeed);
 		EnhancedInputComponent->BindAction(DefenseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToDefense);
@@ -101,41 +99,26 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-
-void  AKHU_GEBCharacter::BeginPlay()
+void AKHU_GEBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 폼별 스탯 초기화: DefaultFormStats 맵을 Stats->FormStats로 이식
-	if (Stats)
-	{
-		Stats->FormStats.Empty();
-		for (const auto& Pair : DefaultFormStats)
-		{
-			FFormStatState S; S.StatsData = Pair.Value;
-			Stats->FormStats.Add(Pair.Key, S);
-		}
-		// 기본 체력
-		if (Stats->MaxHealth <= 0.f) Stats->MaxHealth = 120.f;
-		if (Stats->Health <= 0.f) Stats->Health = Stats->MaxHealth;
-
-		// 모든 폼 재계산(캐시 업데이트)
-		for (const auto& Pair : Stats->FormStats)
-		{
-			Stats->RecalcForForm(Pair.Key);
-		}
-		// 시작 폼의 실효 이속/쿨다운 반영
-		ApplyStatsForCurrentForm();
-	}
+	if (FormManager) { FormManager->InitializeForms(FormManager->CurrentForm); }
 
 	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
+}
+
+void AKHU_GEBCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
 }
 
 float AKHU_GEBCharacter::GetHealth() const
 {
 	return HealthComp ? HealthComp->Health : 0.f;
 }
-
 
 void AKHU_GEBCharacter::Heal(float Amount)
 {
@@ -145,7 +128,6 @@ void AKHU_GEBCharacter::Heal(float Amount)
 	}
 }
 
-
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -153,14 +135,6 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	{
 		HealthComp->ReduceHealth(Damage);
 	}
-}
-
-void AKHU_GEBCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-
-
 }
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
@@ -181,71 +155,39 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
-
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
-	if (CurrentForm == EPlayerForm::None) return;
-	SwitchTo(EPlayerForm::None);
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Base) return;	
+	FormManager->SwitchTo(EPlayerForm::Base);
 }
 
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
-	if (CurrentForm == EPlayerForm::Range) return;
-	SwitchTo(EPlayerForm::Range);
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Range) return;
+	FormManager->SwitchTo(EPlayerForm::Range);
 }
 
 void AKHU_GEBCharacter::SwitchToSpeed(const FInputActionValue& Value)
 {
-	if (CurrentForm == EPlayerForm::Speed) return;
-	SwitchTo(EPlayerForm::Speed);
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Speed) return;
+	FormManager->SwitchTo(EPlayerForm::Speed);
 }
 
 void AKHU_GEBCharacter::SwitchToDefense(const FInputActionValue& Value)
 {
-	if (CurrentForm == EPlayerForm::Defense) return;
-	SwitchTo(EPlayerForm::Defense);
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Defense) return;
+	FormManager->SwitchTo(EPlayerForm::Defense);
 }
 
 void AKHU_GEBCharacter::SwitchToDebuff(const FInputActionValue& Value)
 {
-	if (CurrentForm == EPlayerForm::Debuff) return;
-	SwitchTo(EPlayerForm::Debuff);
-}
-
-FVector AKHU_GEBCharacter::FindSafeGroundLocation(const FVector& Around) const
-{
-	FHitResult Hit;
-	FVector Start = Around + FVector(0, 0, 1000);
-	FVector End = Around - FVector(0, 0, 2000);
-	FCollisionQueryParams P(SCENE_QUERY_STAT(FormGroundTrace), false, this);
-
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, P))
-	{
-		const float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-		return Hit.Location + FVector(0, 0, HalfHeight + 2.f);
-	}
-	return Around;
-}
-
-void AKHU_GEBCharacter::PlaySmallFade(APlayerController* PC, float Time) const
-{
-	if (!PC) return;
-	if (APlayerCameraManager* CM = PC->PlayerCameraManager)
-	{
-		CM->StartCameraFade(0.f, 1.f, Time, FLinearColor::Black, false, true);
-		CM->StartCameraFade(1.f, 0.f, Time, FLinearColor::Black, false, true);
-	}
-}
-
-void AKHU_GEBCharacter::ApplyStatsForCurrentForm()
-{
-	if (!Stats) return;
-	if (auto* Move = GetCharacterMovement())
-	{
-		Move->MaxWalkSpeed = Stats->GetMoveSpeed(CurrentForm);
-	}
-	// 스킬 시스템이 있다면 여기서 쿨타임 반영:
-	// AbilitySystem->SetGlobalCooldown( Stats->GetSkillCooldown(CurrentForm) );
+	if (!FormManager) return;
+	if (FormManager->CurrentForm == EPlayerForm::Debuff) return;
+	FormManager->SwitchTo(EPlayerForm::Debuff);
 }
 
 void AKHU_GEBCharacter::DoMove(float Right, float Forward)
@@ -288,90 +230,4 @@ void AKHU_GEBCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
-}
-
-void AKHU_GEBCharacter::SwitchTo(EPlayerForm NewForm)
-{
-	if (NewForm == CurrentForm) return;
-
-	// 새 폼 클래스 확인
-	TSubclassOf<AKHU_GEBCharacter>* Cls = FormClasses.Find(NewForm);
-	if (!Cls || !(*Cls)) return;
-
-	// 1) 상태 번들 추출
-	const FPlayerStateBundle Bundle = MakeStateBundle();
-
-	// 2) 스폰 트랜스폼(지면 보정)
-	FTransform SpawnTM = GetActorTransform();
-	SpawnTM.SetLocation(FindSafeGroundLocation(SpawnTM.GetLocation()));
-
-	// 3) 새 Pawn 생성
-	AKHU_GEBCharacter* NewPawn = GetWorld()->SpawnActorDeferred<AKHU_GEBCharacter>(*Cls, SpawnTM);
-	UGameplayStatics::FinishSpawningActor(NewPawn, SpawnTM);
-
-	// 4) 상태 이관 + 폼 지정 + 스탯 즉시 반영
-	NewPawn->ApplyStateBundle(Bundle);
-	NewPawn->CurrentForm = NewForm;
-	NewPawn->ApplyStatsForCurrentForm();
-
-	// 5) 포제션 + 페이드
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		PlaySmallFade(PC, 0.08f);
-		PC->UnPossess();
-		PC->Possess(NewPawn);
-		PlaySmallFade(PC, 0.08f);
-	}
-
-	// 6) 기존 Pawn 제거
-	Destroy();
-}
-
-FPlayerStateBundle AKHU_GEBCharacter::MakeStateBundle() const
-{
-	FPlayerStateBundle B;
-	if (Stats)
-	{
-		B.MaxHP = Stats->MaxHealth;
-		B.HP = FMath::Clamp(Stats->Health, 0.f, Stats->MaxHealth);
-		// 예시: Ammo/ReserveAmmo 등 필요 시 채우세요
-		// B.ActiveEffects ... 필요 시 채우기
-
-		// 폼 업그레이드 진행도 저장
-		for (const auto& Pair : Stats->FormStats)
-		{
-			const EPlayerForm Form = Pair.Key;
-			const FFormStatState& S = Pair.Value;
-
-			FFormStatProgressSave Save;
-			Save.Form = Form;
-			Save.AttackLevel = S.Progress.AttackLevel;
-			Save.DefenseLevel = S.Progress.DefenseLevel;
-			Save.MoveSpeedLevel = S.Progress.MoveSpeedLevel;
-			Save.SkillCooldownLevel = S.Progress.SkillCooldownLevel;
-			B.FormProgresses.Add(Save);
-		}
-	}
-	return B;
-}
-
-void AKHU_GEBCharacter::ApplyStateBundle(const FPlayerStateBundle& B)
-{
-	if (!Stats) return;
-
-	Stats->MaxHealth = B.MaxHP;
-	Stats->Health = FMath::Clamp(B.HP, 0.f, B.MaxHP);
-
-	// 폼 진행도 복원 + 재계산
-	for (const FFormStatProgressSave& S : B.FormProgresses)
-	{
-		if (FFormStatState* Target = Stats->FormStats.Find(S.Form))
-		{
-			Target->Progress.AttackLevel = S.AttackLevel;
-			Target->Progress.DefenseLevel = S.DefenseLevel;
-			Target->Progress.MoveSpeedLevel = S.MoveSpeedLevel;
-			Target->Progress.SkillCooldownLevel = S.SkillCooldownLevel;
-			Stats->RecalcForForm(S.Form);
-		}
-	}
 }
