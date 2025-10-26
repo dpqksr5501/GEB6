@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,19 +20,19 @@ public:
 	// Sets default values for this component's properties
 	UFormManagerComponent();
 
-	// === Æû »óÅÂ ===
+	// === í¼ ìƒíƒœ ===
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Forms")
 	EPlayerForm CurrentForm = EPlayerForm::Base;
 
-	// Æû ¡æ Æû¿ë ºí·çÇÁ¸°Æ® Å¬·¡½º (¿¡µğÅÍ¿¡¼­ BP ÁöÁ¤)
+	// í¼ â†’ í¼ìš© ë¸”ë£¨í”„ë¦°íŠ¸ í´ë˜ìŠ¤ (ì—ë””í„°ì—ì„œ BP ì§€ì •)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
 	TMap<EPlayerForm, TSubclassOf<AKHU_GEBCharacter>> FormClasses;
 
-	// Æû ¡æ Æû ½ºÅÈ DataAsset (¿¡µğÅÍ¿¡¼­ 4°³ DataAsset ÁöÁ¤)
+	// í¼ â†’ í¼ ìŠ¤íƒ¯ DataAsset (ì—ë””í„°ì—ì„œ 4ê°œ DataAsset ì§€ì •)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
 	TMap<EPlayerForm, TSoftObjectPtr<UFormStatsData>> DefaultFormStats;
 
-	// ½ºÅÈ(°øÅë ¼ÒÀ¯ÀÚ)
+	// ìŠ¤íƒ¯(ê³µí†µ ì†Œìœ ì)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	UPlayerStatsComponent* Stats;
 
@@ -47,16 +47,17 @@ public:
 private:
 	AKHU_GEBCharacter* GetOwnerChar() const;
 	FTransform GetSafeSpawnTM(const FTransform& Around) const;
+	FTransform GetInPlaceOrNearbyTM(AKHU_GEBCharacter* OldPawn, TSubclassOf<AKHU_GEBCharacter> NewCls) const;
 
 public:
 	// API
 	UFUNCTION(BlueprintCallable, Category = "Forms") void InitializeForms(EPlayerForm StartForm);
 	UFUNCTION(BlueprintCallable, Category = "Forms") void SwitchTo(EPlayerForm NewForm);
 
-	// ¹øµé I/O
+	// ë²ˆë“¤ I/O
 	UFUNCTION(BlueprintCallable, Category = "Forms") FPlayerStateBundle BuildBundle() const;
 	UFUNCTION(BlueprintCallable, Category = "Forms") void ApplyBundle(const FPlayerStateBundle& B);
 
-	// ÇöÀç Owner(Character)¿¡ ½ºÅÈ Áï½Ã ¹İ¿µ
+	// í˜„ì¬ Owner(Character)ì— ìŠ¤íƒ¯ ì¦‰ì‹œ ë°˜ì˜
 	UFUNCTION(BlueprintCallable, Category = "Forms") void ApplyStatsToOwner();
 };

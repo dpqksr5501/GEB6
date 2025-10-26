@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -26,13 +26,13 @@ struct FFormStatState
 {
 	GENERATED_BODY()
 
-	// ¹ë·±½º °î¼± (DataAsset)
+	// ë°¸ëŸ°ìŠ¤ ê³¡ì„  (DataAsset)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) TSoftObjectPtr<UFormStatsData> StatsData;
 
-	// ¾÷±×·¹ÀÌµå ÁøÇàµµ
+	// ì—…ê·¸ë ˆì´ë“œ ì§„í–‰ë„
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FFormStatProgress Progress;
 
-	// ½ÇÈ¿°ª Ä³½Ã(°è»ê °á°ú)
+	// ì‹¤íš¨ê°’ ìºì‹œ(ê³„ì‚° ê²°ê³¼)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) float Attack = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) float Defense = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) float MoveSpeed = 600.f;
@@ -48,11 +48,11 @@ public:
 	// Sets default values for this component's properties
 	UPlayerStatsComponent();
 
-	// Æûº° ½ºÅÈ »óÅÂ(¾÷±×·¹ÀÌµå Æ÷ÇÔ)
+	// í¼ë³„ ìŠ¤íƒ¯ ìƒíƒœ(ì—…ê·¸ë ˆì´ë“œ í¬í•¨)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Forms")
 	TMap<EPlayerForm, FFormStatState> FormStats;
 
-	// Ã¼·Â(°øÅë)
+	// ì²´ë ¥(ê³µí†µ)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health") float MaxHealth = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health") float Health = 100.f;
 
@@ -65,7 +65,7 @@ public:
 	// virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	// Àç°è»ê/¾÷±×·¹ÀÌµå/Á¶È¸
+	// ì¬ê³„ì‚°/ì—…ê·¸ë ˆì´ë“œ/ì¡°íšŒ
 	UFUNCTION(BlueprintCallable) void RecalcForForm(EPlayerForm Form);
 	UFUNCTION(BlueprintCallable) void ApplyUpgrade(EPlayerForm Form, EUpgradableStatType Stat, int32 Levels = 1);
 

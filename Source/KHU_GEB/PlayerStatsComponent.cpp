@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "PlayerStatsComponent.h"
@@ -49,7 +49,7 @@ void UPlayerStatsComponent::RecalcForForm(EPlayerForm Form)
         S->Attack = D->Attack.Base + D->Attack.PerLevel * aL;
         S->Defense = D->Defense.Base + D->Defense.PerLevel * dL;
         S->MoveSpeed = D->MoveSpeed.Base + D->MoveSpeed.PerLevel * mL;
-        // Äð´Ù¿î ÃÖ¼Ò ÇÏÇÑ(¿¹: 0.05ÃÊ) º¸Á¤
+        // ì¿¨ë‹¤ìš´ ìµœì†Œ í•˜í•œ(ì˜ˆ: 0.05ì´ˆ) ë³´ì •
         S->SkillCooldown = FMath::Max(0.05f, D->SkillCooldown.Base + D->SkillCooldown.PerLevel * cL);
     }
 }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #include "PlayerStateBundle.generated.h"
 
 /**
- º¯½Å ½Ã ½ºÅİ ÀÌ°ü
+ ë³€ì‹  ì‹œ ìŠ¤í…Ÿ ì´ê´€
  */
 
 USTRUCT(BlueprintType)
@@ -34,15 +34,15 @@ struct FPlayerStateBundle
 {
     GENERATED_BODY()
 
-    // Ã¼·Â(°øÅë)
+    // ì²´ë ¥(ê³µí†µ)
     UPROPERTY(EditAnywhere, BlueprintReadWrite) float MaxHP = 100.f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) float HP = 100.f;
 
-    // ¿¹½Ã: Åº¾à/¹öÇÁ µî (¿øÇÏ¸é È®Àå)
+    // ì˜ˆì‹œ: íƒ„ì•½/ë²„í”„ ë“± (ì›í•˜ë©´ í™•ì¥)
     UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Ammo = 0;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 ReserveAmmo = 0;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) TArray<FActiveEffect> ActiveEffects;
 
-    // Æû ¾÷±×·¹ÀÌµå ÁøÇàµµµé
+    // í¼ ì—…ê·¸ë ˆì´ë“œ ì§„í–‰ë„ë“¤
     UPROPERTY(EditAnywhere, BlueprintReadWrite) TArray<FFormStatProgressSave> FormProgresses;
 };

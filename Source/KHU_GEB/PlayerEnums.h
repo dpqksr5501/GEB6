@@ -1,11 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "PlayerEnums.generated.h"
 
 /**
- º¯½Å ÇüÅÂ ±¸ºÐ
+ ë³€ì‹  í˜•íƒœ êµ¬ë¶„
  */
 
 UENUM(BlueprintType)

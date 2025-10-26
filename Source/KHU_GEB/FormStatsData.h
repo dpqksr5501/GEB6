@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #include "FormStatsData.generated.h"
 
 /**
- ½ºÅÈ DataAsset
+ ìŠ¤íƒ¯ DataAsset
  */
 
 USTRUCT(BlueprintType)
@@ -25,10 +25,10 @@ class KHU_GEB_API UFormStatsData : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	// Æû ½Äº°¿ë(µğ¹ö±×/¿¡µğÅÍ ÆíÀÇ)
+	// í¼ ì‹ë³„ìš©(ë””ë²„ê·¸/ì—ë””í„° í¸ì˜)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName FormId;
 
-	// Ã¼·Â Á¦¿Ü: °ø°İ·Â/¹æ¾î·Â/ÀÌ¼Ó/½ºÅ³ÄğÅ¸ÀÓ
+	// ì²´ë ¥ ì œì™¸: ê³µê²©ë ¥/ë°©ì–´ë ¥/ì´ì†/ìŠ¤í‚¬ì¿¨íƒ€ì„
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats") FStatCurve Attack;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats") FStatCurve Defense;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats") FStatCurve MoveSpeed;

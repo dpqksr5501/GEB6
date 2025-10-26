@@ -148,7 +148,7 @@ void UFormManagerComponent::SwitchTo(EPlayerForm NewForm)
     const FPlayerStateBundle Bundle = BuildBundle();
 
     // 2) 새 Pawn 스폰
-    const FTransform TM = GetSafeSpawnTM(OwnerChar->GetActorTransform());
+    const FTransform TM = GetInPlaceOrNearbyTM(OwnerChar, *Cls);
     AKHU_GEBCharacter* NewPawn = GetWorld()->SpawnActorDeferred<AKHU_GEBCharacter>(
         *Cls, TM, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
     UGameplayStatics::FinishSpawningActor(NewPawn, TM);
@@ -169,4 +169,55 @@ void UFormManagerComponent::SwitchTo(EPlayerForm NewForm)
     // 5) 상태 갱신 & 기존 Pawn 제거
     CurrentForm = NewForm;
     OwnerChar->Destroy();
+}
+
+static bool TryCapsuleAt(UWorld* W, const FVector& Loc, float Radius, float HalfH, ECollisionChannel Chan)
+{
+    FCollisionQueryParams Q; Q.bTraceComplex = false; Q.bReturnPhysicalMaterial = false;
+    return !W->OverlapBlockingTestByChannel(Loc, FQuat::Identity, Chan,
+        FCollisionShape::MakeCapsule(Radius, HalfH), Q);
+}
+
+FTransform UFormManagerComponent::GetInPlaceOrNearbyTM(AKHU_GEBCharacter* OldPawn, TSubclassOf<AKHU_GEBCharacter> NewCls) const
+{
+    FTransform TM = OldPawn->GetActorTransform();
+    UWorld* W = GetWorld();
+    if (!W) return GetSafeSpawnTM(TM);
+
+    // 새 폼의 캡슐 크기 예측
+    float NewRadius = 42.f, NewHalf = 96.f;
+    if (const AKHU_GEBCharacter* CDO = NewCls ? Cast<AKHU_GEBCharacter>(NewCls->GetDefaultObject()) : nullptr)
+    {
+        if (const UCapsuleComponent* CapCDO = CDO->GetCapsuleComponent())
+        {
+            NewRadius = CapCDO->GetUnscaledCapsuleRadius() * CDO->GetActorScale3D().Z;
+            NewHalf = CapCDO->GetUnscaledCapsuleHalfHeight() * CDO->GetActorScale3D().Z;
+        }
+    }
+
+    // 1) 제자리 시도(스윕/오버랩 체크)
+    const FVector BaseLoc = OldPawn->GetActorLocation();
+    if (TryCapsuleAt(W, BaseLoc, NewRadius, NewHalf, ECC_Pawn))
+    {
+        TM.SetLocation(BaseLoc);
+        return TM;
+    }
+
+    // 2) 근처 소폭 보정(반경 50~120cm 정도 스파이럴 탐색)
+    static const float Radii[] = { 50.f, 75.f, 100.f, 120.f };
+    for (float R : Radii)
+    {
+        for (int i = 0;i < 12;i++)
+        {
+            const float Ang = (PI * 2.f / 12.f) * i;
+            const FVector Cand = BaseLoc + FVector(FMath::Cos(Ang), FMath::Sin(Ang), 0.f) * R;
+            if (TryCapsuleAt(W, Cand, NewRadius, NewHalf, ECC_Pawn))
+            {
+                TM.SetLocation(Cand); return TM;
+            }
+        }
+    }
+
+    // 3) 최후: 기존 바닥 스냅 방식
+    return GetSafeSpawnTM(TM);
 }

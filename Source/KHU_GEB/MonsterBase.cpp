@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MonsterBase.h"
@@ -14,19 +14,19 @@ AMonsterBase::AMonsterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 1. "¸öÀÌ ¸Ó¸®¸¦ µû¶ó°¡Áö ¾Ê°Ô ÇÏ±â"
-	// ¸¶¿ì½º(ÄÁÆ®·Ñ·¯)¸¦ ¿òÁ÷¿©µµ Ä³¸¯ÅÍÀÇ ¸öÀÌ µû¶ó È¸ÀüÇÏÁö ¾Êµµ·Ï ¼³Á¤ÇÕ´Ï´Ù.
+	// 1. "ëª¸ì´ ë¨¸ë¦¬ë¥¼ ë”°ë¼ê°€ì§€ ì•Šê²Œ í•˜ê¸°"
+	// ë§ˆìš°ìŠ¤(ì»¨íŠ¸ë¡¤ëŸ¬)ë¥¼ ì›€ì§ì—¬ë„ ìºë¦­í„°ì˜ ëª¸ì´ ë”°ë¼ íšŒì „í•˜ì§€ ì•Šë„ë¡ ì„¤ì •í•©ë‹ˆë‹¤.
 	bUseControllerRotationYaw = false;
 
-	// 2. "¸öÀÌ °¡´Â ¹æÇâÀ» ¹Ù¶óº¸°Ô ÇÏ±â"
-	// Ä³¸¯ÅÍÀÇ ¿òÁ÷ÀÓ ¹æÇâÀ¸·Î ¸öÀÌ ÀÚµ¿À¸·Î È¸ÀüÇÏµµ·Ï ¼³Á¤ÇÕ´Ï´Ù.
+	// 2. "ëª¸ì´ ê°€ëŠ” ë°©í–¥ì„ ë°”ë¼ë³´ê²Œ í•˜ê¸°"
+	// ìºë¦­í„°ì˜ ì›€ì§ì„ ë°©í–¥ìœ¼ë¡œ ëª¸ì´ ìë™ìœ¼ë¡œ íšŒì „í•˜ë„ë¡ ì„¤ì •í•©ë‹ˆë‹¤.
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
-	// ±âº» °È±â ¼Óµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù. (600)
+	// ê¸°ë³¸ ê±·ê¸° ì†ë„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. (600)
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 
 
-	// Ã¼·Â
+	// ì²´ë ¥
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
 }
@@ -49,7 +49,7 @@ void AMonsterBase::BeginPlay()
 	
 }
 
-//// Ã¼·Â
+//// ì²´ë ¥
 
 float AMonsterBase::GetHealth() const
 {
@@ -146,12 +146,12 @@ void AMonsterBase::SetCharacterState(ECharacterState NewState)
 
 void AMonsterBase::Look(const FInputActionValue& Value)
 {
-	// ¸¶¿ì½ºÀÇ X, Y ¿òÁ÷ÀÓ °ªÀ» °¡Á®¿É´Ï´Ù.
+	// ë§ˆìš°ìŠ¤ì˜ X, Y ì›€ì§ì„ ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		// XÃà ¿òÁ÷ÀÓÀº ÄÁÆ®·Ñ·¯ÀÇ ÁÂ¿ì È¸Àü(Yaw)¿¡, YÃà ¿òÁ÷ÀÓÀº »óÇÏ È¸Àü(Pitch)¿¡ Ãß°¡ÇÕ´Ï´Ù.
+		// Xì¶• ì›€ì§ì„ì€ ì»¨íŠ¸ë¡¤ëŸ¬ì˜ ì¢Œìš° íšŒì „(Yaw)ì—, Yì¶• ì›€ì§ì„ì€ ìƒí•˜ íšŒì „(Pitch)ì— ì¶”ê°€í•©ë‹ˆë‹¤.
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
@@ -164,18 +164,18 @@ void AMonsterBase::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// 1. ÄÁÆ®·Ñ·¯(Ä«¸Ş¶ó)ÀÇ ÇöÀç È¸Àü °ªÀ» °¡Á®¿É´Ï´Ù.
+		// 1. ì»¨íŠ¸ë¡¤ëŸ¬(ì¹´ë©”ë¼)ì˜ í˜„ì¬ íšŒì „ ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
 		const FRotator Rotation = Controller->GetControlRotation();
-		// 2. Ä«¸Ş¶ó°¡ À§¾Æ·¡¸¦ º¸´Â °Í(Pitch)Àº ¹«½ÃÇÏ°í, ¿ÀÁ÷ ¼öÆò È¸Àü(Yaw) °ª¸¸ »ç¿ëÇÕ´Ï´Ù.
+		// 2. ì¹´ë©”ë¼ê°€ ìœ„ì•„ë˜ë¥¼ ë³´ëŠ” ê²ƒ(Pitch)ì€ ë¬´ì‹œí•˜ê³ , ì˜¤ì§ ìˆ˜í‰ íšŒì „(Yaw) ê°’ë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// 3. ÀÌ ¼öÆò È¸Àü °ªÀ» ±âÁØÀ¸·Î »õ·Î¿î '¾ÕÂÊ'°ú '¿À¸¥ÂÊ' ¹æÇâÀ» °è»êÇÕ´Ï´Ù.
+		// 3. ì´ ìˆ˜í‰ íšŒì „ ê°’ì„ ê¸°ì¤€ìœ¼ë¡œ ìƒˆë¡œìš´ 'ì•ìª½'ê³¼ 'ì˜¤ë¥¸ìª½' ë°©í–¥ì„ ê³„ì‚°í•©ë‹ˆë‹¤.
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// 4. °è»êµÈ ¹æÇâ¿¡ µû¶ó ¿òÁ÷ÀÓÀ» Ãß°¡ÇÕ´Ï´Ù.
-		AddMovementInput(ForwardDirection, MovementVector.Y); // W/S´Â Ä«¸Ş¶óÀÇ ¾Õ/µÚ·Î
-		AddMovementInput(RightDirection, MovementVector.X);   // A/D´Â Ä«¸Ş¶óÀÇ ÁÂ/¿ì·Î
+		// 4. ê³„ì‚°ëœ ë°©í–¥ì— ë”°ë¼ ì›€ì§ì„ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
+		AddMovementInput(ForwardDirection, MovementVector.Y); // W/SëŠ” ì¹´ë©”ë¼ì˜ ì•/ë’¤ë¡œ
+		AddMovementInput(RightDirection, MovementVector.X);   // A/DëŠ” ì¹´ë©”ë¼ì˜ ì¢Œ/ìš°ë¡œ
 	}
 }
 
@@ -185,5 +185,5 @@ void AMonsterBase::Move(const FInputActionValue& Value)
 void AMonsterBase::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
-	OnLandedEvent(Hit); // ºí·çÇÁ¸°Æ®ÀÇ OnLandedEvent¸¦ È£Ãâ
+	OnLandedEvent(Hit); // ë¸”ë£¨í”„ë¦°íŠ¸ì˜ OnLandedEventë¥¼ í˜¸ì¶œ
 }
