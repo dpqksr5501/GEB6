@@ -77,6 +77,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionLAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionRAttack;
+
 	///////////////////////////////////////////
 
 	
@@ -111,6 +114,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void LAttackAction_Start();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void RAttackAction_Start();
 
 public:	
 	// Called every frame
