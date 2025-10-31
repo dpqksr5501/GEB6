@@ -31,10 +31,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
+	//회전 시 기울기에 사용
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	float YawDeltaSpeed;
+
+	//좌/우 각도
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
+	float AimYaw;
+
+	//위/아래 각도
+	/** 캐릭터가 바라보는 Pitch (위/아래) 각도 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
+	float AimPitch;
+
 protected:
 	UPROPERTY()
 	AMonsterBase* OwningMonster;
 
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	float LastYaw;//마지막 Yaw값 가져오기
 };
