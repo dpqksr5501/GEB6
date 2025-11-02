@@ -131,6 +131,9 @@ void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		{
 			EnhancedInputComponent->BindAction(InputActionLAttack, ETriggerEvent::Started, this, &AMonsterBase::LAttackAction_Start);
 		}
+		if (InputActionRAttack) {
+			EnhancedInputComponent->BindAction(InputActionRAttack, ETriggerEvent::Started, this, &AMonsterBase::RAttackAction_Start);
+		}
 	}
 }
 

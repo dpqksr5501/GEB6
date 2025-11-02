@@ -19,8 +19,7 @@ public:
 
 	//// 체력관련
 	UFUNCTION()
-	void HandleAnyDamage(AActor* DamagedActor, float Damage,
-		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	void HandleAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComp;
@@ -77,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionLAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionRAttack;
+
 	///////////////////////////////////////////
 
 	
@@ -111,6 +113,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void LAttackAction_Start();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void RAttackAction_Start();
 
 public:	
 	// Called every frame

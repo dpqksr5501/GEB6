@@ -33,10 +33,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
+	//ȸ�� �� �����⿡ ����
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	float YawDeltaSpeed;
+
+	//��/�� ����
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
+	float AimYaw;
+
+	//��/�Ʒ� ����
+	/** ĳ���Ͱ� �ٶ󺸴� Pitch (��/�Ʒ�) ���� */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
+	float AimPitch;
+
 protected:
 	UPROPERTY()
 	AMonsterBase* OwningMonster;
 
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	float LastYaw;//������ Yaw�� ��������
 };
