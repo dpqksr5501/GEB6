@@ -25,11 +25,11 @@ void USkill_Range::ActivateSkill()
                     EAttachLocation::SnapToTarget, true);
             }
         }
+        Super::ActivateSkill();
+
         // 채널 시작
         GetWorld()->GetTimerManager().SetTimer(TickHandle, this, &USkill_Range::TickBreath, TickInterval, true);
         GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Range::StopSkill, MaxDuration, false);
-
-        Super::ActivateSkill();
     }
 }
 
@@ -38,6 +38,7 @@ void USkill_Range::StopSkill()
     GetWorld()->GetTimerManager().ClearTimer(TickHandle);
     GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
     if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
+
     Super::StopSkill();
 }
 
@@ -86,6 +87,7 @@ void USkill_Guard::ActivateSkill()
                 FVector::ZeroVector, FRotator::ZeroRotator,
                 EAttachLocation::SnapToTarget, true);
         }
+        Super::ActivateSkill();
         GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Guard::StopSkill, Duration, false);
     }
 }
@@ -95,6 +97,8 @@ void USkill_Guard::StopSkill()
     if (AActor* Owner = GetOwner()) Owner->SetCanBeDamaged(true);
     if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
     GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
+
+    Super::StopSkill();
 }
 
 /*=============================Special=============================*/
