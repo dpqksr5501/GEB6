@@ -29,6 +29,10 @@ AMonsterBase::AMonsterBase()
 	// 체력
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
+
+	//State 값 Idle로 고정
+	CharacterState = ECharacterState::Idle;
+
 }
 
 // Called when the game starts or when spawned
