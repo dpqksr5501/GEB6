@@ -10,8 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "FormManagerComponent.h"
 #include "HealthComponent.h"
+#include "FormManagerComponent.h"
+#include "SkillManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 
@@ -53,21 +54,28 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
+	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_BASE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_BaseForm.IA_BaseForm'"));
-	if (FORM_BASE.Object) { BaseForm = FORM_BASE.Object; }
+	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
+	if (ATTACK.Object) { AttackAction = ATTACK.Object; }
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_RANGE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_RangeForm.IA_RangeForm'"));
-	if (FORM_RANGE.Object) { RangeForm = FORM_RANGE.Object; }
+	static ConstructorHelpers::FObjectFinder<UInputAction> SKILL(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Skill.IA_Skill'"));
+	if (SKILL.Object) { SkillAction = SKILL.Object; }
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SPEED(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SpeedForm.IA_SpeedForm'"));
-	if (FORM_SPEED.Object) { SpeedForm = FORM_SPEED.Object; }
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_BASE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Base.IA_Form_Base'"));
+	if (FORM_BASE.Object) { FormBase = FORM_BASE.Object; }
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_DEFENSE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DefenseForm.IA_DefenseForm'"));
-	if (FORM_DEFENSE.Object) { DefenseForm = FORM_DEFENSE.Object; }
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_RANGE(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Range.IA_Form_Range'"));
+	if (FORM_RANGE.Object) { FormRange = FORM_RANGE.Object; }
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_DEBUFF(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DebuffForm.IA_DebuffForm'"));
-	if (FORM_DEBUFF.Object) { DebuffForm = FORM_DEBUFF.Object; }
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SWIFT(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Swift.IA_Form_Swift'"));
+	if (FORM_SWIFT.Object) { FormSwift = FORM_SWIFT.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_GUARD(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Guard.IA_Form_Guard'"));
+	if (FORM_GUARD.Object) { FormGuard = FORM_GUARD.Object; }
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SPECIAL(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Special.IA_Form_Special'"));
+	if (FORM_SPECIAL.Object) { FormSpecial = FORM_SPECIAL.Object; }
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -86,12 +94,17 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
+		// Attack
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Attack);
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::SkillStart);
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::SkillEnd);
+
 		// 변신
-		EnhancedInputComponent->BindAction(BaseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
-		EnhancedInputComponent->BindAction(RangeForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToRange);
-		EnhancedInputComponent->BindAction(SpeedForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpeed);
-		EnhancedInputComponent->BindAction(DefenseForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToDefense);
-		EnhancedInputComponent->BindAction(DebuffForm, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToDebuff);
+		EnhancedInputComponent->BindAction(FormBase, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
+		EnhancedInputComponent->BindAction(FormRange, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToRange);
+		EnhancedInputComponent->BindAction(FormSwift, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSwift);
+		EnhancedInputComponent->BindAction(FormGuard, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToGuard);
+		EnhancedInputComponent->BindAction(FormSpecial, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpecial);
 	}
 	else
 	{
@@ -103,7 +116,11 @@ void AKHU_GEBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (FormManager) { FormManager->InitializeForms(FormManager->CurrentForm); }
+	if (FormManager)
+	{
+		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged);
+		FormManager->InitializeForms();
+	}
 
 	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
 }
@@ -112,7 +129,7 @@ void AKHU_GEBCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
+	//UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
 }
 
 float AKHU_GEBCharacter::GetHealth() const
@@ -155,39 +172,51 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
+void AKHU_GEBCharacter::Attack(const FInputActionValue& Value)
+{
+	
+}
+
+void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
+{
+	if (!SkillManager) return;
+	SkillManager->TryActivate(ESkillSlot::Active);
+}
+
+void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
+{
+	if (!SkillManager) return;
+	SkillManager->TryStop(ESkillSlot::Active);
+}
+
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
 	if (!FormManager) return;
-	if (FormManager->CurrentForm == EPlayerForm::Base) return;	
-	FormManager->SwitchTo(EPlayerForm::Base);
+	FormManager->SwitchTo(EFormType::Base);
 }
 
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
 	if (!FormManager) return;
-	if (FormManager->CurrentForm == EPlayerForm::Range) return;
-	FormManager->SwitchTo(EPlayerForm::Range);
+	FormManager->SwitchTo(EFormType::Range);
 }
 
-void AKHU_GEBCharacter::SwitchToSpeed(const FInputActionValue& Value)
+void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 {
 	if (!FormManager) return;
-	if (FormManager->CurrentForm == EPlayerForm::Speed) return;
-	FormManager->SwitchTo(EPlayerForm::Speed);
+	FormManager->SwitchTo(EFormType::Swift);
 }
 
-void AKHU_GEBCharacter::SwitchToDefense(const FInputActionValue& Value)
+void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 {
 	if (!FormManager) return;
-	if (FormManager->CurrentForm == EPlayerForm::Defense) return;
-	FormManager->SwitchTo(EPlayerForm::Defense);
+	FormManager->SwitchTo(EFormType::Guard);
 }
 
-void AKHU_GEBCharacter::SwitchToDebuff(const FInputActionValue& Value)
+void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 {
 	if (!FormManager) return;
-	if (FormManager->CurrentForm == EPlayerForm::Debuff) return;
-	FormManager->SwitchTo(EPlayerForm::Debuff);
+	FormManager->SwitchTo(EFormType::Special);
 }
 
 void AKHU_GEBCharacter::DoMove(float Right, float Forward)
@@ -230,4 +259,14 @@ void AKHU_GEBCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
+{
+	UE_LOG(LogTemp, Log, TEXT("[Character] OnFormChanged -> %d, SkillSet=%s"),
+		(int32)NewForm, Def && Def->SkillSet ? *GetNameSafe(Def->SkillSet) : TEXT("None"));
+	if (SkillManager)
+	{
+		SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr);
+	}
 }
