@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -43,10 +43,10 @@ public:
 	void InitializeHealth(float InMaxHealth, float InStartHealth = -1.f);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void ReduceHealth(float Amount);            // √º∑¬ ∞®º“ («««ÿ)
+	void ReduceHealth(float Amount);            // Ï≤¥Î†• Í∞êÏÜå (ÌîºÌï¥)
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void AddHealth(float Amount);               // √º∑¬ »∏∫π
+	void AddHealth(float Amount);               // Ï≤¥Î†• ÌöåÎ≥µ
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetMaxHealth(float NewMaxHealth, bool bClampCurrentToNewMax = true);
