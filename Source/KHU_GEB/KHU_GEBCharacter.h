@@ -11,8 +11,9 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
-class UPlayerStatsComponent;
+class UHealthComponent;
 class UFormManagerComponent;
+class USkillManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -50,21 +51,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
-	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* BaseForm;
-	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* RangeForm;
-	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* SpeedForm;
-	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* DefenseForm;
-	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* DebuffForm;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* SkillAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormBase;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormRange;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSwift;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormGuard;
+	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSpecial;
+	
 public:
 	/** Constructor */
 	AKHU_GEBCharacter();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHealthComponent* HealthComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UHealthComponent* HealthComp;
+	USkillManagerComponent* SkillManager;
 
 protected:
 	/** Initialize input action bindings */
@@ -81,12 +88,17 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for Attack */
+	void Attack(const FInputActionValue& Value);
+	void SkillStart(const FInputActionValue& Value);
+	void SkillEnd(const FInputActionValue& Value);
+
 	/** Called for 변신 */
 	void SwitchToBase(const FInputActionValue& Value);
 	void SwitchToRange(const FInputActionValue& Value);
-	void SwitchToSpeed(const FInputActionValue& Value);
-	void SwitchToDefense(const FInputActionValue& Value);
-	void SwitchToDebuff(const FInputActionValue& Value);
+	void SwitchToSwift(const FInputActionValue& Value);
+	void SwitchToGuard(const FInputActionValue& Value);
+	void SwitchToSpecial(const FInputActionValue& Value);
 
 public:
 	/** Handles move inputs from either controls or UI interfaces */
@@ -114,6 +126,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float Amount);
+
+	UFUNCTION()
+	void OnFormChanged(EFormType NewForm, const UFormDefinition* Def);
 
 public:
 	/** Returns CameraBoom subobject **/

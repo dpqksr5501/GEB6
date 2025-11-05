@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,6 +11,8 @@ enum class ECharacterState : uint8
 {
 	Attacking	UMETA(DisplayName = "Attacking"),
 	Idle	UMETA(DisplayName = "Idle"),
+	Attack	UMETA(DisplayName = "Attack"),
+	Skill1	UMETA(DisplayName = "Skill1"), //ìš°í´ë¦­
 	Hit		UMETA(DisplayName = "Hit"),
 	Die		UMETA(DisplayName = "Die")
 };
@@ -25,23 +27,23 @@ class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
 	GENERATED_BODY()
 
 public:
-	// ºí·çÇÁ¸°Æ®¿¡¼­ ÀĞ±â Àü¿ëÀ¸·Î »ç¿ëÇÒ º¯¼öµé
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì½ê¸° ì „ìš©ìœ¼ë¡œ ì‚¬ìš©í•  ë³€ìˆ˜ë“¤
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	float Speed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
-	//È¸Àü ½Ã ±â¿ï±â¿¡ »ç¿ë
+	//È¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	float YawDeltaSpeed;
 
-	//ÁÂ/¿ì °¢µµ
+	//ï¿½ï¿½/ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
 	float AimYaw;
 
-	//À§/¾Æ·¡ °¢µµ
-	/** Ä³¸¯ÅÍ°¡ ¹Ù¶óº¸´Â Pitch (À§/¾Æ·¡) °¢µµ */
+	//ï¿½ï¿½/ï¿½Æ·ï¿½ ï¿½ï¿½ï¿½ï¿½
+	/** Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½Ù¶óº¸´ï¿½ Pitch (ï¿½ï¿½/ï¿½Æ·ï¿½) ï¿½ï¿½ï¿½ï¿½ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
 	float AimPitch;
 
@@ -52,5 +54,5 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	float LastYaw;//¸¶Áö¸· Yaw°ª °¡Á®¿À±â
+	float LastYaw;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Yawï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 };
