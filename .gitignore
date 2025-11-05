@@ -1,6 +1,15 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# Assets
+Content/Assets
+Content/ParagonKallari
+Content/ParagonMinions
+Content/ParagonSevarog
+Content/ParagonTerra
+Content/QuadrapedCreatures
+Content/DashFX
+
 # Compiled Object files
 *.slo
 *.lo
