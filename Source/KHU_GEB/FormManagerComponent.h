@@ -1,42 +1,62 @@
-癤�// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "FormDefinition.h"
+#include "PlayerEnums.h"
 #include "FormManagerComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFormChanged, EFormType, NewForm, const UFormDefinition*, Def);
+class AKHU_GEBCharacter;
+class UPlayerStatsComponent;
+class UFormStatsData;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API UFormManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Transient) TWeakObjectPtr<class USkeletalMeshComponent> CachedMesh;
-
-public:
+public:	
+	// Sets default values for this component's properties
 	UFormManagerComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Form")
-	TObjectPtr<UFormSet> FormSet;
+	// === 폼 상태 ===
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Forms")
+	EPlayerForm CurrentForm = EPlayerForm::Base;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Form")
-	EFormType CurrentForm = EFormType::Base;
+	// 폼 → 폼용 블루프린트 클래스 (에디터에서 BP 지정)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
+	TMap<EPlayerForm, TSubclassOf<AKHU_GEBCharacter>> FormClasses;
 
-	UPROPERTY(BlueprintAssignable) FOnFormChanged OnFormChanged;
+	// 폼 → 폼 스탯 DataAsset (에디터에서 4개 DataAsset 지정)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forms")
+	TMap<EPlayerForm, TSoftObjectPtr<UFormStatsData>> DefaultFormStats;
+
+	// 스탯(공통 소유자)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	UPlayerStatsComponent* Stats;
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	// virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	const UFormDefinition* FindDef(EFormType T) const;
-	void ApplyMesh(const UFormDefinition* Def);	
-
-	void FindMesh();
+	AKHU_GEBCharacter* GetOwnerChar() const;
+	FTransform GetSafeSpawnTM(const FTransform& Around) const;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Form")
-	void InitializeForms();
+	// API
+	UFUNCTION(BlueprintCallable, Category = "Forms") void InitializeForms(EPlayerForm StartForm);
+	UFUNCTION(BlueprintCallable, Category = "Forms") void SwitchTo(EPlayerForm NewForm);
 
-	UFUNCTION(BlueprintCallable, Category = "Form")
-	void SwitchTo(EFormType NewForm);
+	// 번들 I/O
+	UFUNCTION(BlueprintCallable, Category = "Forms") FPlayerStateBundle BuildBundle() const;
+	UFUNCTION(BlueprintCallable, Category = "Forms") void ApplyBundle(const FPlayerStateBundle& B);
+
+	// 현재 Owner(Character)에 스탯 즉시 반영
+	UFUNCTION(BlueprintCallable, Category = "Forms") void ApplyStatsToOwner();
 };

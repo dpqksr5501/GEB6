@@ -1,4 +1,4 @@
-ï»¿
+
 #include "HealthComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -6,7 +6,7 @@
 
 UHealthComponent::UHealthComponent()
 {
-    PrimaryComponentTick.bCanEverTick = false; // í‹± ì•ˆ ì“°ë©´ false ê¶Œìž¥
+    PrimaryComponentTick.bCanEverTick = false; // Æ½ ¾È ¾²¸é false ±ÇÀå
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -42,7 +42,7 @@ void UHealthComponent::ReduceHealth(float Amount)
     if (Amount <= 0.f || MaxHealth <= 0.f) return;
 
     const float NewHealth = FMath::Clamp(Health - Amount, 0.f, MaxHealth);
-    const float Delta = NewHealth - Health; // ìŒìˆ˜(ê°ì†ŒëŸ‰)
+    const float Delta = NewHealth - Health; // À½¼ö(°¨¼Ò·®)
     ApplyHealth(NewHealth, Delta);
     HandleDeathIfNeeded();
 }
@@ -55,7 +55,7 @@ void UHealthComponent::AddHealth(float Amount)
     }
 
     const float NewHealth = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
-    const float Delta = NewHealth - Health; // ì–‘ìˆ˜(íšŒë³µëŸ‰)
+    const float Delta = NewHealth - Health; // ¾ç¼ö(È¸º¹·®)
     ApplyHealth(NewHealth, Delta);
 }
 
@@ -63,7 +63,7 @@ void UHealthComponent::SetMaxHealth(float NewMaxHealth, bool bClampCurrentToNewM
 {
     NewMaxHealth = FMath::Max(0.f, NewMaxHealth);
 
-    // í˜„ìž¬ ì²´ë ¥ ë¹„ìœ¨ ìœ ì§€í•˜ê³  ì‹¶ë‹¤ë©´ ì•„ëž˜ ë‘ ì¤„ì„ ì‚¬ìš©:
+    // ÇöÀç Ã¼·Â ºñÀ² À¯ÁöÇÏ°í ½Í´Ù¸é ¾Æ·¡ µÎ ÁÙÀ» »ç¿ë:
     // const float Ratio = (MaxHealth > 0.f) ? (Health / MaxHealth) : 0.f;
     // Health = Ratio * NewMaxHealth;
 
@@ -90,7 +90,7 @@ void UHealthComponent::HandleDeathIfNeeded()
     if (Health <= 0.f)
     {
         OnDeath.Broadcast();
-        // í•„ìš” ì‹œ: ì†Œìœ  ì•¡í„° ì²˜ë¦¬ (Destroy ë“±)
+        // ÇÊ¿ä ½Ã: ¼ÒÀ¯ ¾×ÅÍ Ã³¸® (Destroy µî)
         // if (AActor* Owner = GetOwner()) { Owner->Destroy(); }
     }
 }
