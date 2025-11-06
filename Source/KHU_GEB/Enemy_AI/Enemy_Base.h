@@ -16,12 +16,13 @@ public:
 	// Sets default values for this character's properties
 	AEnemy_Base();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Enemy Action") // 평타
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 평타
 	UAnimMontage* AttackMontage;
-	UPROPERTY(EditDefaultsOnly, Category = "Enemy Action") // 기본스킬
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 기본스킬
 	UAnimMontage* SkillMontage;
-	UPROPERTY(EditDefaultsOnly, Category = "Enemy Action") // 특수스킬
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 특수스킬
 	UAnimMontage* SpecialSkillMontage;
+
 
 protected:
 	// Called when the game starts or when spawned
