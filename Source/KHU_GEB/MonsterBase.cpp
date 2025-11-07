@@ -29,6 +29,9 @@ AMonsterBase::AMonsterBase()
 	// 체력
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
+	//점프 입력 변수 초기화.
+	bJumpInput = false;
+
 }
 
 // Called when the game starts or when spawned
