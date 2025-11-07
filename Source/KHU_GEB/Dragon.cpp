@@ -1,26 +1,26 @@
-// Dragon.cpp
+ï»¿// Dragon.cppğŸ˜„
 
 #include "Dragon.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetSystemLibrary.h" // SphereTrace¸¦ À§ÇØ Æ÷ÇÔ
+#include "Kismet/KismetSystemLibrary.h" // SphereTraceë¥¼ ìœ„í•´ í¬í•¨
 
 ADragon::ADragon()
 {
-	// »ı¼ºÀÚ: ÄÄÆ÷³ÍÆ® ±âº»°ª ¼³Á¤
+	// ìƒì„±ì: ì»´í¬ë„ŒíŠ¸ ê¸°ë³¸ê°’ ì„¤ì •
 	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 	{
-		MoveComp->MaxFlySpeed = MaxFlySpeed; // Çì´õ¿¡ ¼±¾ğµÈ º¯¼ö »ç¿ë
+		MoveComp->MaxFlySpeed = MaxFlySpeed; // í—¤ë”ì— ì„ ì–¸ëœ ë³€ìˆ˜ ì‚¬ìš©
 		MoveComp->BrakingDecelerationFlying = FlyingBrakingDeceleration;
 	}
 }
 
 void ADragon::BeginPlay()
 {
-	Super::BeginPlay(); // ºÎ¸ğÀÇ BeginPlay È£Ãâ (InputMappingContext Ãß°¡ µî)
+	Super::BeginPlay(); // ë¶€ëª¨ì˜ BeginPlay í˜¸ì¶œ (InputMappingContext ì¶”ê°€ ë“±)
 
-	// CharacterMovement ÄÄÆ÷³ÍÆ®¸¦ Ã£¾Æ º¯¼ö¿¡ ÀúÀå (Ä³½ºÆÃ ¹× À¯È¿¼º °Ë»ç Ãß°¡)
+	// CharacterMovement ì»´í¬ë„ŒíŠ¸ë¥¼ ì°¾ì•„ ë³€ìˆ˜ì— ì €ì¥ (ìºìŠ¤íŒ… ë° ìœ íš¨ì„± ê²€ì‚¬ ì¶”ê°€)
 	DragonMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
-	// ½ÃÀÛ ½Ã ÇÑ ¹ø ´õ °ª ¼³Á¤ (¾ÈÀü¼º)
+	// ì‹œì‘ ì‹œ í•œ ë²ˆ ë” ê°’ ì„¤ì • (ì•ˆì „ì„±)
 	if (DragonMovementComponent)
 	{
 		DragonMovementComponent->MaxFlySpeed = MaxFlySpeed;
@@ -30,30 +30,30 @@ void ADragon::BeginPlay()
 
 void ADragon::Landed(const FHitResult& Hit)
 {
-	Super::Landed(Hit); // ºÎ¸ğÀÇ Landed ·ÎÁ÷ È£Ãâ (OnLandedEvent ½ÅÈ£ ¹ß¼Û)
+	Super::Landed(Hit); // ë¶€ëª¨ì˜ Landed ë¡œì§ í˜¸ì¶œ (OnLandedEvent ì‹ í˜¸ ë°œì†¡)
 
-	// ºñÇà ¶Ç´Â ÇÏ°­ Áß¿¡ ¶¥¿¡ ´ê¾Ò´Ù¸é
+	// ë¹„í–‰ ë˜ëŠ” í•˜ê°• ì¤‘ì— ë•…ì— ë‹¿ì•˜ë‹¤ë©´
 	if (bIsFlying && DragonMovementComponent)
 	{
-		bIsFlying = false; // ºñÇà »óÅÂ OFF
-		bIsDescending = false; // ÇÏ°­ »óÅÂ OFF
+		bIsFlying = false; // ë¹„í–‰ ìƒíƒœ OFF
+		bIsDescending = false; // í•˜ê°• ìƒíƒœ OFF
 		DragonMovementComponent->SetMovementMode(EMovementMode::MOVE_Walking);
-		DragonMovementComponent->GravityScale = 1.f; // Áß·Â ON
+		DragonMovementComponent->GravityScale = 1.f; // ì¤‘ë ¥ ON
 	}
 }
 
 void ADragon::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime); // ºÎ¸ğÀÇ Tick ±â´É ½ÇÇà
+	Super::Tick(DeltaTime); // ë¶€ëª¨ì˜ Tick ê¸°ëŠ¥ ì‹¤í–‰
 
 	if (DragonMovementComponent)
 	{
-		// 1. Áö¼Ó ÇÏ°­ ·ÎÁ÷ (bIsDescending ÇÃ·¡±×°¡ TrueÀÏ ¶§)
+		// 1. ì§€ì† í•˜ê°• ë¡œì§ (bIsDescending í”Œë˜ê·¸ê°€ Trueì¼ ë•Œ)
 		if (bDescentMovementActive)
 		{
 			//AddMovementInput(FVector(0.f, 0.f, -5000.f), 1.0f);
 
-			// 2. Âø·ú °¨Áö ·ÎÁ÷ (SphereTrace)
+			// 2. ì°©ë¥™ ê°ì§€ ë¡œì§ (SphereTrace)
 			FVector Start = GetActorLocation();
 			FVector End = Start - FVector(0.f, 0.f, LandingTraceDistance);
 			FHitResult HitResult;
@@ -65,7 +65,7 @@ void ADragon::Tick(float DeltaTime)
 				UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
 				EDrawDebugTrace::None, HitResult, true);
 
-			// ¶¥ÀÌ °¨ÁöµÇ°í ÇöÀç ºñÇà ÁßÀÌ¸é Âø·ú ÁØºñ (Falling ¸ğµå·Î º¯°æ)
+			// ë•…ì´ ê°ì§€ë˜ê³  í˜„ì¬ ë¹„í–‰ ì¤‘ì´ë©´ ì°©ë¥™ ì¤€ë¹„ (Falling ëª¨ë“œë¡œ ë³€ê²½)
 			if (bHit && (DragonMovementComponent->MovementMode == EMovementMode::MOVE_Flying))
 			{
 				DragonMovementComponent->SetMovementMode(EMovementMode::MOVE_Falling);

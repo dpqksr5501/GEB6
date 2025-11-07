@@ -26,7 +26,7 @@ void UMonsterAnimInstanceBase::NativeInitializeAnimation()
 	bIsFalling = false;
 }
 
-// 매 프레임마다 호출되어 애니메이션 변수들을 업데이트합니다. (Tick과 유사)
+// 매 프레임마다 호출되어 애니메이션 변수들을 업데이트합니다. (Tick과 유사)😄
 void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds); // 부모 클래스의 업데이트 함수 호출
@@ -34,9 +34,9 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 	// OwningMonster가 유효한지(null이 아닌지) 확인합니다.
 	if (OwningMonster)
 	{
-		// 몬스터의 현재 속도(Velocity)의 크기를 구해 Speed 변수에 저장합니다. [cite: 3775]
+		// 몬스터의 현재 속도(Velocity)의 크기를 구해 Speed 변수에 저장합니다.
 		Speed = OwningMonster->GetVelocity().Size();
-		// 몬스터의 현재 ECharacterState (Idle, Attacking 등)를 가져와 CharacterState 변수에 저장합니다. [cite: 3775]
+		// 몬스터의 현재 ECharacterState (Idle, Attacking 등)를 가져와 CharacterState 변수에 저장합니다.
 		CharacterState = OwningMonster->GetCharacterState();
 
 		UCharacterMovementComponent* MovementComp = OwningMonster->GetCharacterMovement();
