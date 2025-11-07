@@ -1,4 +1,4 @@
-// Dragon.h
+ï»¿// Dragon.hğŸ˜„
 
 #pragma once
 
@@ -7,16 +7,16 @@
 #include "Dragon.generated.h"
 
 UCLASS()
-class KHU_GEB_API ADragon : public AMonsterBase // ºÎ¸ğ°¡ MonsterBase ÀÔ´Ï´Ù.
+class KHU_GEB_API ADragon : public AMonsterBase // ë¶€ëª¨ê°€ MonsterBase ì…ë‹ˆë‹¤.
 {
 	GENERATED_BODY()
 
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	ADragon();
 
 protected:
-	// --- µå·¡°ï Àü¿ë »óÅÂ º¯¼ö ---
+	// --- ë“œë˜ê³¤ ì „ìš© ìƒíƒœ ë³€ìˆ˜ ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Flight", meta = (AllowPrivateAccess = "true"))
 	bool bIsFlying = false;
 
@@ -31,24 +31,24 @@ protected:
 
 	
 
-	// ¿£Áø ±âº» ÇÔ¼ö ÀçÁ¤ÀÇ
+	// ì—”ì§„ ê¸°ë³¸ í•¨ìˆ˜ ì¬ì •ì˜
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void BeginPlay() override;
 
-	// --- ºñÇà ¼³Á¤ º¯¼ö (ºí·çÇÁ¸°Æ®¿¡¼­ Á¶Àı °¡´É) ---
+	// --- ë¹„í–‰ ì„¤ì • ë³€ìˆ˜ (ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì¡°ì ˆ ê°€ëŠ¥) ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight", meta = (AllowPrivateAccess = "true"))
-	float FlyingBrakingDeceleration = 500.f; // ºñÇà ½Ã Á¦µ¿ °¨¼Ó
+	float FlyingBrakingDeceleration = 500.f; // ë¹„í–‰ ì‹œ ì œë™ ê°ì†
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight", meta = (AllowPrivateAccess = "true"))
-	float MaxFlySpeed = 900.f; // ÃÖ´ë ºñÇà ¼Óµµ
+	float MaxFlySpeed = 900.f; // ìµœëŒ€ ë¹„í–‰ ì†ë„
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight", meta = (AllowPrivateAccess = "true"))
-	float LandingTraceDistance = 150.f; // Âø·ú °¨Áö °Å¸®
+	float LandingTraceDistance = 150.f; // ì°©ë¥™ ê°ì§€ ê±°ë¦¬
 
 private:
-	// CharacterMovement ÄÄÆ÷³ÍÆ®¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ (privateÀ¸·Î º¯°æ)
+	// CharacterMovement ì»´í¬ë„ŒíŠ¸ë¥¼ ì €ì¥í•  í¬ì¸í„° (privateìœ¼ë¡œ ë³€ê²½)
 	UPROPERTY()
-	TObjectPtr<class UCharacterMovementComponent> DragonMovementComponent; // TObjectPtr »ç¿ë ±ÇÀå
+	TObjectPtr<class UCharacterMovementComponent> DragonMovementComponent; // TObjectPtr ì‚¬ìš© ê¶Œì¥
 
 };

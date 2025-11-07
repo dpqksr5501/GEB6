@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.ğŸ˜„
 //Tanker.h
 
 #pragma once
@@ -8,7 +8,7 @@
 #include "Tanker.generated.h"
 
 /**
- * Tanker Ä³¸¯ÅÍ Å¬·¡½º
+ * Tanker ìºë¦­í„° í´ë˜ìŠ¤
  */
 UCLASS()
 class KHU_GEB_API ATanker : public AMonsterBase
@@ -16,25 +16,25 @@ class KHU_GEB_API ATanker : public AMonsterBase
     GENERATED_BODY()
 
 public:
-    // »ı¼ºÀÚ
+    // ìƒì„±ì
     ATanker();
 
 protected:
-    /** ¹«Àû »óÅÂÀÎÁö ¿©ºÎ¸¦ ³ªÅ¸³»´Â º¯¼ö. ºí·çÇÁ¸°Æ®¿¡¼­ ÀĞ°í ¾µ ¼ö ÀÖµµ·Ï ¼³Á¤ÇÕ´Ï´Ù. */
+    /** ë¬´ì  ìƒíƒœì¸ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë³€ìˆ˜. ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì½ê³  ì“¸ ìˆ˜ ìˆë„ë¡ ì„¤ì •í•©ë‹ˆë‹¤. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tanker|State", meta = (AllowPrivateAccess = "true"))
-    bool bIsInvincible; // ¹«Àû »óÅÂ º¯¼ö ¼±¾ğ
+    bool bIsInvincible; // ë¬´ì  ìƒíƒœ ë³€ìˆ˜ ì„ ì–¸
 
 
 public:
-    /** ºí·çÇÁ¸°Æ®¿¡¼­ È£ÃâÇÏ¿© ¹«Àû »óÅÂ¸¦ È°¼ºÈ­ÇÏ´Â ÇÔ¼ö */
+    /** ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í˜¸ì¶œí•˜ì—¬ ë¬´ì  ìƒíƒœë¥¼ í™œì„±í™”í•˜ëŠ” í•¨ìˆ˜ */
     UFUNCTION(BlueprintCallable, Category = "Tanker|State")
     void ActivateInvincibility();
 
-    /** ºí·çÇÁ¸°Æ®¿¡¼­ È£ÃâÇÏ¿© ¹«Àû »óÅÂ¸¦ ºñÈ°¼ºÈ­ÇÏ´Â ÇÔ¼ö */
+    /** ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í˜¸ì¶œí•˜ì—¬ ë¬´ì  ìƒíƒœë¥¼ ë¹„í™œì„±í™”í•˜ëŠ” í•¨ìˆ˜ */
     UFUNCTION(BlueprintCallable, Category = "Tanker|State")
     void DeactivateInvincibility();
 
-    /** ºí·çÇÁ¸°Æ®¿¡¼­ ÇöÀç ¹«Àû »óÅÂÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö */
+    /** ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í˜„ì¬ ë¬´ì  ìƒíƒœì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ */
     UFUNCTION(BlueprintPure, Category = "Tanker|State")
     bool IsInvincible() const;
 };

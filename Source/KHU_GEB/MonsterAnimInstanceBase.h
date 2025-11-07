@@ -18,7 +18,7 @@ enum class ECharacterState : uint8
 
 class AMonsterBase;
 /**
- * 
+ * 😄
  */
 UCLASS()
 class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
