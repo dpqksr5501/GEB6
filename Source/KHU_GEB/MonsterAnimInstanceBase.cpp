@@ -3,7 +3,8 @@
 #include "MonsterAnimInstanceBase.h"
 #include "Animation/AnimInstance.h"
 #include "MonsterBase.h"
-#include "Kismet/KismetMathLibrary.h" // NormalizedDeltaRotator 같은 수학 함수를 사용하기 위해 포함합니다.
+#include "Kismet/KismetMathLibrary.h" // NormalizedDeltaRotator 같은 수학 함수를 위해서
+#include "GameFramework/CharacterMovementComponent.h"
 
 // 애니메이션 인스턴스가 처음 생성될 때 한 번 호출됩니다. (BeginPlay와 유사)
 void UMonsterAnimInstanceBase::NativeInitializeAnimation()
@@ -20,6 +21,9 @@ void UMonsterAnimInstanceBase::NativeInitializeAnimation()
 		}
 	// Yaw 회전 속도를 0으로 초기화합니다.
 	YawDeltaSpeed = 0.f;
+	Speed = 0.f;
+	bJumpInput_Anim = false;
+	bIsFalling = false;
 }
 
 // 매 프레임마다 호출되어 애니메이션 변수들을 업데이트합니다. (Tick과 유사)
@@ -34,6 +38,16 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 		Speed = OwningMonster->GetVelocity().Size();
 		// 몬스터의 현재 ECharacterState (Idle, Attacking 등)를 가져와 CharacterState 변수에 저장합니다. [cite: 3775]
 		CharacterState = OwningMonster->GetCharacterState();
+
+		UCharacterMovementComponent* MovementComp = OwningMonster->GetCharacterMovement();
+		if (MovementComp)
+		{
+			// IsFalling()이 점프와 추락을 모두 감지합니다.
+			bIsFalling = MovementComp->IsFalling();
+		}
+		bJumpInput_Anim = OwningMonster->bJumpInput;
+
+		OwningMonster->bJumpInput = false;
 
 		// --- Yaw 회전 속도 (Turn-in-Place) 계산 ---
 		// DeltaSeconds가 0보다 커서 나누기 오류가 발생하지 않는지 확인합니다.
@@ -89,7 +103,10 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 	}
 	else
 	{
+		
 		// OwningMonster가 유효하지 않으면(예: 게임 시작 중), 모든 값을 0으로 초기화합니다.
+		bIsFalling = false;
+		bJumpInput_Anim = false;
 		AimPitch = 0.f;
 		AimYaw = 0.f;
 	}
