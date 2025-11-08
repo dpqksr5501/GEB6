@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Enemy_AI/UpdateTargetDistance.h"
+#include "UpdateTargetDistance.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "GameFramework/Actor.h"
@@ -13,7 +13,7 @@ UUpdateTargetDistance::UUpdateTargetDistance()
     NodeName = TEXT("Update Target Distance");
 
     // 서비스가 얼마나 자주 실행될지 (초) 설정 (0.5초마다)
-    Interval = 0.5f;
+    Interval = 0.016f;
     // 매번 약간의 시간차를 두어 여러 AI가 동시에 실행되는 것을 방지
     RandomDeviation = 0.1f;
 }

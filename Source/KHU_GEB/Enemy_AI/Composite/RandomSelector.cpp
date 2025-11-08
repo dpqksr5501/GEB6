@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Enemy_AI/RandomSelector.h"
+#include "RandomSelector.h"
 
 URandomSelector::URandomSelector(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer), LastSuccessfulChildIdx(INDEX_NONE)
