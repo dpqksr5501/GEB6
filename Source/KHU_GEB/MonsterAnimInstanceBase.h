@@ -18,7 +18,7 @@ enum class ECharacterState : uint8
 
 class AMonsterBase;
 /**
- * 
+ * 😄
  */
 UCLASS()
 class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
@@ -33,16 +33,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
-	//ȸ�� �� �����⿡ ����
+	//좌/우 방향의 delta값을 가져옴
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	float YawDeltaSpeed;
 
-	//��/�� ����
+	/** 캐릭터가 방금 점프 입력을 했는지 여부 (신호용) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bJumpInput_Anim;
+
+	//캐릭터가 추락하는지 여부
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bIsFalling;
+
+
+	//여기 변수들은 (AimYaw, AimPitch) 에임 오프셋을 쓸 수 있을 때를 대비해서 만들어뒀습니다.
+	//에임 좌/우
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
 	float AimYaw;
 
-	//��/�Ʒ� ����
-	/** ĳ���Ͱ� �ٶ󺸴� Pitch (��/�Ʒ�) ���� */
+	//에임 상/하
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
 	float AimPitch;
 
@@ -53,5 +62,5 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	float LastYaw;//������ Yaw�� ��������
+	float LastYaw;//delta yaw를 구하기 위해서
 };

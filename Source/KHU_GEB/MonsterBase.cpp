@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.😄
 
 
 #include "MonsterBase.h"
@@ -28,6 +28,9 @@ AMonsterBase::AMonsterBase()
 
 	// 체력
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
+	//점프 입력 변수 초기화.
+	bJumpInput = false;
 
 }
 

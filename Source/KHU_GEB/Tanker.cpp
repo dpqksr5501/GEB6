@@ -1,30 +1,30 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.ğŸ˜„
 
 #include "Tanker.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// »ı¼ºÀÚ
+// ìƒì„±ì
 ATanker::ATanker()
 {
     bIsInvincible = false;
 }
 
-// ¹«Àû È°¼ºÈ­ ÇÔ¼ö ±¸Çö
+// ë¬´ì  í™œì„±í™” í•¨ìˆ˜ êµ¬í˜„
 void ATanker::ActivateInvincibility()
 {
     bIsInvincible = true;
     UE_LOG(LogTemp, Log, TEXT("Tanker %s activated invincibility."), *GetName());
 }
 
-// ¹«Àû ºñÈ°¼ºÈ­ ÇÔ¼ö ±¸Çö
+// ë¬´ì  ë¹„í™œì„±í™” í•¨ìˆ˜ êµ¬í˜„
 void ATanker::DeactivateInvincibility()
 {
     bIsInvincible = false;
     UE_LOG(LogTemp, Log, TEXT("Tanker %s deactivated invincibility."), *GetName());
 }
 
-// ÇöÀç ¹«Àû »óÅÂÀÎÁö ¹İÈ¯ÇÏ´Â ÇÔ¼ö ±¸Çö
+// í˜„ì¬ ë¬´ì  ìƒíƒœì¸ì§€ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜ êµ¬í˜„
 bool ATanker::IsInvincible() const
 {
     return bIsInvincible;

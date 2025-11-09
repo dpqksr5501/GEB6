@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.😄
 
 #pragma once
 
@@ -16,6 +16,10 @@ class KHU_GEB_API AMonsterBase : public ACharacter
 
 public:
 	AMonsterBase();
+
+	/** 캐릭터가 방금 점프 입력을 했는지 여부 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bJumpInput;
 
 	//// 체력관련
 	UFUNCTION()
