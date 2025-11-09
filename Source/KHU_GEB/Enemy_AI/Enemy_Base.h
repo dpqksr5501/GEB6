@@ -23,6 +23,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 특수스킬
 	UAnimMontage* SpecialSkillMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
+	float  AttackCooldown;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
+	float  SkillCooldown;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
+	float  SpecialSkillCooldown;
+
 
 protected:
 	// Called when the game starts or when spawned

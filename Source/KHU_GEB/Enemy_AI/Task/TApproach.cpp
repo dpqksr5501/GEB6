@@ -10,7 +10,7 @@
 
 UTApproach::UTApproach()
 {
-	NodeName = "TApproach (MoveOnce)";
+	NodeName = "TApproach";
 
 	// TickTask를 매 프레임 호출하기 위해 반드시 true로 설정
 	bNotifyTick = true;
@@ -21,10 +21,6 @@ UTApproach::UTApproach()
 
 EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT("Execute!"));
-	}
 	// AIController, Controlled Pawn, Character Movement Component 가져와 변수로 저장
 	AIController = OwnerComp.GetAIOwner();
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
@@ -78,6 +74,8 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 		if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
 		{
 			// 이동 요청 성공. TickTask에서 거리 검사 시작
+			// 상태 변환
+			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Moving);
 			return EBTNodeResult::InProgress;
 		}
 		else

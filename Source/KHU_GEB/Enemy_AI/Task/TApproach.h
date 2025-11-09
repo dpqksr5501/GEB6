@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "BehaviorTree/BlackboardComponent.h" // FBlackboardKeySelector 사용을 위해 필요
+#include "EnemyState.h"
 #include "TApproach.generated.h"
 
 // 전방 선언
