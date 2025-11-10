@@ -8,10 +8,31 @@
 
 class USkeletalMesh;
 class UAnimInstance;
+class UAnimMontage;
 class USkillSet;
 
 UENUM(BlueprintType)
 enum class EFormType : uint8 { Base, Range, Swift, Guard, Special };
+
+USTRUCT(BlueprintType)
+struct FAttackStep
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> Montage = nullptr;
+
+	// 이 몽타주에서 Save/Reset 이 열리는 "프레임" 번호
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
+	int32 SaveFrame = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
+	int32 ResetFrame = 0;
+
+	// 선택: 프레임 → 초 변환에 쓸 FPS(0이면 자동 추정)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
+	float OverrideFPS = 0.f; // 0: 자동, 그 외: 해당 값 사용(예: 30, 60)
+};
 
 UCLASS()
 class KHU_GEB_API UFormDefinition : public UPrimaryDataAsset
@@ -19,16 +40,22 @@ class KHU_GEB_API UFormDefinition : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Type")
 	EFormType FormType = EFormType::Base;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
 	TObjectPtr<USkeletalMesh> Mesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> AnimClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Attack")
+	TArray<FAttackStep> AttackMontages;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Skill")
+	TObjectPtr<UAnimMontage> SkillMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<USkillSet> SkillSet;
 };
 
