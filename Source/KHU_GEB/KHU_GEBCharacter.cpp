@@ -17,7 +17,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 
-
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
 	// Set size for collision capsule
