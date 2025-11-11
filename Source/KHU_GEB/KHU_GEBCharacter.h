@@ -13,14 +13,12 @@ class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UFormManagerComponent;
+class UFormDefinition;
+class UAttackComponent;
 class USkillManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
- */
 UCLASS(abstract)
 class AKHU_GEBCharacter : public ACharacter
 {
@@ -59,7 +57,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSwift;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormGuard;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSpecial;
-	
+
 public:
 	/** Constructor */
 	AKHU_GEBCharacter();
@@ -69,6 +67,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAttackComponent* AttackManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
@@ -88,8 +89,7 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	/** Called for Attack */
-	void Attack(const FInputActionValue& Value);
+	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);
 	void SkillEnd(const FInputActionValue& Value);
 

@@ -17,9 +17,7 @@ enum class ECharacterState : uint8
 };
 
 class AMonsterBase;
-/**
- * 😄
- */
+
 UCLASS()
 class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
 {
@@ -62,5 +60,5 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	float LastYaw;//delta yaw를 구하기 위해서
+	float LastYaw;	//delta yaw를 구하기 위해서
 };
