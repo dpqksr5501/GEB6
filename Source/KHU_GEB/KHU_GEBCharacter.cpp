@@ -12,10 +12,10 @@
 #include "InputActionValue.h"
 #include "HealthComponent.h"
 #include "FormManagerComponent.h"
+#include "AttackComponent.h"
 #include "SkillManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
-
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -54,6 +54,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
+	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
@@ -95,7 +96,11 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
 		// Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Attack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager, &UAttackComponent::AttackStarted);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager, &UAttackComponent::AttackTriggered);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager, &UAttackComponent::AttackCompleted);
+
+		// Skill
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::SkillStart);
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::SkillEnd);
 
@@ -170,11 +175,6 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
-}
-
-void AKHU_GEBCharacter::Attack(const FInputActionValue& Value)
-{
-	
 }
 
 void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
@@ -263,10 +263,6 @@ void AKHU_GEBCharacter::DoJumpEnd()
 
 void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
 {
-	UE_LOG(LogTemp, Log, TEXT("[Character] OnFormChanged -> %d, SkillSet=%s"),
-		(int32)NewForm, Def && Def->SkillSet ? *GetNameSafe(Def->SkillSet) : TEXT("None"));
-	if (SkillManager)
-	{
-		SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr);
-	}
+	if (AttackManager) { AttackManager->SetForm(Def); }
+	if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr); }
 }

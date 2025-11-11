@@ -26,7 +26,7 @@ void UMonsterAnimInstanceBase::NativeInitializeAnimation()
 	bIsFalling = false;
 }
 
-// 매 프레임마다 호출되어 애니메이션 변수들을 업데이트합니다. (Tick과 유사)😄
+// 매 프레임마다 호출되어 애니메이션 변수들을 업데이트합니다. (Tick과 유사)
 void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds); // 부모 클래스의 업데이트 함수 호출
