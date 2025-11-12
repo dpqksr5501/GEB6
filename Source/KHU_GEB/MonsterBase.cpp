@@ -193,3 +193,37 @@ void AMonsterBase::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 	OnLandedEvent(Hit); // 블루프린트의 OnLandedEvent를 호출
 }
+
+
+
+
+//인터페이스 함수 4개를 새로 구현합니다. 11/12
+
+float AMonsterBase::GetAnimSpeed_Implementation() const
+{
+	return GetVelocity().Size();
+}
+
+ECharacterState AMonsterBase::GetAnimCharacterState_Implementation() const
+{
+	return GetCharacterState(); // 이미 가지고 있는 GetCharacterState() 함수 호출
+}
+
+bool AMonsterBase::GetAnimIsFalling_Implementation() const
+{
+	if (GetCharacterMovement())
+	{
+		return GetCharacterMovement()->IsFalling();
+	}
+	return false;
+}
+
+bool AMonsterBase::GetAnimJumpInput_Implementation(bool bConsumeInput)
+{
+	const bool Result = bJumpInput;
+	if (bConsumeInput)
+	{
+		bJumpInput = false; // 신호 리셋
+	}
+	return Result;
+}

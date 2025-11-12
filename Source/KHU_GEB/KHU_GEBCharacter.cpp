@@ -16,6 +16,8 @@
 #include "SkillManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
+#include "AttackComponent.h"     // GetAnimCharacterState_Implementation에서 필요
+#include "SkillManagerComponent.h" // GetAnimCharacterState_Implementation에서 필요
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -77,6 +79,11 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SPECIAL(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Special.IA_Form_Special'"));
 	if (FORM_SPECIAL.Object) { FormSpecial = FORM_SPECIAL.Object; }
+
+
+	// 1. 인터페이스용 변수 2개를 초기화합니다.
+	CurrentPlayerState = ECharacterState::Idle;
+	bPlayerWantsToJump = false;
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -87,6 +94,15 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+
+		//추가 코드
+		//점프 바인딩을 수정
+		//ACharacter::Jump 대신 만든 StartJump 함수를 호출하게 하도록
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Move);
@@ -158,6 +174,14 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 		HealthComp->ReduceHealth(Damage);
 	}
 }
+
+//StartJump 함수를 새로 구현합니다.
+void AKHU_GEBCharacter::StartJump()
+{
+	bPlayerWantsToJump = true; // 애님 인스턴스가 읽어갈 플래그 ON
+	Jump(); // ACharacter의 실제 점프 실행
+}
+
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
@@ -265,4 +289,64 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 {
 	if (AttackManager) { AttackManager->SetForm(Def); }
 	if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr); }
+}
+
+
+
+//인터페이스 함수 6개를 파일 맨 아래에 새로 구현합니다.
+void AKHU_GEBCharacter::AttackStarted_Character(const FInputActionValue& Value)
+{
+	// 공격 입력을 받으면 캐릭터의 상태를 Attack으로 설정합니다.
+	CurrentPlayerState = ECharacterState::Attack;
+}
+
+void AKHU_GEBCharacter::AttackCompleted_Character(const FInputActionValue& Value)
+{
+	// (참고: 'Completed'는 '키를 뗐을 때'입니다. 콤보 로직에 따라 즉시 Idle로
+	// 되돌리는 것이 맞는지 확인이 필요할 수 있으나, 우선 상태를 되돌립니다.)
+
+	// 공격 입력을 떼면 캐릭터의 상태를 Idle(Locomotion)로 되돌립니다.
+	CurrentPlayerState = ECharacterState::Idle; // 또는 Locomotion
+}
+
+
+
+float AKHU_GEBCharacter::GetAnimSpeed_Implementation() const
+{
+	// ACharacter의 기본 함수인 GetVelocity().Size()를 사용합니다.
+	return GetVelocity().Size();
+}
+
+ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
+{
+	// 이제 AttackManager->IsAttacking() 대신,
+	// 캐릭터가 직접 관리하는 CurrentPlayerState를 확인합니다.
+	if (CurrentPlayerState == ECharacterState::Attack || CurrentPlayerState == ECharacterState::Skill1)
+	{
+		return CurrentPlayerState;
+	}
+
+	// 그 외에는 CurrentPlayerState (Hit, Die, Idle/Locomotion)를 반환
+	return CurrentPlayerState;
+}
+
+bool AKHU_GEBCharacter::GetAnimIsFalling_Implementation() const
+{
+	// ACharacter의 기본 함수인 GetCharacterMovement()->IsFalling()을 사용합니다.
+	if (GetCharacterMovement())
+	{
+		return GetCharacterMovement()->IsFalling();
+	}
+	return false;
+}
+
+bool AKHU_GEBCharacter::GetAnimJumpInput_Implementation(bool bConsumeInput)
+{
+	// bPlayerWantsToJump 값을 읽고, 필요시 리셋(소모)합니다.
+	const bool Result = bPlayerWantsToJump;
+	if (bConsumeInput)
+	{
+		bPlayerWantsToJump = false; // 신호 리셋
+	}
+	return Result;
 }

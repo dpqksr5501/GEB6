@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "MyAnimDataProvider.h" // 1. 생성한 인터페이스 헤더를 포함합니다.
+#include "MonsterAnimInstanceBase.h" // 2. ECharacterState 열거형을 사용하기 위해 포함합니다.
 #include "KHU_GEBCharacter.generated.h"
 
 class USpringArmComponent;
@@ -20,7 +22,7 @@ class USkillManagerComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(abstract)
-class AKHU_GEBCharacter : public ACharacter
+class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속을 추가
 {
 	GENERATED_BODY()
 
@@ -74,6 +76,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
 
+
+	//추가 코드 부분입니다.
+	//애님 인스턴스에 데이터를 제공할 플레이어 전용 변수 2개를 추가합니다.
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State")
+	ECharacterState CurrentPlayerState; // 몬스터의 CharacterState와 동일한 역할
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State")
+	bool bPlayerWantsToJump; // 몬스터의 bJumpInput과 동일한 역할
+
 protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -99,6 +110,14 @@ protected:
 	void SwitchToSwift(const FInputActionValue& Value);
 	void SwitchToGuard(const FInputActionValue& Value);
 	void SwitchToSpecial(const FInputActionValue& Value);
+
+
+
+	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
+	void StartJump();
+	/** AttackComponent로 입력을 전달하는 것과 *별개로* 캐릭터의 상태를 관리합니다. */
+	void AttackStarted_Character(const FInputActionValue& Value);
+	void AttackCompleted_Character(const FInputActionValue& Value);
 
 public:
 	/** Handles move inputs from either controls or UI interfaces */
@@ -129,6 +148,13 @@ public:
 
 	UFUNCTION()
 	void OnFormChanged(EFormType NewForm, const UFormDefinition* Def);
+
+
+	//인터페이스(IMyAnimDataProvider)의 함수 4개를 구현하겠다고 선언합니다.
+	virtual float GetAnimSpeed_Implementation() const override;
+	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
+	virtual bool GetAnimIsFalling_Implementation() const override;
+	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
 
 public:
 	/** Returns CameraBoom subobject **/

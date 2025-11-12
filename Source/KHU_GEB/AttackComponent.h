@@ -69,6 +69,7 @@ protected:
     USkeletalMeshComponent* GetMesh() const;
     UAnimInstance* GetAnim() const;
 
+
 public:	
     // 외부(캐릭터) API
     void SetForm(const UFormDefinition* Def);
@@ -78,6 +79,11 @@ public:
 
     // (선택) 전투 중단/리셋
     void ResetComboHard();
+
+
+    /** 컴포넌트가 현재 공격 몽타주를 재생 중인지 확인합니다. */
+    UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
+    bool bIsAttacking = false;
 
 protected:
     // 델리게이트 핸들러
