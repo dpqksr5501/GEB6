@@ -16,8 +16,7 @@
 #include "SkillManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
-#include "AttackComponent.h"     // GetAnimCharacterState_Implementation에서 필요
-#include "SkillManagerComponent.h" // GetAnimCharacterState_Implementation에서 필요
+#include "FormDefinition.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -80,8 +79,14 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	static ConstructorHelpers::FObjectFinder<UInputAction> FORM_SPECIAL(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Form_Special.IA_Form_Special'"));
 	if (FORM_SPECIAL.Object) { FormSpecial = FORM_SPECIAL.Object; }
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> SPRINT_ACTION(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Shift.IA_Shift'"));
+	if (SPRINT_ACTION.Object) {	SprintAction = SPRINT_ACTION.Object; }
 
-	// 1. 인터페이스용 변수 2개를 초기화합니다.
+	CurrentFormBaseSpeed = 600.f; // 기본값 (DA_Base의 값과 일치시키는 것이 좋음)
+	bIsSprinting = false;
+
+
+	//인터페이스용 변수 2개를 초기화합니다.
 	CurrentPlayerState = ECharacterState::Idle;
 	bPlayerWantsToJump = false;
 }
@@ -112,9 +117,9 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
 		// Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager, &UAttackComponent::AttackStarted);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager, &UAttackComponent::AttackTriggered);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager, &UAttackComponent::AttackCompleted);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager.Get(), &UAttackComponent::AttackStarted); // AttackManager.Get()으로 수정
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager.Get(), &UAttackComponent::AttackTriggered); // AttackManager.Get()으로 수정
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager.Get(), &UAttackComponent::AttackCompleted); // AttackManager.Get()으로 수정
 
 		// Skill
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::SkillStart);
@@ -126,6 +131,12 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FormSwift, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSwift);
 		EnhancedInputComponent->BindAction(FormGuard, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToGuard);
 		EnhancedInputComponent->BindAction(FormSpecial, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpecial);
+
+
+		// 달리기
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartSprinting);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::StopSprinting);
+		
 	}
 	else
 	{
@@ -139,7 +150,8 @@ void AKHU_GEBCharacter::BeginPlay()
 
 	if (FormManager)
 	{
-		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged);
+		// 폼이 바뀔 때마다 OnFormChanged_Handler 함수를 호출하도록 연결합니다.
+		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged_Handler);
 		FormManager->InitializeForms();
 	}
 
@@ -149,8 +161,9 @@ void AKHU_GEBCharacter::BeginPlay()
 void AKHU_GEBCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	//UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
+
 }
 
 float AKHU_GEBCharacter::GetHealth() const
@@ -172,6 +185,18 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	if (HealthComp && Damage > 0.f)
 	{
 		HealthComp->ReduceHealth(Damage);
+	}
+	if (GEngine && DamageCauser)
+	{
+		// 키(-1): 새 메시지가 기존 메시지를 덮어쓰지 않음
+		// 시간(5.f): 5초간 화면에 표시
+		// 색상(FColor::Red): 빨간색
+		FString Msg = FString::Printf(TEXT("HIT! %s가 %s에게 %f 데미지를 받음!"),
+			*GetName(), // 내 이름 (예: BP_KHUCharacter)
+			*DamageCauser->GetName(), // 때린 액터 (예: BP_Tanker)
+			Damage); // 받은 데미지
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
 	}
 }
 
@@ -285,49 +310,14 @@ void AKHU_GEBCharacter::DoJumpEnd()
 	StopJumping();
 }
 
-void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
-{
-	if (AttackManager) { AttackManager->SetForm(Def); }
-	if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr); }
-}
 
 
-
-//인터페이스 함수 6개를 파일 맨 아래에 새로 구현합니다.
-void AKHU_GEBCharacter::AttackStarted_Character(const FInputActionValue& Value)
-{
-	// 공격 입력을 받으면 캐릭터의 상태를 Attack으로 설정합니다.
-	CurrentPlayerState = ECharacterState::Attack;
-}
-
-void AKHU_GEBCharacter::AttackCompleted_Character(const FInputActionValue& Value)
-{
-	// (참고: 'Completed'는 '키를 뗐을 때'입니다. 콤보 로직에 따라 즉시 Idle로
-	// 되돌리는 것이 맞는지 확인이 필요할 수 있으나, 우선 상태를 되돌립니다.)
-
-	// 공격 입력을 떼면 캐릭터의 상태를 Idle(Locomotion)로 되돌립니다.
-	CurrentPlayerState = ECharacterState::Idle; // 또는 Locomotion
-}
-
-
+//인터페이스 함수 4개를 파일 맨 아래에 새로 구현합니다.
 
 float AKHU_GEBCharacter::GetAnimSpeed_Implementation() const
 {
 	// ACharacter의 기본 함수인 GetVelocity().Size()를 사용합니다.
 	return GetVelocity().Size();
-}
-
-ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
-{
-	// 이제 AttackManager->IsAttacking() 대신,
-	// 캐릭터가 직접 관리하는 CurrentPlayerState를 확인합니다.
-	if (CurrentPlayerState == ECharacterState::Attack || CurrentPlayerState == ECharacterState::Skill1)
-	{
-		return CurrentPlayerState;
-	}
-
-	// 그 외에는 CurrentPlayerState (Hit, Die, Idle/Locomotion)를 반환
-	return CurrentPlayerState;
 }
 
 bool AKHU_GEBCharacter::GetAnimIsFalling_Implementation() const
@@ -349,4 +339,92 @@ bool AKHU_GEBCharacter::GetAnimJumpInput_Implementation(bool bConsumeInput)
 		bPlayerWantsToJump = false; // 신호 리셋
 	}
 	return Result;
+}
+
+
+// [수정 후] GetAnimCharacterState_Implementation (컴포넌트 직접 쿼리)
+ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
+{
+	// 1. 컴포넌트의 "공격/스킬" 상태를 우선적으로 확인합니다.
+	// (SkillManager에 IsUsingSkill()과 같은 상태 변수가 있다고 가정합니다)
+	if (SkillManager /*&& SkillManager->IsUsingSkill()*/) // TODO: SkillManager 상태 확인
+	{
+		return ECharacterState::Skill1;
+	}
+
+	// AttackManager의 blsAttacking 플래그를 확인합니다.
+	if (AttackManager && AttackManager->bIsAttacking)
+	{
+		return ECharacterState::Attack;
+	}
+
+	// 2. 공격/스킬 상태가 아니라면, 캐릭터가 관리하는 기본 상태(Idle, Hit, Die)를 반환합니다.
+	// CurrentPlayerState는 이제 Idle, Hit, Die 등만 관리합니다. [cite: 608]
+	return CurrentPlayerState;
+}
+
+//달리기 관련 함수들
+/** 폼이 변경될 때 호출되는 핸들러 */
+void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
+{
+	if (!Def || !GetCharacterMovement())
+	{
+		return;
+	}
+
+	// 1. 새 폼의 기본 속도를 DA에서 읽어와 변수에 저장합니다.
+	CurrentFormBaseSpeed = Def->BaseWalkSpeed;
+
+	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
+	UpdateMovementSpeed();
+}
+
+/** 스프린트 시작 (Shift 누름) */
+void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
+{
+	bIsSprinting = true;
+	UpdateMovementSpeed();
+}
+
+/** 스프린트 종료 (Shift 뗌) */
+void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
+{
+	bIsSprinting = false;
+	UpdateMovementSpeed();
+}
+
+/**
+ * [핵심 로직]
+ * 현재 폼의 기본 속도와 스프린트 여부에 따라
+ * UCharacterMovementComponent의 MaxWalkSpeed를 설정합니다.
+ */
+void AKHU_GEBCharacter::UpdateMovementSpeed()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (!MoveComp)
+	{
+		return;
+	}
+
+	if (bIsSprinting)
+	{
+		// 스프린트 중일 때
+		EFormType CurrentForm = FormManager ? FormManager->CurrentForm : EFormType::Base;
+
+		if (CurrentForm == EFormType::Swift)
+		{
+			// Swift 폼은 1200
+			MoveComp->MaxWalkSpeed = 1400.f;
+		}
+		else
+		{
+			// 나머지 폼은 900
+			MoveComp->MaxWalkSpeed = 900.f;
+		}
+	}
+	else
+	{
+		// 스프린트 중이 아닐 때 (기본 속도 적용)
+		MoveComp->MaxWalkSpeed = CurrentFormBaseSpeed;
+	}
 }

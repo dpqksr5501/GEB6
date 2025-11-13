@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "MyAnimDataProvider.h" // 1. 생성한 인터페이스 헤더를 포함합니다.
 #include "MonsterAnimInstanceBase.h" // 2. ECharacterState 열거형을 사용하기 위해 포함합니다.
+#include "FormDefinition.h"
 #include "KHU_GEBCharacter.generated.h"
 
 class USpringArmComponent;
@@ -60,6 +61,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormGuard;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSpecial;
 
+
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* SprintAction; // IA_Shift를 여기에 할당합니다.
+
+private:
+	/** 현재 폼의 기본 이동 속도 (DA에서 읽어옴) */
+	float CurrentFormBaseSpeed;
+
+	/** 현재 스프린트 중인지 여부 */
+	bool bIsSprinting;
+
 public:
 	/** Constructor */
 	AKHU_GEBCharacter();
@@ -71,7 +84,7 @@ public:
 	UFormManagerComponent* FormManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UAttackComponent* AttackManager;
+	TObjectPtr<UAttackComponent> AttackManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
@@ -115,9 +128,21 @@ protected:
 
 	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
 	void StartJump();
-	/** AttackComponent로 입력을 전달하는 것과 *별개로* 캐릭터의 상태를 관리합니다. */
-	void AttackStarted_Character(const FInputActionValue& Value);
-	void AttackCompleted_Character(const FInputActionValue& Value);
+
+
+	/** 스프린트 입력을 받았을 때 호출됩니다. (Started) */
+	void StartSprinting(const FInputActionValue& Value);
+
+	/** 스프린트 입력을 뗐을 때 호출됩니다. (Completed) */
+	void StopSprinting(const FInputActionValue& Value);
+
+	/** 폼이 변경되었을 때 FormManager로부터 호출됩니다. */
+	UFUNCTION()
+	void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
+
+	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
+	void UpdateMovementSpeed();
+	
 
 public:
 	/** Handles move inputs from either controls or UI interfaces */
@@ -137,17 +162,13 @@ public:
 	virtual void DoJumpEnd();
 
 	UFUNCTION()
-	void HandleAnyDamage(AActor* DamagedActor, float Damage,
-		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	void HandleAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetHealth() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float Amount);
-
-	UFUNCTION()
-	void OnFormChanged(EFormType NewForm, const UFormDefinition* Def);
 
 
 	//인터페이스(IMyAnimDataProvider)의 함수 4개를 구현하겠다고 선언합니다.

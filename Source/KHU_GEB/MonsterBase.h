@@ -131,6 +131,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void RAttackAction_Start();
 
+	//공격 판정 디버깅용
+	UFUNCTION()
+	void HandleDamage(AActor* DamagedActor, float Damage,
+		const class UDamageType* DamageType, class AController* InstigatedBy,
+		AActor* DamageCauser);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
