@@ -39,6 +39,10 @@ void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//공격 판정 디버깅용
+	// 몬스터가 ApplyDamage를 받으면(피해를 입으면) HandleDamage 함수를 실행하도록 바인딩합니다.
+	OnTakeAnyDamage.AddDynamic(this, &AMonsterBase::HandleDamage);
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -192,4 +196,58 @@ void AMonsterBase::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 	OnLandedEvent(Hit); // 블루프린트의 OnLandedEvent를 호출
+}
+
+
+
+
+//인터페이스 함수 4개를 새로 구현합니다. 11/12
+
+float AMonsterBase::GetAnimSpeed_Implementation() const
+{
+	return GetVelocity().Size();
+}
+
+ECharacterState AMonsterBase::GetAnimCharacterState_Implementation() const
+{
+	return GetCharacterState(); // 이미 가지고 있는 GetCharacterState() 함수 호출
+}
+
+bool AMonsterBase::GetAnimIsFalling_Implementation() const
+{
+	if (GetCharacterMovement())
+	{
+		return GetCharacterMovement()->IsFalling();
+	}
+	return false;
+}
+
+bool AMonsterBase::GetAnimJumpInput_Implementation(bool bConsumeInput)
+{
+	const bool Result = bJumpInput;
+	if (bConsumeInput)
+	{
+		bJumpInput = false; // 신호 리셋
+	}
+	return Result;
+}
+
+
+//공격 판정 디버깅용
+/**몬스터가 피해를 입었을 때 실행되는 실제 로직*/
+void AMonsterBase::HandleDamage(AActor * DamagedActor, float Damage, const UDamageType * DamageType, AController * InstigatedBy, AActor * DamageCauser)
+{
+	// TODO: 몬스터의 HealthComponent에서 체력을 감소시키는 로직 추가
+
+	// 디버깅을 위해 GEngine 메시지를 화면에 띄웁니다.
+	if (GEngine && DamageCauser)
+	{
+		// 플레이어의 HandleAnyDamage 코드와 유사하게 화면에 디버그 메시지를 출력합니다.
+		FString Msg = FString::Printf(TEXT("MONSTER HIT! %s (몬스터)가 %s (플레이어)에게 %f 데미지를 입음!"),
+			*GetName(), // 내 이름 (예: BP_Minion_01)
+			*DamageCauser->GetName(), // 때린 액터 (예: BP_KHUCharacter)
+			Damage); // 받은 데미지
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, Msg); // 노란색으로 표시
+	}
 }
