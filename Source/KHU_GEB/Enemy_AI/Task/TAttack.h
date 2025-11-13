@@ -1,14 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+		// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "EnemyState.h"
+#include "SkillDefinition.h"
 #include "TAttack.generated.h"
 
 /**
- * AI가 지정된 몽타주를 재생하도록 하는 태스크입니다.
+ * AI가 지정된 몽타주를 재생하고, 선택적으로 스킬을 활성화하는 태스크입니다.
  * 몽타주 재생이 완료되면 성공을 반환합니다.
  */
 UCLASS()
@@ -26,6 +27,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack Type")
 	FBlackboardKeySelector LastActionTimeKey;
 
+	/** 이 공격 시 활성화할 스킬 슬롯 (None = 스킬 없음) */
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	ESkillSlot SkillSlotToActivate;
+
 protected:
 	/** 태스크가 시작될 때 호출됩니다. 몽타주 재생을 시작합니다. */
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
@@ -35,5 +40,4 @@ protected:
 
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
-
 };
