@@ -6,6 +6,8 @@
 #include "Kismet/KismetMathLibrary.h" // NormalizedDeltaRotator 같은 수학 함수를 위해서
 #include "MyAnimDataProvider.h" // 1. 인터페이스 헤더 포함
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NiagaraFunctionLibrary.h" // UNiagaraFunctionLibrary::SpawnSystemAttached 함수를 위해 필요
+#include "NiagaraComponent.h"       // UNiagaraComponent를 위해 필요
 
 // 애니메이션 인스턴스가 처음 생성될 때 한 번 호출됩니다. (BeginPlay와 유사)
 void UMonsterAnimInstanceBase::NativeInitializeAnimation()
@@ -94,4 +96,44 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
     }
 
 
+}
+
+
+
+//달리기 시 이펙트 켜고 끄는 함수
+void UMonsterAnimInstanceBase::ToggleSprintEffect(bool bActivate, USkeletalMeshComponent* TargetMesh)
+{
+    if (bActivate)
+    {
+        // [켜기 로직]
+        if (SprintEffectTemplate && TargetMesh && !ActiveSprintEffectComponent)
+        {
+            // "this"를 첫 번째 인수로 전달해야 합니다.
+            ActiveSprintEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                SprintEffectTemplate,               // [1] UNiagaraSystem*
+                TargetMesh,                         // [2] USceneComponent*
+                SprintEffectSocketName,
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                EAttachLocation::KeepRelativeOffset,
+                true,                               // bAutoDestroy
+                true,                               // bAutoActivate
+                ENCPoolMethod::None,                // Pooling
+                true
+            );
+        }
+    }
+    else
+    {
+        // [끄기 로직]
+        if (ActiveSprintEffectComponent)
+        {
+            // [!!!] DestroyComponent() 대신 Deactivate()를 호출합니다.
+            // 이펙트가 서서히 사라진 후, bAutoDestroy 설정(true)에 의해 자동으로 파괴됩니다.
+            ActiveSprintEffectComponent->Deactivate();
+
+            // 참조를 즉시 제거하여, 다음 프레임에 다시 켤 수 있도록 준비합니다.
+            ActiveSprintEffectComponent = nullptr;
+        }
+    }
 }
