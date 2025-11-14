@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.😄
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,20 +6,21 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "MonsterAnimInstanceBase.h"
+#include "MyAnimDataProvider.h" //인터페이스 헤더 포함
 #include "MonsterBase.generated.h"
 
 
 UCLASS()
-class KHU_GEB_API AMonsterBase : public ACharacter
+class KHU_GEB_API AMonsterBase : public ACharacter, public IMyAnimDataProvider // 상속 추가
 {
 	GENERATED_BODY()
 
 public:
 	AMonsterBase();
 
-	/** 캐릭터가 방금 점프 입력을 했는지 여부 */
+	/** 캐릭터가 방금 점프 입력을 했는지 여부 */ //추가코드
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
-	bool bJumpInput;
+	bool bJumpInput; // (기존 bWantsToJump 변수)
 
 	//// 체력관련
 	UFUNCTION()
@@ -49,6 +50,16 @@ public:
 	// 상태를 안전하게 변경할 수 있는 public 함수
 	UFUNCTION(BlueprintCallable, Category = "State")
 	void SetCharacterState(ECharacterState NewState);
+
+
+
+
+
+	//인터페이스(IMyAnimDataProvider)의 함수 4개를 구현하겠다고 선언합니다.
+	virtual float GetAnimSpeed_Implementation() const override;
+	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
+	virtual bool GetAnimIsFalling_Implementation() const override;
+	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
 
 protected:
 	// 상태 변수는 외부에서 직접 건드리지 못하도록 protected로 보호합니다.
@@ -119,6 +130,12 @@ protected:
 	void LAttackAction_Start();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void RAttackAction_Start();
+
+	//공격 판정 디버깅용
+	UFUNCTION()
+	void HandleDamage(AActor* DamagedActor, float Damage,
+		const class UDamageType* DamageType, class AController* InstigatedBy,
+		AActor* DamageCauser);
 
 public:	
 	// Called every frame
