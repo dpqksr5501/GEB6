@@ -56,11 +56,6 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 		// 거짓일 경우 (범위 밖에 있으므로 이동 시작)
 		MovementComponent->MaxWalkSpeed = WalkSpeed;
 
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT("Walk! (MoveToActor Started)"));
-		}
-
 		// 타겟 액터 가져오기
 		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
 		if (!TargetActor)
@@ -69,7 +64,7 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 		}
 
 		// [핵심] MoveToActor를 여기서 *한 번만* 호출
-		EPathFollowingRequestResult::Type MoveResult = AIController->MoveToActor(TargetActor, 0.0f);
+		EPathFollowingRequestResult::Type MoveResult = AIController->MoveToActor(TargetActor, 1.0f);
 
 		if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
 		{
@@ -97,7 +92,7 @@ void UTApproach::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	}
 	CurrentDistance = BlackboardComp->GetValueAsFloat(TargetDistanceKey.SelectedKeyName);
 	if (CurrentDistance <= StopDistance)
-	{	
+	{
 		// 목표 범위 도달. 이동 중지 (선택적이지만 안전함)
 		if (AIController)
 		{

@@ -1,22 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Enemy_AI/Enemy_Base.h"
 #include "Engine/Engine.h"
+#include "FormManagerComponent.h"
+#include "SkillManagerComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
 void AEnemy_Base::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// SkillClasses가 설정되어 있으면 자동으로 초기화
+	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
+	{
+		InitializeSkills();
+	}
 }
 
 // Called every frame
@@ -54,5 +59,22 @@ void AEnemy_Base::PerformSpecialSkill()
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("PerfromSpecialSkill Called"));
+	}
+}
+
+void AEnemy_Base::InitializeSkills()
+{
+	Equipped.Empty();
+
+	for (const TPair<ESkillSlot, TSubclassOf<USkillBase>>& Pair : SkillClasses)
+	{
+		if (Pair.Value)
+		{
+			USkillBase* NewSkill = NewObject<USkillBase>(this, Pair.Value);
+			if (NewSkill)
+			{
+				Equipped.Add(Pair.Key, NewSkill);
+			}
+		}
 	}
 }

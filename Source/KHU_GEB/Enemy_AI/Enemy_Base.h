@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
+#include "SkillDefinition.h"
+#include "SkillBase.h"
 #include "Enemy_Base.generated.h"
 
 UCLASS()
@@ -16,20 +18,17 @@ public:
 	// Sets default values for this character's properties
 	AEnemy_Base();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 평타
-	UAnimMontage* AttackMontage;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 기본스킬
-	UAnimMontage* SkillMontage;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Action") // 특수스킬
-	UAnimMontage* SpecialSkillMontage;
+	// 블루프린트에서 직접 스킬 인스턴스를 할당 (런타임에 이미 생성된 스킬 객체)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TMap<ESkillSlot, TObjectPtr<USkillBase>> Equipped;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
-	float  AttackCooldown;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
-	float  SkillCooldown;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Cooldown")
-	float  SpecialSkillCooldown;
+	// 블루프린트에서 스킬 클래스를 설정 (생성할 스킬의 클래스 타입)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TMap<ESkillSlot, TSubclassOf<USkillBase>> SkillClasses;
 
+	// SkillClasses를 기반으로 Equipped 맵 초기화
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void InitializeSkills();
 
 protected:
 	// Called when the game starts or when spawned

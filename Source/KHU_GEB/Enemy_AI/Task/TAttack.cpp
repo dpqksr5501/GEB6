@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Enemy_AI/Task/TAttack.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -8,6 +7,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Engine/World.h"
+#include "Enemy_AI/Enemy_Base.h"
+#include "SkillManagerComponent.h"
 
 UTAttack::UTAttack()
 {
@@ -42,6 +43,36 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
+	// Enemy_Base로 캐스팅하여 스킬 시스템에 접근
+	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
+	if (EnemyBase == nullptr)
+	{
+		return EBTNodeResult::Failed;	
+	}
+
+	// Equipped 배열에서 사용 가능한 스킬 찾기
+	USkillBase* SkillToUse = nullptr;
+	for (const auto& EquippedItem : EnemyBase->Equipped)
+	{
+		// 튜플의 두 번째 요소(스킬)를 가져오기
+		USkillBase* Skill = EquippedItem.Get<1>();
+		if (Skill != nullptr)
+		{
+			SkillToUse = Skill;
+			break;
+		}
+	}
+
+	// 스킬이 있으면 스킬 사용, 없으면 기존 몽타주 재생
+	if (SkillToUse)
+	{
+		// 스킬 활성화
+		SkillToUse->ActivateSkill();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Skill이 설정되지 않았습니다."));
+	}
 	// 캐릭터의 애님 인스턴스를 가져옵니다.
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 	if (AnimInstance == nullptr)
@@ -59,12 +90,11 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 	// 몽타주를 재생합니다.
 	AnimInstance->Montage_Play(AttackMontage);
 
-	// 몽타주가 재생되는 동안 태스크가 계속 실행 중이어야 하므로 InProgress를 반환합니다.
-	// TickTask에서 몽타주 종료를 감지할 것입니다.
 	// 상태 변환
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
 	BlackboardComp->SetValueAsFloat(LastActionTimeKey.SelectedKeyName, OwnerComp.GetWorld()->GetTimeSeconds());
 	BlackboardComp->SetValueAsFloat("LastActionTime", OwnerComp.GetWorld()->GetTimeSeconds());
+	
 	return EBTNodeResult::InProgress;
 }
 
@@ -74,7 +104,6 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 	// AI 컨트롤러와 캐릭터, 애님 인스턴스를 다시 가져옵니다.
-	// (ExecuteTask 이후에 유효하지 않게 될 수도 있으므로 매번 확인하는 것이 안전합니다.)
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr)
 	{
@@ -108,6 +137,4 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 		// 몽타주 재생이 끝났으므로, 태스크를 성공으로 완료시킵니다.
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
-
-	// 몽타주가 아직 재생 중이라면 아무것도 하지 않습니다. (태스크는 InProgress 상태 유지)
 }
