@@ -16,6 +16,7 @@
 #include "Components/BoxComponent.h"     // Box 생성용
 #include "Kismet/GameplayStatics.h"
 #include "FormManagerComponent.h"
+#include "GameFramework/Character.h"
 
 
 UAttackComponent::UAttackComponent() {}
@@ -196,28 +197,73 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
 {
     // [디버그 2]
     if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[2] PlayCurrentComboMontage: Called"));
-    if (!CurrentFormDef) { 
+
+    if (!CurrentFormDef) {
         // [디버그 2-E]
         if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] CurrentFormDef is NULL!"));
         return;
     }
-    UAnimInstance* Anim = GetAnim(); if (!Anim) return;
+
+    UAnimInstance* Anim = GetAnim();
+    if (!Anim) return;
 
     // FormDefinition의 스텝 구조에 맞춰 접근
-    const auto& Steps = CurrentFormDef->AttackMontages; // FAttackStep 배열
-    if (!Steps.IsValidIndex(ComboIndex) || !Steps[ComboIndex].Montage) { 
+    const auto& Steps = CurrentFormDef->AttackMontages;
+
+    // [수정된 부분 1] .Montage 검사를 제거합니다.
+    if (!Steps.IsValidIndex(ComboIndex)) {
         // [디버그 2-E]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] Montage is MISSING in DA!"));
+        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] Invalid ComboIndex!"));
         ComboIndex = 0; return;
     }
+
+    // --- 여기부터가 FullBody/UpperBody 선택 로직입니다 ---
+
+    const FAttackStep& CurrentStep = Steps[ComboIndex];
+
+    // 1. 현재 캐릭터의 속도를 가져옵니다.
+    float CurrentSpeed = 0.0f;
+    if (AActor* Owner = GetOwner())
+    {
+        if (APawn* OwnerPawn = Cast<APawn>(Owner))
+        {
+            CurrentSpeed = OwnerPawn->GetVelocity().Size();
+        }
+    }
+
+    // 2. 속도에 따라 재생할 몽타주를 선택합니다.
+    UAnimMontage* MontageToPlay = nullptr;
+    const float FullBodySpeedThreshold = 20.0f;
+
+    if (CurrentSpeed < FullBodySpeedThreshold)
+    {
+        // 속도가 20 미만이면 FullBody 몽타주를 선택
+        MontageToPlay = CurrentStep.Montage_FullBody;
+    }
+    else
+    {
+        // 그렇지 않으면 UpperBody 몽타주를 선택
+        MontageToPlay = CurrentStep.Montage_UpperBody;
+    }
+
+    // 3. (필수) 두 슬롯 중 하나라도 비어있으면 공격이 멈추므로, 유효성 검사를 합니다.
+    if (!MontageToPlay)
+    {
+        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("[2-ERROR] Montage is MISSING in DA for ComboIndex %d!"), ComboIndex));
+        ComboIndex = 0; return;
+    }
+
+    // --- 선택 로직 끝 ---
+
     // [디버그 3]
     if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[3] Montage_Play: EXECUTED"));
 
-    UAnimMontage* M = Steps[ComboIndex].Montage;
+    // [수정된 부분 2] M 변수에 MontageToPlay를 할당합니다.
+    UAnimMontage* M = MontageToPlay;
     LastAttackMontage = M;
     Anim->Montage_Play(M, PlayRate);
 
-    // 새 타 시작: 창구 초기화 & 프레임→타이머 예약
+    // 새 콤보 시작: 창구 초기화 & 프레임 타이머 예약
     bCanChain = false; bAdvancedThisWindow = false; NextPolicy = EComboPolicy::None;
     ScheduleComboWindows(M, PlayRate);
 }
@@ -239,10 +285,10 @@ void UAttackComponent::AdvanceComboImmediately()
     // 현재 몽타주용 타이머 먼저 정리(레이스 가드)
     ClearComboWindows();
 
-    if (UAnimInstance* Anim = GetAnim())
+    /*if (UAnimInstance* Anim = GetAnim())
     {
         if (LastAttackMontage) { Anim->Montage_Stop(0.05f, LastAttackMontage); }
-    }
+    }*/
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
