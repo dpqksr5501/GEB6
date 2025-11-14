@@ -61,9 +61,6 @@ struct FAttackStep
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UAnimMontage> Montage = nullptr;
-
 	// 이 몽타주에서 Save/Reset 이 열리는 "프레임" 번호
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	int32 SaveFrame = 0;
@@ -75,7 +72,14 @@ struct FAttackStep
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	float OverrideFPS = 0.f; // 0: 자동, 그 외: 해당 값 사용(예: 30, 60)
 
-	
+	/** 캐릭터가 움직이는 중에 재생될 상체 전용 몽타주입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	TObjectPtr<UAnimMontage> Montage_UpperBody = nullptr;
+
+	/** 캐릭터가 가만히 있을 때 재생될 전신 몽타주입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	TObjectPtr<UAnimMontage> Montage_FullBody = nullptr;
+
 };
 
 UCLASS()
