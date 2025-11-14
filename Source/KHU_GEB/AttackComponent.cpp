@@ -42,6 +42,11 @@ void UAttackComponent::BeginPlay()
         }
     }
     InitializeColliderPool(5);
+
+    //if (!BoundAnim.IsValid())
+    //{
+    //    BindAnimDelegates();
+    //}
 }
 
 USkeletalMeshComponent* UAttackComponent::GetMesh() const
@@ -247,6 +252,8 @@ void UAttackComponent::AdvanceComboImmediately()
 
 void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool /*bInterrupted*/)
 {
+    // 몽타주가 끝나면 이 스윙에서 적중한 목록을 초기화
+    HitActorsThisSwing.Empty();
     // 이전 몽타주의 End가 늦게 와도, '그 몽타주' 소유 타이머만 지움
     if (Montage == WindowOwnerMontage) { ClearComboWindows(); }
 
@@ -311,34 +318,33 @@ void UAttackComponent::Notify_ResetCombo()
 
 float UAttackComponent::GetFPSFor(const UAnimMontage* Montage, float OverrideFPS) const
 {
-    // 1. [우선순위 1] DA에 0 이상의 FPS가 명시된 경우, 그 값을 사용합니다.
+    // 1. DA에서 사용자가 OverrideFPS를 명시한 경우 (우선)
     if (OverrideFPS > 0.f)
     {
         return OverrideFPS;
     }
 
-    // 2. [우선순위 2] 몽타주 애셋의 실제 FPS를 계산합니다.
-    // UAnimMontage는 UAnimSequenceBase를 상속받으므로 캐스팅이 필요 없습니다.
+    // 2. 캐시 확인 (mutable TMap 사용)
     if (Montage)
     {
-        // GetNumberOfSampledKeys()가 런타임 C++에서 총 프레임 수를 가져오는
-        // 올바른 함수 이름입니다.
-        const int32 TotalFrames = Montage->GetNumberOfSampledKeys();
-
-        // 몽타주의 총 재생 시간(초)을 가져옵니다.
-        const float PlayLength = Montage->GetPlayLength();
-
-        // 프레임과 시간이 모두 유효한 경우 FPS를 계산합니다.
-        if (TotalFrames > 0 && PlayLength > KINDA_SMALL_NUMBER)
+        if (const float* Cached = CachedMontageFPS.Find(Montage))
         {
-            // FPS = 총 프레임 수 / 총 시간(초)
-            // 300 FPS 몽타주의 경우: (약 300) / (약 1.0) = 300.0f
-            return (float)TotalFrames / PlayLength;
+            return *Cached;
+        }
+
+        const int32 TotalKeys = Montage->GetNumberOfSampledKeys();
+        const float Length = Montage->GetPlayLength();
+
+        if (TotalKeys > 0 && Length > KINDA_SMALL_NUMBER)
+        {
+            const float CalculatedFPS = float(TotalKeys) / Length;
+            CachedMontageFPS.Add(Montage, CalculatedFPS);
+            return CalculatedFPS;
         }
     }
 
-    // 3. [우선순위 3] 위 2가지가 모두 실패하면, 30 FPS를 기본값으로 사용합니다.
-    return 30.0f;
+    // 3. 디폴트
+    return 30.f;
 }
 
 
@@ -430,31 +436,15 @@ void UAttackComponent::InitializeColliderPool(int32 PoolSize)
     for (int32 i = 0; i < PoolSize; ++i)
     {
         // 1. 박스 생성
-        UBoxComponent* NewBox = NewObject<UBoxComponent>(GetOwner());
-        if (NewBox)
+        if (UBoxComponent* Box = CreateNewBoxCollider())
         {
-            NewBox->RegisterComponent();
-            NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 기본 비활성화
-            NewBox->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-            NewBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-            NewBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-            NewBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-            BoxColliderPool.Add(NewBox);
-            NewBox->SetHiddenInGame(false);
+            BoxColliderPool.Add(Box);
         }
 
         // 2. 구체 생성
-        USphereComponent* NewSphere = NewObject<USphereComponent>(GetOwner());
-        if (NewSphere)
+        if (USphereComponent* Sphere = CreateNewSphereCollider())
         {
-            NewSphere->RegisterComponent();
-            NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 기본 비활성화
-            NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-            NewSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-            NewSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-            NewSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-            SphereColliderPool.Add(NewSphere);
-            NewSphere->SetHiddenInGame(false);
+            SphereColliderPool.Add(Sphere);
         }
     }
 }
@@ -470,10 +460,12 @@ UBoxComponent* UAttackComponent::GetPooledBoxCollider()
             return Box;
         }
     }
-    // (안전장치) 풀이 부족하면 새로 생성 (경고 로그 출력)
-    UE_LOG(LogTemp, Warning, TEXT("BoxColliderPool is empty! Creating new one."));
-    // (실제로는 풀 크기를 늘리거나, InitializeColliderPool에서 더 생성해야 함)
-    return nullptr; // 단순화를 위해 null 반환 (실제로는 위 Initialize 로직으로 하나 더 생성)
+
+    // 부족하므로 새로 생성
+    UBoxComponent* NewBox = CreateNewBoxCollider();
+    BoxColliderPool.Add(NewBox);
+    return NewBox;
+
 }
 
 // [새 함수] 풀에서 구체 가져오기
@@ -486,8 +478,11 @@ USphereComponent* UAttackComponent::GetPooledSphereCollider()
             return Sphere;
         }
     }
-    UE_LOG(LogTemp, Warning, TEXT("SphereColliderPool is empty!"));
-    return nullptr;
+
+    // 부족 → 새로 생성
+    USphereComponent* NewSphere = CreateNewSphereCollider();
+    SphereColliderPool.Add(NewSphere);
+    return NewSphere;
 }
 
 // [수정 후] DeactivateAllColliders (DestroyComponent 제거)
@@ -496,18 +491,70 @@ void UAttackComponent::DeactivateAllColliders()
     USkeletalMeshComponent* Mesh = GetMesh();
     for (UShapeComponent* Collider : ActiveColliders)
     {
-        if (Collider)
+        if (!Collider) continue;
+
+        // 1) 충돌 비활성화
+        Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+        // 2) 소켓에서 분리 (상대 좌표 유지한 채)
+        //    KeepRelativeTransform 사용해야 다음 Attach 시 서로 영향을 안 줌
+        Collider->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+
+        // 3) 풀 복귀를 위해 초기화
+        //    상대 좌표 초기화는 Detach 상태에서도 의미 있음 (다음 Attach에 적용됨)
+        Collider->SetRelativeLocation(FVector::ZeroVector);
+        Collider->SetRelativeRotation(FRotator::ZeroRotator);
+
+        // 크기 초기화 (박스/스피어 모두)
+        if (UBoxComponent* Box = Cast<UBoxComponent>(Collider))
         {
-            Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            // 풀로 되돌리기 위해 부착 해제
-            if (Mesh)
-            {
-                Collider->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-            }
+            Box->SetBoxExtent(FVector::ZeroVector);
+        }
+        else if (USphereComponent* Sphere = Cast<USphereComponent>(Collider))
+        {
+            Sphere->SetSphereRadius(0.0f);
         }
     }
     ActiveColliders.Empty(); // 활성 목록만 비움 (풀은 유지)
 }
 
 
+
+UBoxComponent* UAttackComponent::CreateNewBoxCollider()
+{
+    AActor* Owner = GetOwner();
+    if (!Owner) return nullptr;
+
+    UBoxComponent* NewBox = NewObject<UBoxComponent>(Owner);
+    if (!NewBox) return nullptr;
+
+    NewBox->RegisterComponent();
+    NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NewBox->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
+    NewBox->SetCollisionObjectType(ECC_WorldDynamic);
+    NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+    NewBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    NewBox->SetHiddenInGame(false);
+
+    return NewBox;
+}
+
+USphereComponent* UAttackComponent::CreateNewSphereCollider()
+{
+    AActor* Owner = GetOwner();
+    if (!Owner) return nullptr;
+
+    USphereComponent* NewSphere = NewObject<USphereComponent>(Owner);
+    if (!NewSphere) return nullptr;
+
+    NewSphere->RegisterComponent();
+    NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
+    NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
+    NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+    NewSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    NewSphere->SetHiddenInGame(false);
+
+    return NewSphere;
+}
 
