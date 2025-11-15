@@ -168,21 +168,52 @@ void UAttackComponent::UnbindAnimDelegates()
 
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1] AttackStarted: Input Received"));
+    if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1]AttackStarted: Input Received")); }
     bAttackHeld = true;
-    if (UAnimInstance* Anim = GetAnim())
+    // 로직 순서 변경 
+    // 1. [먼저] 콤보 연계가 가능한지 확인합니다. 
+    // (Save 프레임이 지났고, 이번 창에서 아직 연계하지 않았는지) 
+    if (bCanChain && !bAdvancedThisWindow)
     {
-        const bool bPlaying = Anim->Montage_IsPlaying(nullptr);
-        if (!bPlaying)
-        {
-            ComboIndex = 0;
-            bCanChain = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
-            PlayCurrentComboMontage();
-            return;
-        }
-        if (bCanChain && !bAdvancedThisWindow) { AdvanceComboImmediately(); }
+        // 2. 가능하다면 즉시 다음 콤보로 넘어갑니다. 
+        AdvanceComboImmediately();
+        // 3. 연계를 했으므로 함수를 종료합니다. (밑의 1타 재생 로직 실행 방지) 
+        return;
     }
+
+    // 콤보 연계 상태가 아닐 때,
+    if (bIsAttacking)
+    {
+        return;
+    }
+
+    // bIsAttacking이 false일 때 (즉, 공격 중이 아닐 때) 1타 콤보를 새로 시작합니다.
+    // *오직 콤보 인덱스가 0일 때만* 1타를 시작해야 합니다.
+    // (버그 2: "다음 콤보로 안 넘어감" 해결)
+    if (ComboIndex == 0) // <--- [수정] !bPlaying 대신 ComboIndex를 확인
+    {
+        if (UAnimInstance* Anim = GetAnim())
+        {
+            // (안전장치) 몽타주가 정말 안 돌고 있는지 한 번 더 확인
+            if (!Anim->Montage_IsPlaying(nullptr))
+            {
+                // 콤보 상태 초기화 (ComboIndex는 이미 0)
+                bCanChain = false;
+                bAdvancedThisWindow = false;
+                bResetOnNext = false;
+                NextPolicy = EComboPolicy::None;
+
+                PlayCurrentComboMontage(); // 1타 콤보 시작
+            }
+        }
+    }
+    // (ComboIndex가 0이 아니라면)
+    // (예: 1타가 끝났지만 ResetTimer가 돌기 전)
+    // bIsAttacking은 false지만, ResetTimer가 ComboIndex를 0으로 만들 때까지
+    // 1타가 다시 시작되지 않도록 아무것도 하지 않습니다.
 }
+
+
 void UAttackComponent::AttackTriggered(const FInputActionValue&)
 {
     bAttackHeld = true;
@@ -206,6 +237,9 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
 
     UAnimInstance* Anim = GetAnim();
     if (!Anim) return;
+
+    // 몽타주를 재생하기 직전에, '공격 중' 상태 플래그를 true로 설정
+    bIsAttacking = true;
 
     // FormDefinition의 스텝 구조에 맞춰 접근
     const auto& Steps = CurrentFormDef->AttackMontages;
@@ -292,21 +326,48 @@ void UAttackComponent::AdvanceComboImmediately()
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
+    bIsChaining = true;
 
     PlayCurrentComboMontage();
 }
 
-void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool /*bInterrupted*/)
+void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
     // 몽타주가 끝나면 이 스윙에서 적중한 목록을 초기화
     HitActorsThisSwing.Empty();
     // 이전 몽타주의 End가 늦게 와도, '그 몽타주' 소유 타이머만 지움
     if (Montage == WindowOwnerMontage) { ClearComboWindows(); }
 
-    if (!bAttackHeld)
+    // [!!! 핵심 수정 1 !!!]
+    // 만약 "체인 중" 플래그가 true라면 (AdvanceComboImmediately가 방금 호출됨),
+    // 이 OnMontageEnded는 이전 몽타주가 '중단'된 콜백입니다.
+    // 새 몽타주가 이미 bIsAttacking=true로 재생 중이므로,
+    // bIsAttacking을 false로 바꾸면 안 됩니다.
+    if (bIsChaining)
     {
+        bIsChaining = false; // 플래그만 리셋하고 종료
+        return;
+    }
+
+    // [!!! 핵심 수정 2 !!!]
+    // 체인 중이 아닐 때 (즉, 몽타주가 자연스럽게 끝났거나, 피격 등으로 중단됨)
+    // '공격 중' 상태 플래그를 false로 해제합니다.
+    bIsAttacking = false;
+
+    // [!!! 핵심 수정 3 (버그 2 해결) !!!]
+    // 몽타주가 '자연스럽게' 끝났다면 (binterrupted == false),
+    // 연타 중(bAttackHeld == true)이더라도 콤보가 리셋되어야
+    // AttackStarted가 ComboIndex 0으로 1타를 다시 시작하는 버그를 막을 수 있습니다.
+    // (단, ResetTimer가 이미 발동한 경우는 제외)
+    if (!bInterrupted && !bResetOnNext) // <-- 대문자 'I'를 소문자 'i'로 수정
+    {
+        // 몽타주가 자연스럽게 끝났는데 콤보 연계(bIsChaining)도 없었음
+        // = 콤보 실패
         ComboIndex = 0;
-        bCanChain = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
+        bCanChain = false;
+        bAdvancedThisWindow = false;
+        bResetOnNext = false;
+        NextPolicy = EComboPolicy::None;
     }
 }
 
@@ -427,6 +488,10 @@ void UAttackComponent::ResetComboHard()
     ComboIndex = 0;
     bCanChain = false; bAttackHeld = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
     // 필요하면 현재 몽타주 즉시 정지
+    // 콤보를 강제 리셋하므로, 모든 상태 플래그를 해제합니다.
+    bIsAttacking = false;
+    bIsChaining = false;
+
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
 
