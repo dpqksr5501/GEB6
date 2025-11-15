@@ -9,6 +9,7 @@
 #include "MonsterAnimInstanceBase.h" // 2. ECharacterState 열거형을 사용하기 위해 포함합니다.
 #include "FormDefinition.h"
 #include "Camera/CameraComponent.h"
+#include "NiagaraComponent.h"
 #include "KHU_GEBCharacter.generated.h"
 
 class USpringArmComponent;
@@ -20,6 +21,7 @@ class UFormManagerComponent;
 class UFormDefinition;
 class UAttackComponent;
 class USkillManagerComponent;
+class UNiagaraComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -35,6 +37,10 @@ class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	/** Swift 폼으로 달릴 때 활성화될 나이아가라 이펙트입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* SwiftSprintVFX;
 
 protected:
 	/** Jump Input Action */

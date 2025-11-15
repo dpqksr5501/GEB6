@@ -17,6 +17,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 #include "FormDefinition.h"
+#include "NiagaraComponent.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -89,6 +90,11 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	//인터페이스용 변수 2개를 초기화합니다.
 	CurrentPlayerState = ECharacterState::Idle;
 	bPlayerWantsToJump = false;
+
+
+	SwiftSprintVFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwiftSprintVFX"));
+	SwiftSprintVFX->SetupAttachment(GetMesh()); // 캐릭터 메시에 부착
+	SwiftSprintVFX->bAutoActivate = false;
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -457,6 +463,25 @@ void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefi
 	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
 	UpdateMovementSpeed();
 
+	if (NewForm == EFormType::Swift)
+	{
+		// [A] Swift 폼으로 변경됨
+		// 만약 '이미 달리고 있는 상태'에서 폼을 바꿨다면, 이펙트를 즉시 켭니다.
+		if (bIsSprinting && SwiftSprintVFX)
+		{
+			SwiftSprintVFX->Activate(true);
+		}
+	}
+	else
+	{
+		// [B] 다른 폼으로 변경됨
+		// 폼이 Swift가 아니게 되었으므로, 이펙트를 강제로 끕니다.
+		if (SwiftSprintVFX)
+		{
+			SwiftSprintVFX->Deactivate();
+		}
+	}
+
 	// 2. 폼 변경 시 달리기 중이었다면, 카메라/효과를 새 폼에 맞게 재설정합니다.
 	if (bIsSprinting)
 	{
@@ -502,6 +527,11 @@ void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
 
 		TargetFringeIntensity = 2.0f;
 		TargetVignetteIntensity = 0.8f;
+
+		if (SwiftSprintVFX)
+		{
+			SwiftSprintVFX->Activate(true);
+		}
 	}
 	else
 	{
@@ -525,6 +555,12 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 
 	TargetFringeIntensity = 0.f;
 	TargetVignetteIntensity = 0.f;
+
+	// 달리기를 멈췄으므로, 현재 폼이 무엇이든 상관없이 이펙트를 끕니다.
+	if (SwiftSprintVFX)
+	{
+		SwiftSprintVFX->Deactivate();
+	}
 }
 
 /**

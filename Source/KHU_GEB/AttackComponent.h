@@ -104,6 +104,11 @@ protected:
     // 공용 생성 함수 풀 생성  부족 시 생성 모두 여기서 처리
     UBoxComponent* CreateNewBoxCollider();
     USphereComponent* CreateNewSphereCollider();
+
+    /** (bIsAttacking과 별개로) 콤보가 다음 몽타주로 '연계되는 순간'인지 확인합니다. */
+    UPROPERTY(Transient)
+    bool bIsChaining = false;
+
 private:
 
     /** 미리 생성해 둔 구체 콜리전 풀 */
@@ -121,10 +126,12 @@ private:
     //캐싱 : 몽타주별 계산된 FPS 저장하는 곳
     mutable TMap<const UAnimMontage*, float> CachedMontageFPS;
 
-public:	
+public:
 
+    /*컴포넌트가 현재 공격 몽타주를 재생 중인지 확인합니다.*/
     UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
-    bool bIsAttacking = false; //
+    bool bIsAttacking = false;
+
     // 외부(캐릭터) API
     void SetForm(const UFormDefinition* Def);
     void AttackStarted(const FInputActionValue&);    // 입력: 누름
