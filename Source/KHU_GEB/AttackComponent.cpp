@@ -168,21 +168,45 @@ void UAttackComponent::UnbindAnimDelegates()
 
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1] AttackStarted: Input Received"));
+    if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1]AttackStarted: Input Received")); }
     bAttackHeld = true;
+    // 로직 순서 변경 
+    // 1. [먼저] 콤보 연계가 가능한지 확인합니다. 
+    // (Save 프레임이 지났고, 이번 창에서 아직 연계하지 않았는지) 
+    if (bCanChain && !bAdvancedThisWindow)
+    {
+        // 2. 가능하다면 즉시 다음 콤보로 넘어갑니다. 
+        AdvanceComboImmediately();
+        // 3. 연계를 했으므로 함수를 종료합니다. (밑의 1타 재생 로직 실행 방지) 
+        return;
+    }
+
+    // 4. [연계할 게 없을 때만] 몽타주가 재생 중인지 확인합니다. 
     if (UAnimInstance* Anim = GetAnim())
     {
         const bool bPlaying = Anim->Montage_IsPlaying(nullptr);
+
+        // 5. 아무것도 재생 중이 아닐 때만 1타 콤보를 새로 시작합니다. 
         if (!bPlaying)
         {
             ComboIndex = 0;
-            bCanChain = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
+            bCanChain = false;
+            bAdvancedThisWindow = false;
+            bResetOnNext = false;
+            NextPolicy = EComboPolicy::None;
+
             PlayCurrentComboMontage();
-            return;
         }
-        if (bCanChain && !bAdvancedThisWindow) { AdvanceComboImmediately(); }
+        // else 
+        // { 
+        //   // 몽타주가 재생 중인데 콤보 연계(bCanChain)가 불가능한 상태 
+        //   // (즉, 'Save' 프레임 전) 
+        //   // 이 경우, 아무것도 하지 않고 입력을 '무시'합니다. 
+        // } 
     }
 }
+
+
 void UAttackComponent::AttackTriggered(const FInputActionValue&)
 {
     bAttackHeld = true;

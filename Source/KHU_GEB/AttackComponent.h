@@ -124,7 +124,7 @@ private:
 public:	
 
     UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
-    bool blsAttacking = false; //
+    bool bIsAttacking = false; //
     // 외부(캐릭터) API
     void SetForm(const UFormDefinition* Def);
     void AttackStarted(const FInputActionValue&);    // 입력: 누름
@@ -135,9 +135,6 @@ public:
     void ResetComboHard();
 
 
-    /** 컴포넌트가 현재 공격 몽타주를 재생 중인지 확인합니다. */
-    UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
-    bool bIsAttacking = false;
 
 protected:
     // 델리게이트 핸들러
