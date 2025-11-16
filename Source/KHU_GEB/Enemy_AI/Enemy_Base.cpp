@@ -4,6 +4,7 @@
 #include "Engine/Engine.h"
 #include "FormManagerComponent.h"
 #include "SkillManagerComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -24,44 +25,6 @@ void AEnemy_Base::BeginPlay()
 	}
 }
 
-// Called every frame
-void AEnemy_Base::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void AEnemy_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-void AEnemy_Base::PerformAttack()
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PerformAttack Called"));
-	}
-}
-
-void AEnemy_Base::PerformSkill()
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("PerfromSkill Called"));
-	}
-}
-
-void AEnemy_Base::PerformSpecialSkill()
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("PerfromSpecialSkill Called"));
-	}
-}
-
 void AEnemy_Base::InitializeSkills()
 {
 	Equipped.Empty();
@@ -77,4 +40,28 @@ void AEnemy_Base::InitializeSkills()
 			}
 		}
 	}
+}
+
+
+float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage called. DamageAmount: %f, ActualDamage: %f"), DamageAmount, ActualDamage);
+
+	//현재 상태를 저장하는 CurrentState 변수를 선언하고, Blackboard에서 EnemyState 값을 가져와 저장
+	EEnemyState CurrentState = (EEnemyState)BlackboardComp->GetValueAsEnum("EnemyState");
+
+	if (BlackboardComp) {
+		// 현재 공격 중이 아니라면 피격 중으로 변경
+		if (CurrentState != EEnemyState::EES_Attacking)
+		{
+			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - BlackboardComp is null"));
+	}
+
+	return ActualDamage;
 }

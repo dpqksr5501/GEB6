@@ -28,4 +28,10 @@ protected:
 
 	/** 에디터에서 노드 이름을 더 알기 쉽게 표시하기 위한 함수입니다. */
 	virtual FString GetStaticDescription() const override;
+
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual void OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	virtual EBlackboardNotificationResult OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID) override;
 };

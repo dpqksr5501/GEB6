@@ -511,6 +511,7 @@ void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
     float DamageToApply = 10.f; // [개선안 5번 미적용 시 하드코딩된 대미지]
 
     APawn* OwnerPawn = Cast<APawn>(Owner);
+
     UGameplayStatics::ApplyDamage(OtherActor,
         DamageToApply,
         (OwnerPawn ? OwnerPawn->GetController() : nullptr),

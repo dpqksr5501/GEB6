@@ -11,6 +11,42 @@ UIsGreaterThan::UIsGreaterThan()
 
 	// 기본 비교 값 설정
 	CompareValue = 0.0f;
+
+	// Observer Abort 설정 - 블랙보드 값 변경 시 재평가
+	bNotifyBecomeRelevant = true;
+	bNotifyTick = false; // Tick은 필요 없음
+}
+
+void UIsGreaterThan::InitializeFromAsset(UBehaviorTree& Asset)
+{
+	Super::InitializeFromAsset(Asset);
+
+	// 블랙보드 키 변경 감지 설정
+	UBlackboardData* BBAsset = GetBlackboardAsset();
+	if (BBAsset)
+	{
+		BlackboardKey.ResolveSelectedKey(*BBAsset);
+	}
+}
+
+void UIsGreaterThan::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+
+	// 부모 클래스에서 이미 옵저버를 등록하므로 별도 등록 불필요
+}
+
+void UIsGreaterThan::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
+
+	// 부모 클래스에서 이미 옵저버를 해제하므로 별도 해제 불필요
+}
+
+EBlackboardNotificationResult UIsGreaterThan::OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID)
+{
+	// 부모 클래스 호출로 조건 재평가
+	return Super::OnBlackboardKeyValueChange(Blackboard, ChangedKeyID);
 }
 
 bool UIsGreaterThan::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
