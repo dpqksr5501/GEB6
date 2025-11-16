@@ -11,6 +11,7 @@
 #include "Enemy_Base.generated.h"
 
 class UBlackboardComponent;
+class UHealthComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -42,4 +43,11 @@ protected:
 	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BlackboardComp;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Health")
+	UHealthComponent* HealthComp;
+
+	// 죽음
+	UFUNCTION()
+	void OnDeath();
 };

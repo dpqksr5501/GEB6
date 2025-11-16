@@ -4,6 +4,7 @@
 #include "Engine/Engine.h"
 #include "FormManagerComponent.h"
 #include "SkillManagerComponent.h"
+#include "HealthComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
@@ -11,13 +12,26 @@ AEnemy_Base::AEnemy_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// HealthComponent 생성 및 초기화
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	if (!HealthComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - HealthComp creation failed"));
+	}
 }
 
 // Called when the game starts or when spawned
 void AEnemy_Base::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	// 죽음 델리게이트에 OnDeath 함수 바인딩
+	if (HealthComp)
+	{
+		HealthComp->OnDeath.AddDynamic(this, &AEnemy_Base::OnDeath);
+	}
+	
 	// SkillClasses가 설정되어 있으면 자동으로 초기화
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
 	{
@@ -42,7 +56,6 @@ void AEnemy_Base::InitializeSkills()
 	}
 }
 
-
 float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -57,6 +70,8 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		if (CurrentState != EEnemyState::EES_Attacking)
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
+			HealthComp->ReduceHealth(ActualDamage);
+			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
 		}
 	}
 	else {
@@ -64,4 +79,9 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	}
 
 	return ActualDamage;
+}
+
+void AEnemy_Base::OnDeath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::OnDeath - Enemy has died!"));
 }
