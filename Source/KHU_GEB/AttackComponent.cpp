@@ -536,6 +536,7 @@ void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 /** 폼 변경 핸들러 구현 */
 void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
+    ResetComboHard();
     // 캐릭터를 거치지 않고 직접 SetForm을 호출합니다.
     SetForm(Def);
 }
