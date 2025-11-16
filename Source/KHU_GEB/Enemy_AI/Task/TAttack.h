@@ -22,7 +22,9 @@ public:
 
 	/** 비헤이비어 트리 에디터에서 선택할 공격 몽타주입니다. */
 	UPROPERTY(EditAnywhere, Category = "Attack Montage")
-	UAnimMontage* AttackMontage;
+	UAnimMontage* UpperMontage;
+	UPROPERTY(EditAnywhere, Category = "Attack Montage")
+	UAnimMontage* FullMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Attack Type")
 	FBlackboardKeySelector LastActionTimeKey;
