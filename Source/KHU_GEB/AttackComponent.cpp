@@ -4,6 +4,7 @@
 
 #include "AttackComponent.h"
 #include "FormDefinition.h"
+#include "WeaponComponent.h" // 1. [ì¶”ê°€] WeaponComponent í—¤ë”
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "GameFramework/Actor.h"
@@ -12,11 +13,9 @@
 #include "InputActionValue.h"
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Components/SphereComponent.h" // Sphere »ı¼º¿ë
-#include "Components/BoxComponent.h"     // Box »ı¼º¿ë
-#include "Kismet/GameplayStatics.h"
 #include "FormManagerComponent.h"
 #include "GameFramework/Character.h"
+
 
 
 UAttackComponent::UAttackComponent() {}
@@ -25,29 +24,26 @@ void UAttackComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ¼ÒÀ¯ÀÚ(Ä³¸¯ÅÍ)¿¡¼­ FormManager¸¦ Ã£¾Æ µ¨¸®°ÔÀÌÆ®¿¡ ¹ÙÀÎµùÇÕ´Ï´Ù.
+    // ì†Œìœ ì(ìºë¦­í„°)ì—ì„œ FormManagerë¥¼ ì°¾ì•„ ë¸ë¦¬ê²Œì´íŠ¸ì— ë°”ì¸ë”©í•©ë‹ˆë‹¤.
     if (AActor* Owner = GetOwner())
     {
-        if (UFormManagerComponent* FormManager = Owner->FindComponentByClass<UFormManagerComponent>())
+        if (UFormManagerComponent* FormManager =
+            Owner->FindComponentByClass<UFormManagerComponent>())
         {
-            //µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
-            FormManager->OnFormChanged.AddDynamic(this, &UAttackComponent::OnFormChanged_Handler);
+            FormManager->OnFormChanged.AddDynamic(this,
+                &UAttackComponent::OnFormChanged_Handler);
 
-            // ¹ÙÀÎµù Á÷ÈÄ, FormManagerÀÇ ÇöÀç ÆûÀ» °¡Á®¿Í¼­ ¼öµ¿À¸·Î ÃÊ±âÈ­ÇØÁİ´Ï´Ù.
-            // (InitializeForms ¹æ¼ÛÀ» ³õÃÆÀ» °æ¿ì¸¦ ´ëºñ)
-            const UFormDefinition* InitialDef = FormManager->FindDef(FormManager->CurrentForm);
+            const UFormDefinition* InitialDef =
+                FormManager->FindDef(FormManager->CurrentForm);
             if (InitialDef)
             {
                 OnFormChanged_Handler(FormManager->CurrentForm, InitialDef);
             }
         }
     }
-    InitializeColliderPool(5);
 
-    //if (!BoundAnim.IsValid())
-    //{
-    //    BindAnimDelegates();
-    //}
+    //ì• ë‹˜ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©ì€ ìœ ì§€.
+    BindAnimDelegates();
 }
 
 USkeletalMeshComponent* UAttackComponent::GetMesh() const
@@ -55,19 +51,19 @@ USkeletalMeshComponent* UAttackComponent::GetMesh() const
     AActor* Owner = GetOwner();
     if (!Owner) return nullptr;
 
-    //ACharacter ´ë½Å AKHU_GEBCharacter·Î Á÷Á¢ Ä³½ºÆÃÇÕ´Ï´Ù.
+    //ACharacter ëŒ€ì‹  AKHU_GEBCharacterë¡œ ì§ì ‘ ìºìŠ¤íŒ…í•©ë‹ˆë‹¤.
     if (AKHU_GEBCharacter* OwnerCharacter = Cast<AKHU_GEBCharacter>(Owner))
     {
         return OwnerCharacter->GetMesh();
     }
 
-    //È¤½Ã ¸ó½ºÅÍ(AMonsterBase)¿¡µµ ÀÌ ÄÄÆ÷³ÍÆ®°¡ ºÙÀ» °æ¿ì¸¦ ´ëºñ
+    //í˜¹ì‹œ ëª¬ìŠ¤í„°(AMonsterBase)ì—ë„ ì´ ì»´í¬ë„ŒíŠ¸ê°€ ë¶™ì„ ê²½ìš°ë¥¼ ëŒ€ë¹„
     //if (amonsterbase* ownermonster = cast<amonsterbase>(owner))
     //{
-    //    return ownermonster->getmesh(); // amonsterbaseµµ acharacter¸¦ »ó¼Ó¹Ş¾ÒÀ¸¹Ç·Î getmesh()°¡ ÀÖÀ½
+    //    return ownermonster->getmesh(); // amonsterbaseë„ acharacterë¥¼ ìƒì†ë°›ì•˜ìœ¼ë¯€ë¡œ getmesh()ê°€ ìˆìŒ
     //}
 
-    // µÑ ´Ù ¾Æ´Ï¶ó¸é, ÀÏ¹İÀûÀÎ ¹æ¹ıÀ¸·Î Å½»ö
+    // ë‘˜ ë‹¤ ì•„ë‹ˆë¼ë©´, ì¼ë°˜ì ì¸ ë°©ë²•ìœ¼ë¡œ íƒìƒ‰
     return Owner->FindComponentByClass<USkeletalMeshComponent>();
 }
 
@@ -80,83 +76,41 @@ UAnimInstance* UAttackComponent::GetAnim() const
     return nullptr;
 }
 
-//SetForm ÇÔ¼ö ¼öÁ¤---
-// [¼öÁ¤ ÈÄ] SetForm (µ¥ÀÌÅÍ ±â¹İÀ¸·Î º¯°æ)
+//SetForm í•¨ìˆ˜ ìˆ˜ì •---
+//SetForm ë” ì´ìƒ ì½œë¦¬ì „ì„ ìƒì„±í•˜ì§€ ì•ŠìŒ.
 void UAttackComponent::SetForm(const UFormDefinition* Def)
 {
+    BindAnimDelegates();
     CurrentFormDef = Def;
-    //±âÁ¸ ÆûÀÇ Äİ¸®ÀüÀ» ÆÄ±«ÇÏÁö ¾Ê°í "ºñÈ°¼ºÈ­" (Ç®·Î ¹İÈ¯)
-    DeactivateAllColliders();
-
-    BindAnimDelegates(); // ¾Ö´Ô µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
 
     if (!CurrentFormDef) return;
 
     USkeletalMeshComponent* Mesh = GetMesh();
     if (!Mesh) return;
-
-    // 1-2. Æû Á¤ÀÇ(Form Definition)ÀÇ Hitboxes ¹è¿­À» ¼øÈ¸
-    for (const FHitboxConfig& Config : CurrentFormDef->Hitboxes)
-    {
-        UShapeComponent* NewCollider = nullptr;
-
-        // 1-3. ¼³Á¤¿¡ µû¶ó Ç®¿¡¼­ Äİ¸®Àü °¡Á®¿À±â
-        if (Config.Shape == EHitboxShape::Sphere)
-        {
-            USphereComponent* Sphere = GetPooledSphereCollider();
-            if (Sphere)
-            {
-                Sphere->SetSphereRadius(Config.Size.X); // Size.X¸¦ Radius·Î »ç¿ë
-                NewCollider = Sphere;
-            }
-        }
-        else // EHitboxShape::Box
-        {
-            UBoxComponent* Box = GetPooledBoxCollider();
-            if (Box)
-            {
-                Box->SetBoxExtent(Config.Size); // Size¸¦ BoxExtent·Î »ç¿ë
-                NewCollider = Box;
-            }
-        }
-
-        // 1-4. Äİ¸®ÀüÀ» ¼ÒÄÏ¿¡ ºÎÂøÇÏ°í È°¼º ¸ñ·Ï¿¡ Ãß°¡
-        if (NewCollider)
-        {
-            // ¼ÒÄÏ¿¡ ºÎÂøÇÏ±â *Àü¿¡* ÄÄÆ÷³ÍÆ® ÀÚÃ¼ÀÇ »ó´ë ¿ÀÇÁ¼ÂÀ» ¼³Á¤ÇÕ´Ï´Ù.
-            // ÃÖÁ¾ À§Ä¡ = (¼ÒÄÏÀÇ ¿ùµå À§Ä¡) + (ÀÌ ¿ÀÇÁ¼ÂÀÌ Àû¿ëµÈ »ó´ë À§Ä¡)
-            NewCollider->SetRelativeLocationAndRotation(Config.RelativeLocation, Config.RelativeRotation);
-
-            // ¼ÒÄÏ¿¡ ºÎÂøÇÕ´Ï´Ù. (±ÔÄ¢Àº KeepRelativeTransform À¯Áö)
-            NewCollider->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform, Config.SocketName);
-
-            ActiveColliders.Add(NewCollider);
-        }
-    }
 }
 
 void UAttackComponent::BindAnimDelegates()
 {
-    //ÀÌÀü¿¡ ¹ÙÀÎµùµÈ ¾Ö´Ô ÀÎ½ºÅÏ½º°¡ ÀÖ´Ù¸é, ¸ÕÀú ¿¬°áÀ» ÇØÁ¦ÇÕ´Ï´Ù.
+    //ì´ì „ì— ë°”ì¸ë”©ëœ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ê°€ ìˆë‹¤ë©´, ë¨¼ì € ì—°ê²°ì„ í•´ì œí•©ë‹ˆë‹¤.
     UnbindAnimDelegates();
 
-    //ÇöÀç À¯È¿ÇÑ »õ ¾Ö´Ô ÀÎ½ºÅÏ½º¸¦ °¡Á®¿É´Ï´Ù.
+    //í˜„ì¬ ìœ íš¨í•œ ìƒˆ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     UAnimInstance* Anim = GetAnim();
     if (Anim)
     {
-        //»õ ¾Ö´Ô ÀÎ½ºÅÏ½ºÀÇ µ¨¸®°ÔÀÌÆ®¿¡ ¿ì¸® ÇÔ¼öµéÀ» ¿¬°áÇÕ´Ï´Ù.
+        //ìƒˆ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ì˜ ë¸ë¦¬ê²Œì´íŠ¸ì— ìš°ë¦¬ í•¨ìˆ˜ë“¤ì„ ì—°ê²°í•©ë‹ˆë‹¤.
         Anim->OnPlayMontageNotifyBegin.AddDynamic(this, &UAttackComponent::OnNotifyBeginReceived);
         Anim->OnPlayMontageNotifyEnd.AddDynamic(this, &UAttackComponent::OnNotifyEndReceived);
         Anim->OnMontageEnded.AddDynamic(this, &UAttackComponent::OnMontageEnded);
 
-        //[ÇÙ½É] "ÇöÀç ¹ÙÀÎµùµÈ ¾Ö´Ô ÀÎ½ºÅÏ½º"°¡ ¹«¾ùÀÎÁö º¯¼ö¿¡ ÀúÀåÇÕ´Ï´Ù.
+        //[í•µì‹¬] "í˜„ì¬ ë°”ì¸ë”©ëœ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤"ê°€ ë¬´ì—‡ì¸ì§€ ë³€ìˆ˜ì— ì €ì¥í•©ë‹ˆë‹¤.
         BoundAnim = Anim;
     }
 }
 void UAttackComponent::UnbindAnimDelegates()
 {
-    //ÀÌÀü¿¡ ÀúÀåÇØ µĞ(BoundAnim) ¾Ö´Ô ÀÎ½ºÅÏ½º Æ÷ÀÎÅÍ¸¦ °¡Á®¿É´Ï´Ù.
-    UAnimInstance* Prev = BoundAnim.Get(); // TWeakObjectPtr¿¡¼­ °¡Á®¿È
+    //ì´ì „ì— ì €ì¥í•´ ë‘”(BoundAnim) ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ í¬ì¸í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+    UAnimInstance* Prev = BoundAnim.Get(); // TWeakObjectPtrì—ì„œ ê°€ì ¸ì˜´
     if (Prev)
     {
         Prev->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UAttackComponent::OnNotifyBeginReceived);
@@ -168,49 +122,44 @@ void UAttackComponent::UnbindAnimDelegates()
 
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
-    if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1]AttackStarted: Input Received")); }
     bAttackHeld = true;
-    // ·ÎÁ÷ ¼ø¼­ º¯°æ 
-    // 1. [¸ÕÀú] ÄŞº¸ ¿¬°è°¡ °¡´ÉÇÑÁö È®ÀÎÇÕ´Ï´Ù. 
-    // (Save ÇÁ·¹ÀÓÀÌ Áö³µ°í, ÀÌ¹ø Ã¢¿¡¼­ ¾ÆÁ÷ ¿¬°èÇÏÁö ¾Ê¾Ò´ÂÁö) 
+    // ë¡œì§ ìˆœì„œ ë³€ê²½ 
+    //ì½¤ë³´ ì—°ê³„ê°€ ê°€ëŠ¥í•œì§€ í™•ì¸í•©ë‹ˆë‹¤. 
+    // (Save í”„ë ˆì„ì´ ì§€ë‚¬ê³ , ì´ë²ˆ ì°½ì—ì„œ ì•„ì§ ì—°ê³„í•˜ì§€ ì•Šì•˜ëŠ”ì§€) 
     if (bCanChain && !bAdvancedThisWindow)
     {
-        // 2. °¡´ÉÇÏ´Ù¸é Áï½Ã ´ÙÀ½ ÄŞº¸·Î ³Ñ¾î°©´Ï´Ù. 
+        // 2. ê°€ëŠ¥í•˜ë‹¤ë©´ ì¦‰ì‹œ ë‹¤ìŒ ì½¤ë³´ë¡œ ë„˜ì–´ê°‘ë‹ˆë‹¤. 
         AdvanceComboImmediately();
-        // 3. ¿¬°è¸¦ ÇßÀ¸¹Ç·Î ÇÔ¼ö¸¦ Á¾·áÇÕ´Ï´Ù. (¹ØÀÇ 1Å¸ Àç»ı ·ÎÁ÷ ½ÇÇà ¹æÁö) 
+        // 3. ì—°ê³„ë¥¼ í–ˆìœ¼ë¯€ë¡œ í•¨ìˆ˜ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤. (ë°‘ì˜ 1íƒ€ ì¬ìƒ ë¡œì§ ì‹¤í–‰ ë°©ì§€) 
         return;
     }
 
-    // ÄŞº¸ ¿¬°è »óÅÂ°¡ ¾Æ´Ò ¶§,
+    // ì½¤ë³´ ì—°ê³„ ìƒíƒœê°€ ì•„ë‹ ë•Œ,
     if (bIsAttacking)
     {
         return;
     }
 
-    // bIsAttackingÀÌ falseÀÏ ¶§ (Áï, °ø°İ ÁßÀÌ ¾Æ´Ò ¶§) 1Å¸ ÄŞº¸¸¦ »õ·Î ½ÃÀÛÇÕ´Ï´Ù.
-    // *¿ÀÁ÷ ÄŞº¸ ÀÎµ¦½º°¡ 0ÀÏ ¶§¸¸* 1Å¸¸¦ ½ÃÀÛÇØ¾ß ÇÕ´Ï´Ù.
-    // (¹ö±× 2: "´ÙÀ½ ÄŞº¸·Î ¾È ³Ñ¾î°¨" ÇØ°á)
-    if (ComboIndex == 0) // <--- [¼öÁ¤] !bPlaying ´ë½Å ComboIndex¸¦ È®ÀÎ
+    // bIsAttackingì´ falseì¼ ë•Œ (ì¦‰, ê³µê²© ì¤‘ì´ ì•„ë‹ ë•Œ) 1íƒ€ ì½¤ë³´ë¥¼ ìƒˆë¡œ ì‹œì‘í•©ë‹ˆë‹¤.
+    // *ì˜¤ì§ ì½¤ë³´ ì¸ë±ìŠ¤ê°€ 0ì¼ ë•Œë§Œ* 1íƒ€ë¥¼ ì‹œì‘í•´ì•¼ í•©ë‹ˆë‹¤.
+    if (ComboIndex == 0)
     {
         if (UAnimInstance* Anim = GetAnim())
         {
-            // (¾ÈÀüÀåÄ¡) ¸ùÅ¸ÁÖ°¡ Á¤¸» ¾È µ¹°í ÀÖ´ÂÁö ÇÑ ¹ø ´õ È®ÀÎ
+            // (ì•ˆì „ì¥ì¹˜) ëª½íƒ€ì£¼ê°€ ì •ë§ ì•ˆ ëŒê³  ìˆëŠ”ì§€ í•œ ë²ˆ ë” í™•ì¸
             if (!Anim->Montage_IsPlaying(nullptr))
             {
-                // ÄŞº¸ »óÅÂ ÃÊ±âÈ­ (ComboIndex´Â ÀÌ¹Ì 0)
+                // ì½¤ë³´ ìƒíƒœ ì´ˆê¸°í™” (ComboIndexëŠ” ì´ë¯¸ 0)
                 bCanChain = false;
                 bAdvancedThisWindow = false;
                 bResetOnNext = false;
                 NextPolicy = EComboPolicy::None;
 
-                PlayCurrentComboMontage(); // 1Å¸ ÄŞº¸ ½ÃÀÛ
+                PlayCurrentComboMontage(); // 1íƒ€ ì½¤ë³´ ì‹œì‘
             }
         }
     }
-    // (ComboIndex°¡ 0ÀÌ ¾Æ´Ï¶ó¸é)
-    // (¿¹: 1Å¸°¡ ³¡³µÁö¸¸ ResetTimer°¡ µ¹±â Àü)
-    // bIsAttackingÀº falseÁö¸¸, ResetTimer°¡ ComboIndex¸¦ 0À¸·Î ¸¸µé ¶§±îÁö
-    // 1Å¸°¡ ´Ù½Ã ½ÃÀÛµÇÁö ¾Êµµ·Ï ¾Æ¹«°Íµµ ÇÏÁö ¾Ê½À´Ï´Ù.
+
 }
 
 
@@ -226,36 +175,30 @@ void UAttackComponent::AttackCompleted(const FInputActionValue&)
 
 void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
 {
-    // [µğ¹ö±× 2]
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[2] PlayCurrentComboMontage: Called"));
 
     if (!CurrentFormDef) {
-        // [µğ¹ö±× 2-E]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] CurrentFormDef is NULL!"));
         return;
     }
 
     UAnimInstance* Anim = GetAnim();
     if (!Anim) return;
 
-    // ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÏ±â Á÷Àü¿¡, '°ø°İ Áß' »óÅÂ ÇÃ·¡±×¸¦ true·Î ¼³Á¤
+    // ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•˜ê¸° ì§ì „ì—, 'ê³µê²© ì¤‘' ìƒíƒœ í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •
     bIsAttacking = true;
 
-    // FormDefinitionÀÇ ½ºÅÜ ±¸Á¶¿¡ ¸ÂÃç Á¢±Ù
+    // FormDefinitionì˜ ìŠ¤í… êµ¬ì¡°ì— ë§ì¶° ì ‘ê·¼
     const auto& Steps = CurrentFormDef->AttackMontages;
 
-    // [¼öÁ¤µÈ ºÎºĞ 1] .Montage °Ë»ç¸¦ Á¦°ÅÇÕ´Ï´Ù.
+    // [ìˆ˜ì •ëœ ë¶€ë¶„ 1] .Montage ê²€ì‚¬ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
     if (!Steps.IsValidIndex(ComboIndex)) {
-        // [µğ¹ö±× 2-E]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] Invalid ComboIndex!"));
         ComboIndex = 0; return;
     }
 
-    // --- ¿©±âºÎÅÍ°¡ FullBody/UpperBody ¼±ÅÃ ·ÎÁ÷ÀÔ´Ï´Ù ---
+    // --- ì—¬ê¸°ë¶€í„°ê°€ FullBody/UpperBody ì„ íƒ ë¡œì§ ---
 
     const FAttackStep& CurrentStep = Steps[ComboIndex];
 
-    // 1. ÇöÀç Ä³¸¯ÅÍÀÇ ¼Óµµ¸¦ °¡Á®¿É´Ï´Ù.
+    // 1. í˜„ì¬ ìºë¦­í„°ì˜ ì†ë„ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     float CurrentSpeed = 0.0f;
     if (AActor* Owner = GetOwner())
     {
@@ -265,39 +208,34 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
         }
     }
 
-    // 2. ¼Óµµ¿¡ µû¶ó Àç»ıÇÒ ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃÇÕ´Ï´Ù.
+    // 2. ì†ë„ì— ë”°ë¼ ì¬ìƒí•  ëª½íƒ€ì£¼ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
     UAnimMontage* MontageToPlay = nullptr;
     const float FullBodySpeedThreshold = 20.0f;
 
     if (CurrentSpeed < FullBodySpeedThreshold)
     {
-        // ¼Óµµ°¡ 20 ¹Ì¸¸ÀÌ¸é FullBody ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃ
+        // ì†ë„ê°€ 20 ë¯¸ë§Œì´ë©´ FullBody ëª½íƒ€ì£¼ë¥¼ ì„ íƒ
         MontageToPlay = CurrentStep.Montage_FullBody;
     }
     else
     {
-        // ±×·¸Áö ¾ÊÀ¸¸é UpperBody ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃ
+        // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ UpperBody ëª½íƒ€ì£¼ë¥¼ ì„ íƒ
         MontageToPlay = CurrentStep.Montage_UpperBody;
     }
 
-    // 3. (ÇÊ¼ö) µÎ ½½·Ô Áß ÇÏ³ª¶óµµ ºñ¾îÀÖÀ¸¸é °ø°İÀÌ ¸ØÃß¹Ç·Î, À¯È¿¼º °Ë»ç¸¦ ÇÕ´Ï´Ù.
+    // 3. (í•„ìˆ˜) ë‘ ìŠ¬ë¡¯ ì¤‘ í•˜ë‚˜ë¼ë„ ë¹„ì–´ìˆìœ¼ë©´ ê³µê²©ì´ ë©ˆì¶”ë¯€ë¡œ, ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í•©ë‹ˆë‹¤.
     if (!MontageToPlay)
     {
         if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("[2-ERROR] Montage is MISSING in DA for ComboIndex %d!"), ComboIndex));
         ComboIndex = 0; return;
     }
 
-    // --- ¼±ÅÃ ·ÎÁ÷ ³¡ ---
-
-    // [µğ¹ö±× 3]
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[3] Montage_Play: EXECUTED"));
-
-    // [¼öÁ¤µÈ ºÎºĞ 2] M º¯¼ö¿¡ MontageToPlay¸¦ ÇÒ´çÇÕ´Ï´Ù.
+    //M ë³€ìˆ˜ì— MontageToPlayë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
     UAnimMontage* M = MontageToPlay;
     LastAttackMontage = M;
     Anim->Montage_Play(M, PlayRate);
 
-    // »õ ÄŞº¸ ½ÃÀÛ: Ã¢±¸ ÃÊ±âÈ­ & ÇÁ·¹ÀÓ Å¸ÀÌ¸Ó ¿¹¾à
+    // ìƒˆ ì½¤ë³´ ì‹œì‘: ì°½êµ¬ ì´ˆê¸°í™” & í”„ë ˆì„ íƒ€ì´ë¨¸ ì˜ˆì•½
     bCanChain = false; bAdvancedThisWindow = false; NextPolicy = EComboPolicy::None;
     ScheduleComboWindows(M, PlayRate);
 }
@@ -316,13 +254,14 @@ void UAttackComponent::AdvanceComboImmediately()
 
     ComputeNextIndex();
 
-    // ÇöÀç ¸ùÅ¸ÁÖ¿ë Å¸ÀÌ¸Ó ¸ÕÀú Á¤¸®(·¹ÀÌ½º °¡µå)
+    // í˜„ì¬ ëª½íƒ€ì£¼ìš© íƒ€ì´ë¨¸ ë¨¼ì € ì •ë¦¬(ë ˆì´ìŠ¤ ê°€ë“œ)
     ClearComboWindows();
 
     /*if (UAnimInstance* Anim = GetAnim())
     {
         if (LastAttackMontage) { Anim->Montage_Stop(0.05f, LastAttackMontage); }
     }*/
+    //ì• ë‹ˆë©”ì´ì…˜ ë³´ê°„ì„ ìœ„í•´ ì‚­ì œ
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
@@ -333,36 +272,33 @@ void UAttackComponent::AdvanceComboImmediately()
 
 void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    // ¸ùÅ¸ÁÖ°¡ ³¡³ª¸é ÀÌ ½ºÀ®¿¡¼­ ÀûÁßÇÑ ¸ñ·ÏÀ» ÃÊ±âÈ­
-    HitActorsThisSwing.Empty();
-    // ÀÌÀü ¸ùÅ¸ÁÖÀÇ End°¡ ´Ê°Ô ¿Íµµ, '±× ¸ùÅ¸ÁÖ' ¼ÒÀ¯ Å¸ÀÌ¸Ó¸¸ Áö¿ò
+    // ì´ì „ ëª½íƒ€ì£¼ì˜ Endê°€ ëŠ¦ê²Œ ì™€ë„, 'ê·¸ ëª½íƒ€ì£¼' ì†Œìœ  íƒ€ì´ë¨¸ë§Œ ì§€ì›€
     if (Montage == WindowOwnerMontage) { ClearComboWindows(); }
 
-    // [!!! ÇÙ½É ¼öÁ¤ 1 !!!]
-    // ¸¸¾à "Ã¼ÀÎ Áß" ÇÃ·¡±×°¡ true¶ó¸é (AdvanceComboImmediately°¡ ¹æ±İ È£ÃâµÊ),
-    // ÀÌ OnMontageEnded´Â ÀÌÀü ¸ùÅ¸ÁÖ°¡ 'Áß´Ü'µÈ Äİ¹éÀÔ´Ï´Ù.
-    // »õ ¸ùÅ¸ÁÖ°¡ ÀÌ¹Ì bIsAttacking=true·Î Àç»ı ÁßÀÌ¹Ç·Î,
-    // bIsAttackingÀ» false·Î ¹Ù²Ù¸é ¾È µË´Ï´Ù.
+
+    // ë§Œì•½ "ì²´ì¸ ì¤‘" í”Œë˜ê·¸ê°€ trueë¼ë©´ (AdvanceComboImmediatelyê°€ ë°©ê¸ˆ í˜¸ì¶œë¨),
+    // ì´ OnMontageEndedëŠ” ì´ì „ ëª½íƒ€ì£¼ê°€ 'ì¤‘ë‹¨'ëœ ì½œë°±ì…ë‹ˆë‹¤.
+    // ìƒˆ ëª½íƒ€ì£¼ê°€ ì´ë¯¸ bIsAttacking=trueë¡œ ì¬ìƒ ì¤‘ì´ë¯€ë¡œ,
+    // bIsAttackingì„ falseë¡œ ë°”ê¾¸ë©´ ì•ˆ ë©ë‹ˆë‹¤.
     if (bIsChaining)
     {
-        bIsChaining = false; // ÇÃ·¡±×¸¸ ¸®¼ÂÇÏ°í Á¾·á
+        bIsChaining = false; // í”Œë˜ê·¸ë§Œ ë¦¬ì…‹í•˜ê³  ì¢…ë£Œ
         return;
     }
 
-    // [!!! ÇÙ½É ¼öÁ¤ 2 !!!]
-    // Ã¼ÀÎ ÁßÀÌ ¾Æ´Ò ¶§ (Áï, ¸ùÅ¸ÁÖ°¡ ÀÚ¿¬½º·´°Ô ³¡³µ°Å³ª, ÇÇ°İ µîÀ¸·Î Áß´ÜµÊ)
-    // '°ø°İ Áß' »óÅÂ ÇÃ·¡±×¸¦ false·Î ÇØÁ¦ÇÕ´Ï´Ù.
+
+    // ì²´ì¸ ì¤‘ì´ ì•„ë‹ ë•Œ (ì¦‰, ëª½íƒ€ì£¼ê°€ ìì—°ìŠ¤ëŸ½ê²Œ ëë‚¬ê±°ë‚˜, í”¼ê²© ë“±ìœ¼ë¡œ ì¤‘ë‹¨ë¨)
+    // 'ê³µê²© ì¤‘' ìƒíƒœ í”Œë˜ê·¸ë¥¼ falseë¡œ í•´ì œí•©ë‹ˆë‹¤.
     bIsAttacking = false;
 
-    // [!!! ÇÙ½É ¼öÁ¤ 3 (¹ö±× 2 ÇØ°á) !!!]
-    // ¸ùÅ¸ÁÖ°¡ 'ÀÚ¿¬½º·´°Ô' ³¡³µ´Ù¸é (binterrupted == false),
-    // ¿¬Å¸ Áß(bAttackHeld == true)ÀÌ´õ¶óµµ ÄŞº¸°¡ ¸®¼ÂµÇ¾î¾ß
-    // AttackStarted°¡ ComboIndex 0À¸·Î 1Å¸¸¦ ´Ù½Ã ½ÃÀÛÇÏ´Â ¹ö±×¸¦ ¸·À» ¼ö ÀÖ½À´Ï´Ù.
-    // (´Ü, ResetTimer°¡ ÀÌ¹Ì ¹ßµ¿ÇÑ °æ¿ì´Â Á¦¿Ü)
-    if (!bInterrupted && !bResetOnNext) // <-- ´ë¹®ÀÚ 'I'¸¦ ¼Ò¹®ÀÚ 'i'·Î ¼öÁ¤
+    // ëª½íƒ€ì£¼ê°€ 'ìì—°ìŠ¤ëŸ½ê²Œ' ëë‚¬ë‹¤ë©´ (binterrupted == false),
+    // ì—°íƒ€ ì¤‘(bAttackHeld == true)ì´ë”ë¼ë„ ì½¤ë³´ê°€ ë¦¬ì…‹ë˜ì–´ì•¼
+    // AttackStartedê°€ ComboIndex 0ìœ¼ë¡œ 1íƒ€ë¥¼ ë‹¤ì‹œ ì‹œì‘í•˜ëŠ” ë²„ê·¸ë¥¼ ë§‰ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+    // (ë‹¨, ResetTimerê°€ ì´ë¯¸ ë°œë™í•œ ê²½ìš°ëŠ” ì œì™¸)
+    if (!bInterrupted && !bResetOnNext) // <-- ëŒ€ë¬¸ì 'I'ë¥¼ ì†Œë¬¸ì 'i'ë¡œ ìˆ˜ì •
     {
-        // ¸ùÅ¸ÁÖ°¡ ÀÚ¿¬½º·´°Ô ³¡³µ´Âµ¥ ÄŞº¸ ¿¬°è(bIsChaining)µµ ¾ø¾úÀ½
-        // = ÄŞº¸ ½ÇÆĞ
+        // ëª½íƒ€ì£¼ê°€ ìì—°ìŠ¤ëŸ½ê²Œ ëë‚¬ëŠ”ë° ì½¤ë³´ ì—°ê³„(bIsChaining)ë„ ì—†ì—ˆìŒ
+        // = ì½¤ë³´ ì‹¤íŒ¨
         ComboIndex = 0;
         bCanChain = false;
         bAdvancedThisWindow = false;
@@ -371,42 +307,49 @@ void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
     }
 }
 
-// ¾Ö´Ô ³ëÆ¼ÆÄÀÌ(Notify) ¼ö½Å ÇÔ¼ö
+// ì• ë‹˜ ë…¸í‹°íŒŒì´(Notify) ìˆ˜ì‹  í•¨ìˆ˜
 void UAttackComponent::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
 {
-    // ... (±âÁ¸ ÄŞº¸ ·ÎÁ÷: Notify_SaveAttack, Notify_ResetCombo µî) ...
-    // [µğ¹ö±× 4] (¾î¶² ³ëÆ¼ÆÄÀÌµç ¹ŞÀ¸¸é Ãâ·Â)
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Purple,
-        FString::Printf(TEXT("[4] OnNotifyBeginReceived: %s"), *NotifyName.ToString()));
+    AActor* Owner = GetOwner();
+    if (!Owner) return;
+
+    //[ì¶”ê°€] WeaponComponentë¥¼ ì°¾ìŠµë‹ˆë‹¤.
+    UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>();
+    if (!WeaponComp) return;
+
+    //ë””ë²„ê¹… ë©”ì‹œì§€ WeaponComponentê°€ ì—†ëŠ” ê²½ìš° ì—ëŸ¬ ë¡œê·¸
+    if (!WeaponComp)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AttackComponent] OnNotifyBeginReceived: FAILED to find WeaponComponent!"));
+        return;
+    }
+
 
     if (NotifyName == TEXT("StartAttack"))
     {
-        // [µğ¹ö±× 5](StartAttack ³ëÆ¼ÆÄÀÌ¸¦ ¹ŞÀ¸¸é Ãâ·Â)
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[5] COLLISION ENABLED (StartAttack)"));
-        HitActorsThisSwing.Empty(); // ¸ÂÀº ¾×ÅÍ ¸ñ·Ï ÃÊ±âÈ­
 
-        // ÇöÀç ÆûÀÌ °¡Áø ¸ğµç Äİ¸®Àü º¼·ı(È÷Æ®¹Ú½º)À» È°¼ºÈ­ÇÕ´Ï´Ù.
-        for (UShapeComponent* Collider : ActiveColliders)
+        //ë””ë²„ê¹… ë©”ì‹œì§€ "StartAttack" ë…¸í‹°íŒŒì´ ìˆ˜ì‹  ë° ìœ„ì„ ë¡œê·¸
+        if (GEngine)
         {
-            if (Collider)
-            {
-                Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-            }
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
+                TEXT("[AttackComponent] Notify: StartAttack -> Delegating to WeaponComponent"));
         }
+        //[ìˆ˜ì •] ì½œë¦¬ì „ í™œì„±í™”ë¥¼ WeaponComponentì— ìœ„ì„
+        WeaponComp->EnableCollision();
+
     }
     else if (NotifyName == TEXT("EndAttack"))
     {
-        // [µğ¹ö±× 5-End]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Orange, TEXT("[5-End] COLLISION DISABLED (EndAttack)"));
-
-        // ¸ğµç Äİ¸®Àü º¼·ı(È÷Æ®¹Ú½º)À» ºñÈ°¼ºÈ­ÇÕ´Ï´Ù.
-        for (UShapeComponent* Collider : ActiveColliders)
+        //ë””ë²„ê¹… ë©”ì‹œì§€ "EndAttack" ë…¸í‹°íŒŒì´ ìˆ˜ì‹  ë° ìœ„ì„ ë¡œê·¸
+        if (GEngine)
         {
-            if (Collider)
-            {
-                Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            }
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
+                TEXT("[AttackComponent] Notify: EndAttack -> Delegating to WeaponComponent"));
         }
+
+        //[ìˆ˜ì •] ì½œë¦¬ì „ ë¹„í™œì„±í™”ë¥¼ WeaponComponentì— ìœ„ì„
+        WeaponComp->DisableCollision();
+ 
     }
 }
 void UAttackComponent::OnNotifyEndReceived(FName, const FBranchingPointNotifyPayload&) {}
@@ -425,13 +368,13 @@ void UAttackComponent::Notify_ResetCombo()
 
 float UAttackComponent::GetFPSFor(const UAnimMontage* Montage, float OverrideFPS) const
 {
-    // 1. DA¿¡¼­ »ç¿ëÀÚ°¡ OverrideFPS¸¦ ¸í½ÃÇÑ °æ¿ì (¿ì¼±)
+    // 1. DAì—ì„œ ì‚¬ìš©ìê°€ OverrideFPSë¥¼ ëª…ì‹œí•œ ê²½ìš° (ìš°ì„ )
     if (OverrideFPS > 0.f)
     {
         return OverrideFPS;
     }
 
-    // 2. Ä³½Ã È®ÀÎ (mutable TMap »ç¿ë)
+    // 2. ìºì‹œ í™•ì¸ (mutable TMap ì‚¬ìš©)
     if (Montage)
     {
         if (const float* Cached = CachedMontageFPS.Find(Montage))
@@ -450,7 +393,7 @@ float UAttackComponent::GetFPSFor(const UAnimMontage* Montage, float OverrideFPS
         }
     }
 
-    // 3. µğÆúÆ®
+    // 3. ë””í´íŠ¸
     return 30.f;
 }
 
@@ -470,7 +413,7 @@ void UAttackComponent::ScheduleComboWindows(UAnimMontage* Montage, float PlayRat
 
     GetWorld()->GetTimerManager().SetTimer(Timer_Save, this, &UAttackComponent::Notify_SaveAttack, saveSec, false);
     GetWorld()->GetTimerManager().SetTimer(Timer_Reset, this, &UAttackComponent::Notify_ResetCombo, resetSec, false);
-    WindowOwnerMontage = Montage; // Å¸ÀÌ¸ÓÀÇ ¼ÒÀ¯ ¸ùÅ¸ÁÖ
+    WindowOwnerMontage = Montage; // íƒ€ì´ë¨¸ì˜ ì†Œìœ  ëª½íƒ€ì£¼
 }
 void UAttackComponent::ClearComboWindows()
 {
@@ -487,15 +430,15 @@ void UAttackComponent::ResetComboHard()
     ClearComboWindows();
     ComboIndex = 0;
     bCanChain = false; bAttackHeld = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
-    // ÇÊ¿äÇÏ¸é ÇöÀç ¸ùÅ¸ÁÖ Áï½Ã Á¤Áö
-    // ÄŞº¸¸¦ °­Á¦ ¸®¼ÂÇÏ¹Ç·Î, ¸ğµç »óÅÂ ÇÃ·¡±×¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+    // í•„ìš”í•˜ë©´ í˜„ì¬ ëª½íƒ€ì£¼ ì¦‰ì‹œ ì •ì§€
+    // ì½¤ë³´ë¥¼ ê°•ì œ ë¦¬ì…‹í•˜ë¯€ë¡œ, ëª¨ë“  ìƒíƒœ í”Œë˜ê·¸ë¥¼ í•´ì œí•©ë‹ˆë‹¤.
     bIsAttacking = false;
     bIsChaining = false;
 
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
 
-// ¿À¹ö·¦(È÷Æ®) ÇÔ¼ö
+// ì˜¤ë²„ë©(íˆíŠ¸) í•¨ìˆ˜
 void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
@@ -506,9 +449,9 @@ void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
     if (!Owner || OtherActor == Owner) return;
     if (HitActorsThisSwing.Contains(OtherActor)) return;
 
-    // ... (µ¥¹ÌÁö Àû¿ë ·ÎÁ÷) ...
-    // ... (´ë¹ÌÁö °è»ê ·ÎÁ÷, 4/5¹ø °³¼±¾È ¹ÌÀû¿ë »óÅÂ) ...
-    float DamageToApply = 10.f; // [°³¼±¾È 5¹ø ¹ÌÀû¿ë ½Ã ÇÏµåÄÚµùµÈ ´ë¹ÌÁö]
+    // ... (ë°ë¯¸ì§€ ì ìš© ë¡œì§) ...
+    // ... (ëŒ€ë¯¸ì§€ ê³„ì‚° ë¡œì§, 4/5ë²ˆ ê°œì„ ì•ˆ ë¯¸ì ìš© ìƒíƒœ) ...
+    float DamageToApply = 10.f; // [ê°œì„ ì•ˆ 5ë²ˆ ë¯¸ì ìš© ì‹œ í•˜ë“œì½”ë”©ëœ ëŒ€ë¯¸ì§€]
 
     APawn* OwnerPawn = Cast<APawn>(Owner);
 
@@ -520,7 +463,7 @@ void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 
     HitActorsThisSwing.Add(OtherActor);
 
-    // [!!! ±âÁ¸ UE_LOG ´ë½Å ¶Ç´Â ÇÔ²² ÀÌ ÄÚµå¸¦ Ãß°¡ !!!]
+    // [!!! ê¸°ì¡´ UE_LOG ëŒ€ì‹  ë˜ëŠ” í•¨ê»˜ ì´ ì½”ë“œë¥¼ ì¶”ê°€ !!!]
     if (GEngine)
     {
         FString Msg = FString::Printf(TEXT("ATTACK HIT! %s -> %s (%f DMG)"),
@@ -528,146 +471,16 @@ void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Msg);
     }
 
-    // ±âÁ¸ ·Î±×µµ À¯¿ëÇÏ¹Ç·Î ³²°ÜµÓ´Ï´Ù.
+    // ê¸°ì¡´ ë¡œê·¸ë„ ìœ ìš©í•˜ë¯€ë¡œ ë‚¨ê²¨ë‘¡ë‹ˆë‹¤.
     UE_LOG(LogTemp, Warning, TEXT("Attack Hit via %s: %s"),
         *OverlappedComponent->GetName(), *OtherActor->GetName());
 }
 
-/** Æû º¯°æ ÇÚµé·¯ ±¸Çö */
+/** í¼ ë³€ê²½ í•¸ë“¤ëŸ¬ êµ¬í˜„ */
 void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
     ResetComboHard();
-    // Ä³¸¯ÅÍ¸¦ °ÅÄ¡Áö ¾Ê°í Á÷Á¢ SetFormÀ» È£ÃâÇÕ´Ï´Ù.
+    // ìºë¦­í„°ë¥¼ ê±°ì¹˜ì§€ ì•Šê³  ì§ì ‘ SetFormì„ í˜¸ì¶œí•©ë‹ˆë‹¤.
     SetForm(Def);
-}
-
-// [»õ ÇÔ¼ö] Äİ¸®Àü Ç® ÃÊ±âÈ­
-void UAttackComponent::InitializeColliderPool(int32 PoolSize)
-{
-    if (!GetOwner()) return;
-
-    for (int32 i = 0; i < PoolSize; ++i)
-    {
-        // 1. ¹Ú½º »ı¼º
-        if (UBoxComponent* Box = CreateNewBoxCollider())
-        {
-            BoxColliderPool.Add(Box);
-        }
-
-        // 2. ±¸Ã¼ »ı¼º
-        if (USphereComponent* Sphere = CreateNewSphereCollider())
-        {
-            SphereColliderPool.Add(Sphere);
-        }
-    }
-}
-
-// [»õ ÇÔ¼ö] Ç®¿¡¼­ ¹Ú½º °¡Á®¿À±â
-UBoxComponent* UAttackComponent::GetPooledBoxCollider()
-{
-    // ÇöÀç È°¼ºÈ­µÇÁö ¾ÊÀº (ActiveColliders¿¡ ¾ø´Â) Äİ¸®Àü Å½»ö
-    for (UBoxComponent* Box : BoxColliderPool)
-    {
-        if (Box && !ActiveColliders.Contains(Box))
-        {
-            return Box;
-        }
-    }
-
-    // ºÎÁ·ÇÏ¹Ç·Î »õ·Î »ı¼º
-    UBoxComponent* NewBox = CreateNewBoxCollider();
-    BoxColliderPool.Add(NewBox);
-    return NewBox;
-
-}
-
-// [»õ ÇÔ¼ö] Ç®¿¡¼­ ±¸Ã¼ °¡Á®¿À±â
-USphereComponent* UAttackComponent::GetPooledSphereCollider()
-{
-    for (USphereComponent* Sphere : SphereColliderPool)
-    {
-        if (Sphere && !ActiveColliders.Contains(Sphere))
-        {
-            return Sphere;
-        }
-    }
-
-    // ºÎÁ· ¡æ »õ·Î »ı¼º
-    USphereComponent* NewSphere = CreateNewSphereCollider();
-    SphereColliderPool.Add(NewSphere);
-    return NewSphere;
-}
-
-// [¼öÁ¤ ÈÄ] DeactivateAllColliders (DestroyComponent Á¦°Å)
-void UAttackComponent::DeactivateAllColliders()
-{
-    USkeletalMeshComponent* Mesh = GetMesh();
-    for (UShapeComponent* Collider : ActiveColliders)
-    {
-        if (!Collider) continue;
-
-        // 1) Ãæµ¹ ºñÈ°¼ºÈ­
-        Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-        // 2) ¼ÒÄÏ¿¡¼­ ºĞ¸® (»ó´ë ÁÂÇ¥ À¯ÁöÇÑ Ã¤)
-        //    KeepRelativeTransform »ç¿ëÇØ¾ß ´ÙÀ½ Attach ½Ã ¼­·Î ¿µÇâÀ» ¾È ÁÜ
-        Collider->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-
-        // 3) Ç® º¹±Í¸¦ À§ÇØ ÃÊ±âÈ­
-        //    »ó´ë ÁÂÇ¥ ÃÊ±âÈ­´Â Detach »óÅÂ¿¡¼­µµ ÀÇ¹Ì ÀÖÀ½ (´ÙÀ½ Attach¿¡ Àû¿ëµÊ)
-        Collider->SetRelativeLocation(FVector::ZeroVector);
-        Collider->SetRelativeRotation(FRotator::ZeroRotator);
-
-        // Å©±â ÃÊ±âÈ­ (¹Ú½º/½ºÇÇ¾î ¸ğµÎ)
-        if (UBoxComponent* Box = Cast<UBoxComponent>(Collider))
-        {
-            Box->SetBoxExtent(FVector::ZeroVector);
-        }
-        else if (USphereComponent* Sphere = Cast<USphereComponent>(Collider))
-        {
-            Sphere->SetSphereRadius(0.0f);
-        }
-    }
-    ActiveColliders.Empty(); // È°¼º ¸ñ·Ï¸¸ ºñ¿ò (Ç®Àº À¯Áö)
-}
-
-
-
-UBoxComponent* UAttackComponent::CreateNewBoxCollider()
-{
-    AActor* Owner = GetOwner();
-    if (!Owner) return nullptr;
-
-    UBoxComponent* NewBox = NewObject<UBoxComponent>(Owner);
-    if (!NewBox) return nullptr;
-
-    NewBox->RegisterComponent();
-    NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    NewBox->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-    NewBox->SetCollisionObjectType(ECC_WorldDynamic);
-    NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-    NewBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    NewBox->SetHiddenInGame(false);
-
-    return NewBox;
-}
-
-USphereComponent* UAttackComponent::CreateNewSphereCollider()
-{
-    AActor* Owner = GetOwner();
-    if (!Owner) return nullptr;
-
-    USphereComponent* NewSphere = NewObject<USphereComponent>(Owner);
-    if (!NewSphere) return nullptr;
-
-    NewSphere->RegisterComponent();
-    NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-    NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
-    NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-    NewSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    NewSphere->SetHiddenInGame(false);
-
-    return NewSphere;
 }
 

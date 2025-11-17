@@ -22,6 +22,8 @@ class UFormDefinition;
 class UAttackComponent;
 class USkillManagerComponent;
 class UNiagaraComponent;
+class UWeaponComponent; //[추가] WeaponComponent 전방 선언
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -122,6 +124,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
+
+	//[추가] WeaponComponent 프로퍼티 선언
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWeaponComponent> WeaponManager;
 
 
 	//추가 코드 부분입니다.
