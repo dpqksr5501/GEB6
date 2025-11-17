@@ -438,44 +438,6 @@ void UAttackComponent::ResetComboHard()
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
 
-// 오버랩(히트) 함수
-void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("=== OnAttackOverlap Triggered! ==="));
-
-    
-    AActor* Owner = GetOwner();
-    if (!Owner || OtherActor == Owner) return;
-    if (HitActorsThisSwing.Contains(OtherActor)) return;
-
-    // ... (데미지 적용 로직) ...
-    // ... (대미지 계산 로직, 4/5번 개선안 미적용 상태) ...
-    float DamageToApply = 10.f; // [개선안 5번 미적용 시 하드코딩된 대미지]
-
-    APawn* OwnerPawn = Cast<APawn>(Owner);
-
-    UGameplayStatics::ApplyDamage(OtherActor,
-        DamageToApply,
-        (OwnerPawn ? OwnerPawn->GetController() : nullptr),
-        Owner,
-        nullptr);
-
-    HitActorsThisSwing.Add(OtherActor);
-
-    // [!!! 기존 UE_LOG 대신 또는 함께 이 코드를 추가 !!!]
-    if (GEngine)
-    {
-        FString Msg = FString::Printf(TEXT("ATTACK HIT! %s -> %s (%f DMG)"),
-            *Owner->GetName(), *OtherActor->GetName(), DamageToApply);
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Msg);
-    }
-
-    // 기존 로그도 유용하므로 남겨둡니다.
-    UE_LOG(LogTemp, Warning, TEXT("Attack Hit via %s: %s"),
-        *OverlappedComponent->GetName(), *OtherActor->GetName());
-}
-
 /** 폼 변경 핸들러 구현 */
 void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
