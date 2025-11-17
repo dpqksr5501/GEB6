@@ -260,9 +260,9 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	}
 	if (GEngine && DamageCauser)
 	{
-		// 키(-1): 새 메시지가 기존 메시지를 덮어쓰지 않음
 		// 시간(5.f): 5초간 화면에 표시
 		// 색상(FColor::Red): 빨간색
+		// 공격이 먹는지(좌클릭 시 콜리전 활성화가 되는지)
 		FString Msg = FString::Printf(TEXT("HIT! %s가 %s에게 %f 데미지를 받음!"),
 			*GetName(), // 내 이름 (예: BP_KHUCharacter)
 			*DamageCauser->GetName(), // 때린 액터 (예: BP_Tanker)
@@ -417,8 +417,7 @@ bool AKHU_GEBCharacter::GetAnimJumpInput_Implementation(bool bConsumeInput)
 // [수정 후] GetAnimCharacterState_Implementation (컴포넌트 직접 쿼리)
 ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 {
-	// 1. 컴포넌트의 "공격/스킬" 상태를 우선적으로 확인합니다.
-	// (SkillManager에 IsUsingSkill()과 같은 상태 변수가 있다고 가정합니다)
+	// 컴포넌트의 "공격/스킬" 상태를 우선적으로 확인합니다.
 	if (SkillManager /*&& SkillManager->IsUsingSkill()*/) // TODO: SkillManager 상태 확인
 	{
 		return ECharacterState::Skill1;
@@ -430,8 +429,8 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 		return ECharacterState::Attack;
 	}
 
-	// 2. 공격/스킬 상태가 아니라면, 캐릭터가 관리하는 기본 상태(Idle, Hit, Die)를 반환합니다.
-	// CurrentPlayerState는 이제 Idle, Hit, Die 등만 관리합니다. [cite: 608]
+	// 공격/스킬 상태가 아니라면, 캐릭터가 관리하는 기본 상태(Idle, Hit, Die)를 반환합니다.
+	// CurrentPlayerState는 이제 Idle, Hit, Die 등만 관리합니다.
 	return CurrentPlayerState;
 }
 
@@ -471,7 +470,7 @@ void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefi
 	{
 		MoveComp->MaxAcceleration = Def->BaseAcceleration;
 	}
-	// (참고: 0.f이면, 컴포넌트의 기본값(예: 2048)을 그대로 사용하므로 다른 폼에 영향을 주지 않습니다.)
+	//0.f이면, 컴포넌트의 기본값(예: 2048)을 그대로 사용하므로 다른 폼에 영향을 주지 않습니다.
 
 	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
 	UpdateMovementSpeed();
@@ -578,7 +577,6 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 }
 
 /**
- * [핵심 로직]
  * 현재 폼의 기본 속도와 스프린트 여부에 따라
  * UCharacterMovementComponent의 MaxWalkSpeed를 설정합니다.
  */

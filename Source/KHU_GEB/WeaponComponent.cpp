@@ -8,8 +8,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h" // ApplyDamage용
-#include "FormDefinition.h" // EFormType을 알아야 할 수도 있음 (지금은 불필요)
-#include "KHU_GEBCharacter.h" // GetMesh()를 위해 필요시 사용 (지금은 ACharacter로 충분)
+#include "FormDefinition.h" // EFormType
+#include "KHU_GEBCharacter.h" // GetMesh()를 위해 필요시
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -98,8 +98,7 @@ void UWeaponComponent::EnableCollision()
 	//디버깅 메시지 콜리전 활성화 로그
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green,
-			TEXT("[WeaponComponent] COLLISION ENABLED"));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("[WeaponComponent] COLLISION ENABLED"));
 	}
 	// 이 스윙에서 맞은 액터 목록을 초기화
 	HitActorsThisSwing.Empty();
@@ -121,8 +120,7 @@ void UWeaponComponent::DisableCollision()
 	//디버깅 메시지 콜리전 비활성화 로그
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red,
-			TEXT("[WeaponComponent] COLLISION DISABLED"));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("[WeaponComponent] COLLISION DISABLED"));
 	}
 	// 모든 콜리전 볼륨(히트박스)을 비활성화
 	for (UShapeComponent* Collider : ActiveColliders)
@@ -153,7 +151,6 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 
 	HitActorsThisSwing.Add(OtherActor);
 
-	// (디버그 로그 생략...)
 }
 
 /** [복사] AttackComponent.cpp에서 가져옴 */
@@ -235,7 +232,7 @@ UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 	if (!NewBox) return nullptr;
 	NewBox->RegisterComponent();
 	NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// [중요] 바인딩 함수를 이 클래스(UWeaponComponent)의 것으로 변경
+	// 바인딩 함수를 이 클래스(UWeaponComponent)의 것으로 변경
 	NewBox->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnAttackOverlap);
 	NewBox->SetCollisionObjectType(ECC_WorldDynamic);
 	NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -253,7 +250,7 @@ USphereComponent* UWeaponComponent::CreateNewSphereCollider()
 	if (!NewSphere) return nullptr;
 	NewSphere->RegisterComponent();
 	NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// [중요] 바인딩 함수를 이 클래스(UWeaponComponent)의 것으로 변경
+	// 바인딩 함수를 이 클래스(UWeaponComponent)의 것으로 변경
 	NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnAttackOverlap);
 	NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);

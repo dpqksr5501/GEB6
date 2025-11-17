@@ -122,10 +122,9 @@ void UAttackComponent::UnbindAnimDelegates()
 
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
-    if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[1]AttackStarted: Input Received")); }
     bAttackHeld = true;
     // 로직 순서 변경 
-    // 1. [먼저] 콤보 연계가 가능한지 확인합니다. 
+    //콤보 연계가 가능한지 확인합니다. 
     // (Save 프레임이 지났고, 이번 창에서 아직 연계하지 않았는지) 
     if (bCanChain && !bAdvancedThisWindow)
     {
@@ -143,8 +142,7 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
 
     // bIsAttacking이 false일 때 (즉, 공격 중이 아닐 때) 1타 콤보를 새로 시작합니다.
     // *오직 콤보 인덱스가 0일 때만* 1타를 시작해야 합니다.
-    // (버그 2: "다음 콤보로 안 넘어감" 해결)
-    if (ComboIndex == 0) // <--- [수정] !bPlaying 대신 ComboIndex를 확인
+    if (ComboIndex == 0)
     {
         if (UAnimInstance* Anim = GetAnim())
         {
@@ -196,7 +194,7 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
         ComboIndex = 0; return;
     }
 
-    // --- 여기부터가 FullBody/UpperBody 선택 로직입니다 ---
+    // --- 여기부터가 FullBody/UpperBody 선택 로직 ---
 
     const FAttackStep& CurrentStep = Steps[ComboIndex];
 
