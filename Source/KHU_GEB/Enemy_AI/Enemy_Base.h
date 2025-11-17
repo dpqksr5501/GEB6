@@ -7,7 +7,11 @@
 #include "Animation/AnimMontage.h"
 #include "SkillDefinition.h"
 #include "SkillBase.h"
+#include "EnemyState.h"
 #include "Enemy_Base.generated.h"
+
+class UBlackboardComponent;
+class UHealthComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -30,21 +34,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeSkills();
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
+	UPROPERTY(BlueprintReadWrite, Category = "AI")
+	UBlackboardComponent* BlackboardComp;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(BlueprintReadWrite, Category = "Health")
+	UHealthComponent* HealthComp;
 
-	UFUNCTION(BlueprintCallable, Category = "Enemy Action")
-	virtual void PerformAttack();
-	UFUNCTION(BlueprintCallable, Category = "Enemy Action")
-	virtual void PerformSkill();
-	UFUNCTION(BlueprintCallable, Category = "Enemy Action")
-	virtual void PerformSpecialSkill();
+	// 죽음
+	UFUNCTION()
+	void OnDeath();
 };

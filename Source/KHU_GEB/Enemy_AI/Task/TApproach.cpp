@@ -63,7 +63,7 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 			return EBTNodeResult::Failed;
 		}
 
-		// [핵심] MoveToActor를 여기서 *한 번만* 호출
+		// MoveToActor를 여기서 한 번만 호출
 		EPathFollowingRequestResult::Type MoveResult = AIController->MoveToActor(TargetActor, 1.0f);
 
 		if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)

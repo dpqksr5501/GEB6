@@ -80,15 +80,21 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// AttackMontage 변수가 BT 에디터에서 설정되었는지 확인합니다.
-	if (AttackMontage == nullptr)
+	// UpperMontage 변수가 BT 에디터에서 설정되었는지 확인합니다.
+	if (UpperMontage == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: AttackMontage가 설정되지 않았습니다."));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: UpperMontage가 설정되지 않았습니다."));
+		return EBTNodeResult::Failed;
+	}
+	if (FullMontage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: FullMontage가 설정되지 않았습니다."));
 		return EBTNodeResult::Failed;
 	}
 
 	// 몽타주를 재생합니다.
-	AnimInstance->Montage_Play(AttackMontage);
+	AnimInstance->Montage_Play(UpperMontage);
+	AnimInstance->Montage_Play(FullMontage);
 
 	// 상태 변환
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
@@ -108,6 +114,7 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	if (AIController == nullptr)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AIController is missing"));
 		return;
 	}
 
@@ -115,6 +122,7 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	if (Character == nullptr)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Character is missing"));
 		return;
 	}
 
@@ -122,17 +130,19 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	if (AnimInstance == nullptr)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AnimInstance is missing"));
 		return;
 	}
 
-	if (AttackMontage == nullptr)
+	if (UpperMontage == nullptr || FullMontage == nullptr)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Montage is missing"));
 		return;
 	}
 	
 	// 지정된 몽타주가 현재 재생 중인지 확인합니다.
-	if (!AnimInstance->Montage_IsPlaying(AttackMontage))
+	if (!AnimInstance->Montage_IsPlaying(UpperMontage) && !AnimInstance->Montage_IsPlaying(FullMontage))
 	{
 		// 몽타주 재생이 끝났으므로, 태스크를 성공으로 완료시킵니다.
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

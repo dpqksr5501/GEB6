@@ -4,7 +4,7 @@
 
 #include "AttackComponent.h"
 #include "FormDefinition.h"
-#include "WeaponComponent.h" // 1. [Ãß°¡] WeaponComponent Çì´õ
+#include "WeaponComponent.h" // 1. [ì¶”ê°€] WeaponComponent í—¤ë”
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "GameFramework/Actor.h"
@@ -24,7 +24,7 @@ void UAttackComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ¼ÒÀ¯ÀÚ(Ä³¸¯ÅÍ)¿¡¼­ FormManager¸¦ Ã£¾Æ µ¨¸®°ÔÀÌÆ®¿¡ ¹ÙÀÎµùÇÕ´Ï´Ù.
+    // ì†Œìœ ì(ìºë¦­í„°)ì—ì„œ FormManagerë¥¼ ì°¾ì•„ ë¸ë¦¬ê²Œì´íŠ¸ì— ë°”ì¸ë”©í•©ë‹ˆë‹¤.
     if (AActor* Owner = GetOwner())
     {
         if (UFormManagerComponent* FormManager =
@@ -42,7 +42,7 @@ void UAttackComponent::BeginPlay()
         }
     }
 
-    //¾Ö´Ô µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµùÀº À¯Áö.
+    //ì• ë‹˜ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©ì€ ìœ ì§€.
     BindAnimDelegates();
 }
 
@@ -51,19 +51,19 @@ USkeletalMeshComponent* UAttackComponent::GetMesh() const
     AActor* Owner = GetOwner();
     if (!Owner) return nullptr;
 
-    //ACharacter ´ë½Å AKHU_GEBCharacter·Î Á÷Á¢ Ä³½ºÆÃÇÕ´Ï´Ù.
+    //ACharacter ëŒ€ì‹  AKHU_GEBCharacterë¡œ ì§ì ‘ ìºìŠ¤íŒ…í•©ë‹ˆë‹¤.
     if (AKHU_GEBCharacter* OwnerCharacter = Cast<AKHU_GEBCharacter>(Owner))
     {
         return OwnerCharacter->GetMesh();
     }
 
-    //È¤½Ã ¸ó½ºÅÍ(AMonsterBase)¿¡µµ ÀÌ ÄÄÆ÷³ÍÆ®°¡ ºÙÀ» °æ¿ì¸¦ ´ëºñ
+    //í˜¹ì‹œ ëª¬ìŠ¤í„°(AMonsterBase)ì—ë„ ì´ ì»´í¬ë„ŒíŠ¸ê°€ ë¶™ì„ ê²½ìš°ë¥¼ ëŒ€ë¹„
     //if (amonsterbase* ownermonster = cast<amonsterbase>(owner))
     //{
-    //    return ownermonster->getmesh(); // amonsterbaseµµ acharacter¸¦ »ó¼Ó¹Ş¾ÒÀ¸¹Ç·Î getmesh()°¡ ÀÖÀ½
+    //    return ownermonster->getmesh(); // amonsterbaseë„ acharacterë¥¼ ìƒì†ë°›ì•˜ìœ¼ë¯€ë¡œ getmesh()ê°€ ìˆìŒ
     //}
 
-    // µÑ ´Ù ¾Æ´Ï¶ó¸é, ÀÏ¹İÀûÀÎ ¹æ¹ıÀ¸·Î Å½»ö
+    // ë‘˜ ë‹¤ ì•„ë‹ˆë¼ë©´, ì¼ë°˜ì ì¸ ë°©ë²•ìœ¼ë¡œ íƒìƒ‰
     return Owner->FindComponentByClass<USkeletalMeshComponent>();
 }
 
@@ -76,8 +76,8 @@ UAnimInstance* UAttackComponent::GetAnim() const
     return nullptr;
 }
 
-//SetForm ÇÔ¼ö ¼öÁ¤---
-//SetForm ´õ ÀÌ»ó Äİ¸®ÀüÀ» »ı¼ºÇÏÁö ¾ÊÀ½.
+//SetForm í•¨ìˆ˜ ìˆ˜ì •---
+//SetForm ë” ì´ìƒ ì½œë¦¬ì „ì„ ìƒì„±í•˜ì§€ ì•ŠìŒ.
 void UAttackComponent::SetForm(const UFormDefinition* Def)
 {
     BindAnimDelegates();
@@ -91,26 +91,26 @@ void UAttackComponent::SetForm(const UFormDefinition* Def)
 
 void UAttackComponent::BindAnimDelegates()
 {
-    //ÀÌÀü¿¡ ¹ÙÀÎµùµÈ ¾Ö´Ô ÀÎ½ºÅÏ½º°¡ ÀÖ´Ù¸é, ¸ÕÀú ¿¬°áÀ» ÇØÁ¦ÇÕ´Ï´Ù.
+    //ì´ì „ì— ë°”ì¸ë”©ëœ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ê°€ ìˆë‹¤ë©´, ë¨¼ì € ì—°ê²°ì„ í•´ì œí•©ë‹ˆë‹¤.
     UnbindAnimDelegates();
 
-    //ÇöÀç À¯È¿ÇÑ »õ ¾Ö´Ô ÀÎ½ºÅÏ½º¸¦ °¡Á®¿É´Ï´Ù.
+    //í˜„ì¬ ìœ íš¨í•œ ìƒˆ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     UAnimInstance* Anim = GetAnim();
     if (Anim)
     {
-        //»õ ¾Ö´Ô ÀÎ½ºÅÏ½ºÀÇ µ¨¸®°ÔÀÌÆ®¿¡ ¿ì¸® ÇÔ¼öµéÀ» ¿¬°áÇÕ´Ï´Ù.
+        //ìƒˆ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ì˜ ë¸ë¦¬ê²Œì´íŠ¸ì— ìš°ë¦¬ í•¨ìˆ˜ë“¤ì„ ì—°ê²°í•©ë‹ˆë‹¤.
         Anim->OnPlayMontageNotifyBegin.AddDynamic(this, &UAttackComponent::OnNotifyBeginReceived);
         Anim->OnPlayMontageNotifyEnd.AddDynamic(this, &UAttackComponent::OnNotifyEndReceived);
         Anim->OnMontageEnded.AddDynamic(this, &UAttackComponent::OnMontageEnded);
 
-        //[ÇÙ½É] "ÇöÀç ¹ÙÀÎµùµÈ ¾Ö´Ô ÀÎ½ºÅÏ½º"°¡ ¹«¾ùÀÎÁö º¯¼ö¿¡ ÀúÀåÇÕ´Ï´Ù.
+        //[í•µì‹¬] "í˜„ì¬ ë°”ì¸ë”©ëœ ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤"ê°€ ë¬´ì—‡ì¸ì§€ ë³€ìˆ˜ì— ì €ì¥í•©ë‹ˆë‹¤.
         BoundAnim = Anim;
     }
 }
 void UAttackComponent::UnbindAnimDelegates()
 {
-    //ÀÌÀü¿¡ ÀúÀåÇØ µĞ(BoundAnim) ¾Ö´Ô ÀÎ½ºÅÏ½º Æ÷ÀÎÅÍ¸¦ °¡Á®¿É´Ï´Ù.
-    UAnimInstance* Prev = BoundAnim.Get(); // TWeakObjectPtr¿¡¼­ °¡Á®¿È
+    //ì´ì „ì— ì €ì¥í•´ ë‘”(BoundAnim) ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ í¬ì¸í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+    UAnimInstance* Prev = BoundAnim.Get(); // TWeakObjectPtrì—ì„œ ê°€ì ¸ì˜´
     if (Prev)
     {
         Prev->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UAttackComponent::OnNotifyBeginReceived);
@@ -123,39 +123,39 @@ void UAttackComponent::UnbindAnimDelegates()
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
     bAttackHeld = true;
-    // ·ÎÁ÷ ¼ø¼­ º¯°æ 
-    //ÄŞº¸ ¿¬°è°¡ °¡´ÉÇÑÁö È®ÀÎÇÕ´Ï´Ù. 
-    // (Save ÇÁ·¹ÀÓÀÌ Áö³µ°í, ÀÌ¹ø Ã¢¿¡¼­ ¾ÆÁ÷ ¿¬°èÇÏÁö ¾Ê¾Ò´ÂÁö) 
+    // ë¡œì§ ìˆœì„œ ë³€ê²½ 
+    //ì½¤ë³´ ì—°ê³„ê°€ ê°€ëŠ¥í•œì§€ í™•ì¸í•©ë‹ˆë‹¤. 
+    // (Save í”„ë ˆì„ì´ ì§€ë‚¬ê³ , ì´ë²ˆ ì°½ì—ì„œ ì•„ì§ ì—°ê³„í•˜ì§€ ì•Šì•˜ëŠ”ì§€) 
     if (bCanChain && !bAdvancedThisWindow)
     {
-        // 2. °¡´ÉÇÏ´Ù¸é Áï½Ã ´ÙÀ½ ÄŞº¸·Î ³Ñ¾î°©´Ï´Ù. 
+        // 2. ê°€ëŠ¥í•˜ë‹¤ë©´ ì¦‰ì‹œ ë‹¤ìŒ ì½¤ë³´ë¡œ ë„˜ì–´ê°‘ë‹ˆë‹¤. 
         AdvanceComboImmediately();
-        // 3. ¿¬°è¸¦ ÇßÀ¸¹Ç·Î ÇÔ¼ö¸¦ Á¾·áÇÕ´Ï´Ù. (¹ØÀÇ 1Å¸ Àç»ı ·ÎÁ÷ ½ÇÇà ¹æÁö) 
+        // 3. ì—°ê³„ë¥¼ í–ˆìœ¼ë¯€ë¡œ í•¨ìˆ˜ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤. (ë°‘ì˜ 1íƒ€ ì¬ìƒ ë¡œì§ ì‹¤í–‰ ë°©ì§€) 
         return;
     }
 
-    // ÄŞº¸ ¿¬°è »óÅÂ°¡ ¾Æ´Ò ¶§,
+    // ì½¤ë³´ ì—°ê³„ ìƒíƒœê°€ ì•„ë‹ ë•Œ,
     if (bIsAttacking)
     {
         return;
     }
 
-    // bIsAttackingÀÌ falseÀÏ ¶§ (Áï, °ø°İ ÁßÀÌ ¾Æ´Ò ¶§) 1Å¸ ÄŞº¸¸¦ »õ·Î ½ÃÀÛÇÕ´Ï´Ù.
-    // *¿ÀÁ÷ ÄŞº¸ ÀÎµ¦½º°¡ 0ÀÏ ¶§¸¸* 1Å¸¸¦ ½ÃÀÛÇØ¾ß ÇÕ´Ï´Ù.
+    // bIsAttackingì´ falseì¼ ë•Œ (ì¦‰, ê³µê²© ì¤‘ì´ ì•„ë‹ ë•Œ) 1íƒ€ ì½¤ë³´ë¥¼ ìƒˆë¡œ ì‹œì‘í•©ë‹ˆë‹¤.
+    // *ì˜¤ì§ ì½¤ë³´ ì¸ë±ìŠ¤ê°€ 0ì¼ ë•Œë§Œ* 1íƒ€ë¥¼ ì‹œì‘í•´ì•¼ í•©ë‹ˆë‹¤.
     if (ComboIndex == 0)
     {
         if (UAnimInstance* Anim = GetAnim())
         {
-            // (¾ÈÀüÀåÄ¡) ¸ùÅ¸ÁÖ°¡ Á¤¸» ¾È µ¹°í ÀÖ´ÂÁö ÇÑ ¹ø ´õ È®ÀÎ
+            // (ì•ˆì „ì¥ì¹˜) ëª½íƒ€ì£¼ê°€ ì •ë§ ì•ˆ ëŒê³  ìˆëŠ”ì§€ í•œ ë²ˆ ë” í™•ì¸
             if (!Anim->Montage_IsPlaying(nullptr))
             {
-                // ÄŞº¸ »óÅÂ ÃÊ±âÈ­ (ComboIndex´Â ÀÌ¹Ì 0)
+                // ì½¤ë³´ ìƒíƒœ ì´ˆê¸°í™” (ComboIndexëŠ” ì´ë¯¸ 0)
                 bCanChain = false;
                 bAdvancedThisWindow = false;
                 bResetOnNext = false;
                 NextPolicy = EComboPolicy::None;
 
-                PlayCurrentComboMontage(); // 1Å¸ ÄŞº¸ ½ÃÀÛ
+                PlayCurrentComboMontage(); // 1íƒ€ ì½¤ë³´ ì‹œì‘
             }
         }
     }
@@ -183,22 +183,22 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
     UAnimInstance* Anim = GetAnim();
     if (!Anim) return;
 
-    // ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÏ±â Á÷Àü¿¡, '°ø°İ Áß' »óÅÂ ÇÃ·¡±×¸¦ true·Î ¼³Á¤
+    // ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•˜ê¸° ì§ì „ì—, 'ê³µê²© ì¤‘' ìƒíƒœ í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •
     bIsAttacking = true;
 
-    // FormDefinitionÀÇ ½ºÅÜ ±¸Á¶¿¡ ¸ÂÃç Á¢±Ù
+    // FormDefinitionì˜ ìŠ¤í… êµ¬ì¡°ì— ë§ì¶° ì ‘ê·¼
     const auto& Steps = CurrentFormDef->AttackMontages;
 
-    // [¼öÁ¤µÈ ºÎºĞ 1] .Montage °Ë»ç¸¦ Á¦°ÅÇÕ´Ï´Ù.
+    // [ìˆ˜ì •ëœ ë¶€ë¶„ 1] .Montage ê²€ì‚¬ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
     if (!Steps.IsValidIndex(ComboIndex)) {
         ComboIndex = 0; return;
     }
 
-    // --- ¿©±âºÎÅÍ°¡ FullBody/UpperBody ¼±ÅÃ ·ÎÁ÷ ---
+    // --- ì—¬ê¸°ë¶€í„°ê°€ FullBody/UpperBody ì„ íƒ ë¡œì§ ---
 
     const FAttackStep& CurrentStep = Steps[ComboIndex];
 
-    // 1. ÇöÀç Ä³¸¯ÅÍÀÇ ¼Óµµ¸¦ °¡Á®¿É´Ï´Ù.
+    // 1. í˜„ì¬ ìºë¦­í„°ì˜ ì†ë„ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     float CurrentSpeed = 0.0f;
     if (AActor* Owner = GetOwner())
     {
@@ -208,34 +208,34 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
         }
     }
 
-    // 2. ¼Óµµ¿¡ µû¶ó Àç»ıÇÒ ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃÇÕ´Ï´Ù.
+    // 2. ì†ë„ì— ë”°ë¼ ì¬ìƒí•  ëª½íƒ€ì£¼ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
     UAnimMontage* MontageToPlay = nullptr;
     const float FullBodySpeedThreshold = 20.0f;
 
     if (CurrentSpeed < FullBodySpeedThreshold)
     {
-        // ¼Óµµ°¡ 20 ¹Ì¸¸ÀÌ¸é FullBody ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃ
+        // ì†ë„ê°€ 20 ë¯¸ë§Œì´ë©´ FullBody ëª½íƒ€ì£¼ë¥¼ ì„ íƒ
         MontageToPlay = CurrentStep.Montage_FullBody;
     }
     else
     {
-        // ±×·¸Áö ¾ÊÀ¸¸é UpperBody ¸ùÅ¸ÁÖ¸¦ ¼±ÅÃ
+        // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ UpperBody ëª½íƒ€ì£¼ë¥¼ ì„ íƒ
         MontageToPlay = CurrentStep.Montage_UpperBody;
     }
 
-    // 3. (ÇÊ¼ö) µÎ ½½·Ô Áß ÇÏ³ª¶óµµ ºñ¾îÀÖÀ¸¸é °ø°İÀÌ ¸ØÃß¹Ç·Î, À¯È¿¼º °Ë»ç¸¦ ÇÕ´Ï´Ù.
+    // 3. (í•„ìˆ˜) ë‘ ìŠ¬ë¡¯ ì¤‘ í•˜ë‚˜ë¼ë„ ë¹„ì–´ìˆìœ¼ë©´ ê³µê²©ì´ ë©ˆì¶”ë¯€ë¡œ, ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í•©ë‹ˆë‹¤.
     if (!MontageToPlay)
     {
         if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("[2-ERROR] Montage is MISSING in DA for ComboIndex %d!"), ComboIndex));
         ComboIndex = 0; return;
     }
 
-    //M º¯¼ö¿¡ MontageToPlay¸¦ ÇÒ´çÇÕ´Ï´Ù.
+    //M ë³€ìˆ˜ì— MontageToPlayë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
     UAnimMontage* M = MontageToPlay;
     LastAttackMontage = M;
     Anim->Montage_Play(M, PlayRate);
 
-    // »õ ÄŞº¸ ½ÃÀÛ: Ã¢±¸ ÃÊ±âÈ­ & ÇÁ·¹ÀÓ Å¸ÀÌ¸Ó ¿¹¾à
+    // ìƒˆ ì½¤ë³´ ì‹œì‘: ì°½êµ¬ ì´ˆê¸°í™” & í”„ë ˆì„ íƒ€ì´ë¨¸ ì˜ˆì•½
     bCanChain = false; bAdvancedThisWindow = false; NextPolicy = EComboPolicy::None;
     ScheduleComboWindows(M, PlayRate);
 }
@@ -254,14 +254,14 @@ void UAttackComponent::AdvanceComboImmediately()
 
     ComputeNextIndex();
 
-    // ÇöÀç ¸ùÅ¸ÁÖ¿ë Å¸ÀÌ¸Ó ¸ÕÀú Á¤¸®(·¹ÀÌ½º °¡µå)
+    // í˜„ì¬ ëª½íƒ€ì£¼ìš© íƒ€ì´ë¨¸ ë¨¼ì € ì •ë¦¬(ë ˆì´ìŠ¤ ê°€ë“œ)
     ClearComboWindows();
 
     /*if (UAnimInstance* Anim = GetAnim())
     {
         if (LastAttackMontage) { Anim->Montage_Stop(0.05f, LastAttackMontage); }
     }*/
-    //¾Ö´Ï¸ŞÀÌ¼Ç º¸°£À» À§ÇØ »èÁ¦
+    //ì• ë‹ˆë©”ì´ì…˜ ë³´ê°„ì„ ìœ„í•´ ì‚­ì œ
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
@@ -272,33 +272,33 @@ void UAttackComponent::AdvanceComboImmediately()
 
 void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    // ÀÌÀü ¸ùÅ¸ÁÖÀÇ End°¡ ´Ê°Ô ¿Íµµ, '±× ¸ùÅ¸ÁÖ' ¼ÒÀ¯ Å¸ÀÌ¸Ó¸¸ Áö¿ò
+    // ì´ì „ ëª½íƒ€ì£¼ì˜ Endê°€ ëŠ¦ê²Œ ì™€ë„, 'ê·¸ ëª½íƒ€ì£¼' ì†Œìœ  íƒ€ì´ë¨¸ë§Œ ì§€ì›€
     if (Montage == WindowOwnerMontage) { ClearComboWindows(); }
 
 
-    // ¸¸¾à "Ã¼ÀÎ Áß" ÇÃ·¡±×°¡ true¶ó¸é (AdvanceComboImmediately°¡ ¹æ±İ È£ÃâµÊ),
-    // ÀÌ OnMontageEnded´Â ÀÌÀü ¸ùÅ¸ÁÖ°¡ 'Áß´Ü'µÈ Äİ¹éÀÔ´Ï´Ù.
-    // »õ ¸ùÅ¸ÁÖ°¡ ÀÌ¹Ì bIsAttacking=true·Î Àç»ı ÁßÀÌ¹Ç·Î,
-    // bIsAttackingÀ» false·Î ¹Ù²Ù¸é ¾È µË´Ï´Ù.
+    // ë§Œì•½ "ì²´ì¸ ì¤‘" í”Œë˜ê·¸ê°€ trueë¼ë©´ (AdvanceComboImmediatelyê°€ ë°©ê¸ˆ í˜¸ì¶œë¨),
+    // ì´ OnMontageEndedëŠ” ì´ì „ ëª½íƒ€ì£¼ê°€ 'ì¤‘ë‹¨'ëœ ì½œë°±ì…ë‹ˆë‹¤.
+    // ìƒˆ ëª½íƒ€ì£¼ê°€ ì´ë¯¸ bIsAttacking=trueë¡œ ì¬ìƒ ì¤‘ì´ë¯€ë¡œ,
+    // bIsAttackingì„ falseë¡œ ë°”ê¾¸ë©´ ì•ˆ ë©ë‹ˆë‹¤.
     if (bIsChaining)
     {
-        bIsChaining = false; // ÇÃ·¡±×¸¸ ¸®¼ÂÇÏ°í Á¾·á
+        bIsChaining = false; // í”Œë˜ê·¸ë§Œ ë¦¬ì…‹í•˜ê³  ì¢…ë£Œ
         return;
     }
 
 
-    // Ã¼ÀÎ ÁßÀÌ ¾Æ´Ò ¶§ (Áï, ¸ùÅ¸ÁÖ°¡ ÀÚ¿¬½º·´°Ô ³¡³µ°Å³ª, ÇÇ°İ µîÀ¸·Î Áß´ÜµÊ)
-    // '°ø°İ Áß' »óÅÂ ÇÃ·¡±×¸¦ false·Î ÇØÁ¦ÇÕ´Ï´Ù.
+    // ì²´ì¸ ì¤‘ì´ ì•„ë‹ ë•Œ (ì¦‰, ëª½íƒ€ì£¼ê°€ ìì—°ìŠ¤ëŸ½ê²Œ ëë‚¬ê±°ë‚˜, í”¼ê²© ë“±ìœ¼ë¡œ ì¤‘ë‹¨ë¨)
+    // 'ê³µê²© ì¤‘' ìƒíƒœ í”Œë˜ê·¸ë¥¼ falseë¡œ í•´ì œí•©ë‹ˆë‹¤.
     bIsAttacking = false;
 
-    // ¸ùÅ¸ÁÖ°¡ 'ÀÚ¿¬½º·´°Ô' ³¡³µ´Ù¸é (binterrupted == false),
-    // ¿¬Å¸ Áß(bAttackHeld == true)ÀÌ´õ¶óµµ ÄŞº¸°¡ ¸®¼ÂµÇ¾î¾ß
-    // AttackStarted°¡ ComboIndex 0À¸·Î 1Å¸¸¦ ´Ù½Ã ½ÃÀÛÇÏ´Â ¹ö±×¸¦ ¸·À» ¼ö ÀÖ½À´Ï´Ù.
-    // (´Ü, ResetTimer°¡ ÀÌ¹Ì ¹ßµ¿ÇÑ °æ¿ì´Â Á¦¿Ü)
-    if (!bInterrupted && !bResetOnNext) // <-- ´ë¹®ÀÚ 'I'¸¦ ¼Ò¹®ÀÚ 'i'·Î ¼öÁ¤
+    // ëª½íƒ€ì£¼ê°€ 'ìì—°ìŠ¤ëŸ½ê²Œ' ëë‚¬ë‹¤ë©´ (binterrupted == false),
+    // ì—°íƒ€ ì¤‘(bAttackHeld == true)ì´ë”ë¼ë„ ì½¤ë³´ê°€ ë¦¬ì…‹ë˜ì–´ì•¼
+    // AttackStartedê°€ ComboIndex 0ìœ¼ë¡œ 1íƒ€ë¥¼ ë‹¤ì‹œ ì‹œì‘í•˜ëŠ” ë²„ê·¸ë¥¼ ë§‰ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+    // (ë‹¨, ResetTimerê°€ ì´ë¯¸ ë°œë™í•œ ê²½ìš°ëŠ” ì œì™¸)
+    if (!bInterrupted && !bResetOnNext) // <-- ëŒ€ë¬¸ì 'I'ë¥¼ ì†Œë¬¸ì 'i'ë¡œ ìˆ˜ì •
     {
-        // ¸ùÅ¸ÁÖ°¡ ÀÚ¿¬½º·´°Ô ³¡³µ´Âµ¥ ÄŞº¸ ¿¬°è(bIsChaining)µµ ¾ø¾úÀ½
-        // = ÄŞº¸ ½ÇÆĞ
+        // ëª½íƒ€ì£¼ê°€ ìì—°ìŠ¤ëŸ½ê²Œ ëë‚¬ëŠ”ë° ì½¤ë³´ ì—°ê³„(bIsChaining)ë„ ì—†ì—ˆìŒ
+        // = ì½¤ë³´ ì‹¤íŒ¨
         ComboIndex = 0;
         bCanChain = false;
         bAdvancedThisWindow = false;
@@ -307,17 +307,17 @@ void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
     }
 }
 
-// ¾Ö´Ô ³ëÆ¼ÆÄÀÌ(Notify) ¼ö½Å ÇÔ¼ö
+// ì• ë‹˜ ë…¸í‹°íŒŒì´(Notify) ìˆ˜ì‹  í•¨ìˆ˜
 void UAttackComponent::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
 {
     AActor* Owner = GetOwner();
     if (!Owner) return;
 
-    //[Ãß°¡] WeaponComponent¸¦ Ã£½À´Ï´Ù.
+    //[ì¶”ê°€] WeaponComponentë¥¼ ì°¾ìŠµë‹ˆë‹¤.
     UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>();
     if (!WeaponComp) return;
 
-    //µğ¹ö±ë ¸Ş½ÃÁö WeaponComponent°¡ ¾ø´Â °æ¿ì ¿¡·¯ ·Î±×
+    //ë””ë²„ê¹… ë©”ì‹œì§€ WeaponComponentê°€ ì—†ëŠ” ê²½ìš° ì—ëŸ¬ ë¡œê·¸
     if (!WeaponComp)
     {
         UE_LOG(LogTemp, Error, TEXT("[AttackComponent] OnNotifyBeginReceived: FAILED to find WeaponComponent!"));
@@ -328,26 +328,26 @@ void UAttackComponent::OnNotifyBeginReceived(FName NotifyName, const FBranchingP
     if (NotifyName == TEXT("StartAttack"))
     {
 
-        //µğ¹ö±ë ¸Ş½ÃÁö "StartAttack" ³ëÆ¼ÆÄÀÌ ¼ö½Å ¹× À§ÀÓ ·Î±×
+        //ë””ë²„ê¹… ë©”ì‹œì§€ "StartAttack" ë…¸í‹°íŒŒì´ ìˆ˜ì‹  ë° ìœ„ì„ ë¡œê·¸
         if (GEngine)
         {
             GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
                 TEXT("[AttackComponent] Notify: StartAttack -> Delegating to WeaponComponent"));
         }
-        //[¼öÁ¤] Äİ¸®Àü È°¼ºÈ­¸¦ WeaponComponent¿¡ À§ÀÓ
+        //[ìˆ˜ì •] ì½œë¦¬ì „ í™œì„±í™”ë¥¼ WeaponComponentì— ìœ„ì„
         WeaponComp->EnableCollision();
 
     }
     else if (NotifyName == TEXT("EndAttack"))
     {
-        //µğ¹ö±ë ¸Ş½ÃÁö "EndAttack" ³ëÆ¼ÆÄÀÌ ¼ö½Å ¹× À§ÀÓ ·Î±×
+        //ë””ë²„ê¹… ë©”ì‹œì§€ "EndAttack" ë…¸í‹°íŒŒì´ ìˆ˜ì‹  ë° ìœ„ì„ ë¡œê·¸
         if (GEngine)
         {
             GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
                 TEXT("[AttackComponent] Notify: EndAttack -> Delegating to WeaponComponent"));
         }
 
-        //[¼öÁ¤] Äİ¸®Àü ºñÈ°¼ºÈ­¸¦ WeaponComponent¿¡ À§ÀÓ
+        //[ìˆ˜ì •] ì½œë¦¬ì „ ë¹„í™œì„±í™”ë¥¼ WeaponComponentì— ìœ„ì„
         WeaponComp->DisableCollision();
  
     }
@@ -368,13 +368,13 @@ void UAttackComponent::Notify_ResetCombo()
 
 float UAttackComponent::GetFPSFor(const UAnimMontage* Montage, float OverrideFPS) const
 {
-    // 1. DA¿¡¼­ »ç¿ëÀÚ°¡ OverrideFPS¸¦ ¸í½ÃÇÑ °æ¿ì (¿ì¼±)
+    // 1. DAì—ì„œ ì‚¬ìš©ìê°€ OverrideFPSë¥¼ ëª…ì‹œí•œ ê²½ìš° (ìš°ì„ )
     if (OverrideFPS > 0.f)
     {
         return OverrideFPS;
     }
 
-    // 2. Ä³½Ã È®ÀÎ (mutable TMap »ç¿ë)
+    // 2. ìºì‹œ í™•ì¸ (mutable TMap ì‚¬ìš©)
     if (Montage)
     {
         if (const float* Cached = CachedMontageFPS.Find(Montage))
@@ -393,7 +393,7 @@ float UAttackComponent::GetFPSFor(const UAnimMontage* Montage, float OverrideFPS
         }
     }
 
-    // 3. µğÆúÆ®
+    // 3. ë””í´íŠ¸
     return 30.f;
 }
 
@@ -413,7 +413,7 @@ void UAttackComponent::ScheduleComboWindows(UAnimMontage* Montage, float PlayRat
 
     GetWorld()->GetTimerManager().SetTimer(Timer_Save, this, &UAttackComponent::Notify_SaveAttack, saveSec, false);
     GetWorld()->GetTimerManager().SetTimer(Timer_Reset, this, &UAttackComponent::Notify_ResetCombo, resetSec, false);
-    WindowOwnerMontage = Montage; // Å¸ÀÌ¸ÓÀÇ ¼ÒÀ¯ ¸ùÅ¸ÁÖ
+    WindowOwnerMontage = Montage; // íƒ€ì´ë¨¸ì˜ ì†Œìœ  ëª½íƒ€ì£¼
 }
 void UAttackComponent::ClearComboWindows()
 {
@@ -430,19 +430,57 @@ void UAttackComponent::ResetComboHard()
     ClearComboWindows();
     ComboIndex = 0;
     bCanChain = false; bAttackHeld = false; bAdvancedThisWindow = false; bResetOnNext = false; NextPolicy = EComboPolicy::None;
-    // ÇÊ¿äÇÏ¸é ÇöÀç ¸ùÅ¸ÁÖ Áï½Ã Á¤Áö
-    // ÄŞº¸¸¦ °­Á¦ ¸®¼ÂÇÏ¹Ç·Î, ¸ğµç »óÅÂ ÇÃ·¡±×¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+    // í•„ìš”í•˜ë©´ í˜„ì¬ ëª½íƒ€ì£¼ ì¦‰ì‹œ ì •ì§€
+    // ì½¤ë³´ë¥¼ ê°•ì œ ë¦¬ì…‹í•˜ë¯€ë¡œ, ëª¨ë“  ìƒíƒœ í”Œë˜ê·¸ë¥¼ í•´ì œí•©ë‹ˆë‹¤.
     bIsAttacking = false;
     bIsChaining = false;
 
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
 
-/** Æû º¯°æ ÇÚµé·¯ ±¸Çö */
+// ì˜¤ë²„ë©(íˆíŠ¸) í•¨ìˆ˜
+void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("=== OnAttackOverlap Triggered! ==="));
+
+    
+    AActor* Owner = GetOwner();
+    if (!Owner || OtherActor == Owner) return;
+    if (HitActorsThisSwing.Contains(OtherActor)) return;
+
+    // ... (ë°ë¯¸ì§€ ì ìš© ë¡œì§) ...
+    // ... (ëŒ€ë¯¸ì§€ ê³„ì‚° ë¡œì§, 4/5ë²ˆ ê°œì„ ì•ˆ ë¯¸ì ìš© ìƒíƒœ) ...
+    float DamageToApply = 10.f; // [ê°œì„ ì•ˆ 5ë²ˆ ë¯¸ì ìš© ì‹œ í•˜ë“œì½”ë”©ëœ ëŒ€ë¯¸ì§€]
+
+    APawn* OwnerPawn = Cast<APawn>(Owner);
+
+    UGameplayStatics::ApplyDamage(OtherActor,
+        DamageToApply,
+        (OwnerPawn ? OwnerPawn->GetController() : nullptr),
+        Owner,
+        nullptr);
+
+    HitActorsThisSwing.Add(OtherActor);
+
+    // [!!! ê¸°ì¡´ UE_LOG ëŒ€ì‹  ë˜ëŠ” í•¨ê»˜ ì´ ì½”ë“œë¥¼ ì¶”ê°€ !!!]
+    if (GEngine)
+    {
+        FString Msg = FString::Printf(TEXT("ATTACK HIT! %s -> %s (%f DMG)"),
+            *Owner->GetName(), *OtherActor->GetName(), DamageToApply);
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Msg);
+    }
+
+    // ê¸°ì¡´ ë¡œê·¸ë„ ìœ ìš©í•˜ë¯€ë¡œ ë‚¨ê²¨ë‘¡ë‹ˆë‹¤.
+    UE_LOG(LogTemp, Warning, TEXT("Attack Hit via %s: %s"),
+        *OverlappedComponent->GetName(), *OtherActor->GetName());
+}
+
+/** í¼ ë³€ê²½ í•¸ë“¤ëŸ¬ êµ¬í˜„ */
 void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
     ResetComboHard();
-    // Ä³¸¯ÅÍ¸¦ °ÅÄ¡Áö ¾Ê°í Á÷Á¢ SetFormÀ» È£ÃâÇÕ´Ï´Ù.
+    // ìºë¦­í„°ë¥¼ ê±°ì¹˜ì§€ ì•Šê³  ì§ì ‘ SetFormì„ í˜¸ì¶œí•©ë‹ˆë‹¤.
     SetForm(Def);
 }
 
