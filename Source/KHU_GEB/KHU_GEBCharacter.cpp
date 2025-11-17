@@ -18,6 +18,8 @@
 #include "KHU_GEB.h"
 #include "FormDefinition.h"
 #include "NiagaraComponent.h"
+#include "WeaponComponent.h" //[추가] WeaponComponent 헤더
+#include "WeaponData.h" //[추가] WeaponData 헤더
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -58,6 +60,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
+	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
 	if (ATTACK.Object) { AttackAction = ATTACK.Object; }
@@ -153,13 +156,6 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void AKHU_GEBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//if (FormManager)
-	//{
-	//	// 폼이 바뀔 때마다 OnFormChanged_Handler 함수를 호출하도록 연결합니다.
-	//	FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged_Handler);
-	//	FormManager->InitializeForms();
-	//}
 
 	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
 
@@ -439,10 +435,27 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 	return CurrentPlayerState;
 }
 
-//폼 변경 시 및 달리기 관련 함수들
+
 /** 폼이 변경될 때 호출되는 핸들러 */
 void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
+
+	if (AttackManager)
+	{
+		// AttackComponent에는 폼 정의(콤보 스텝)를 전달
+		AttackManager->SetForm(Def);
+	}
+	if (SkillManager)
+	{
+		// SkillManager에는 스킬셋을 전달
+		SkillManager->EquipFromSkillSet(Def ? Def->SkillSet.Get() : nullptr);
+	}
+	if (WeaponManager)
+	{
+		//[추가] WeaponComponent에는 폼의 '무기 데이터'를 전달
+		WeaponManager->SetWeaponDefinition(Def ? Def->WeaponData.Get() : nullptr);
+	}
+
 	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 
 	if (!Def || !GetCharacterMovement())
@@ -506,6 +519,7 @@ void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefi
 			TargetVignetteIntensity = 0.4f; // 일반 폼은 약하게
 		}
 	}
+	/*if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr); }*/
 }
 
 //bIsSprinting

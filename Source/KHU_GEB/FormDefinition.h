@@ -10,46 +10,7 @@ class USkeletalMesh;
 class UAnimInstance;
 class UAnimMontage;
 class USkillSet;
-
-// [새로 추가] 히트박스 모양을 정의할 Enum
-UENUM(BlueprintType)
-enum class EHitboxShape : uint8
-{
-	Box,
-	Sphere
-};
-
-// [새로 추가] 개별 히트박스 설정을 위한 구조체
-USTRUCT(BlueprintType)
-struct FHitboxConfig
-{
-	GENERATED_BODY()
-
-	/** 이 히트박스를 부착할 스켈레탈 메시 소켓 이름 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName SocketName = NAME_None;
-
-	/** 히트박스 모양 (박스 또는 구체) */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EHitboxShape Shape = EHitboxShape::Box;
-
-	/**
-	* 모양에 따른 크기 값:
-	* - Box: BoxExtent (FVector(X, Y, Z))
-	* - Sphere: Radius (FVector(Radius, 0, 0))
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector Size = FVector(32.f);
-
-	/** 소켓 위치를 기준으로 한 추가적인 위치 오프셋입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
-	FVector RelativeLocation = FVector::ZeroVector;
-
-	/** 소켓 회전을 기준으로 한 추가적인 회전 오프셋입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
-	FRotator RelativeRotation = FRotator::ZeroRotator;
-};
-
+class UWeaponData;
 
 
 UENUM(BlueprintType)
@@ -80,6 +41,8 @@ struct FAttackStep
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_FullBody = nullptr;
 
+	
+
 };
 
 UCLASS()
@@ -106,8 +69,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<USkillSet> SkillSet;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	TArray<FHitboxConfig> Hitboxes;
+	/*웨폰 데이터 에셋*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<UWeaponData> WeaponData;
 
 	/** 이 폼일 때의 기본 최대 이동 속도입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))

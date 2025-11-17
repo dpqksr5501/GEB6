@@ -4,6 +4,7 @@
 
 #include "AttackComponent.h"
 #include "FormDefinition.h"
+#include "WeaponComponent.h" // 1. [추가] WeaponComponent 헤더
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "GameFramework/Actor.h"
@@ -12,11 +13,9 @@
 #include "InputActionValue.h"
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Components/SphereComponent.h" // Sphere 생성용
-#include "Components/BoxComponent.h"     // Box 생성용
-#include "Kismet/GameplayStatics.h"
 #include "FormManagerComponent.h"
 #include "GameFramework/Character.h"
+
 
 
 UAttackComponent::UAttackComponent() {}
@@ -28,26 +27,23 @@ void UAttackComponent::BeginPlay()
     // 소유자(캐릭터)에서 FormManager를 찾아 델리게이트에 바인딩합니다.
     if (AActor* Owner = GetOwner())
     {
-        if (UFormManagerComponent* FormManager = Owner->FindComponentByClass<UFormManagerComponent>())
+        if (UFormManagerComponent* FormManager =
+            Owner->FindComponentByClass<UFormManagerComponent>())
         {
-            //델리게이트 바인딩
-            FormManager->OnFormChanged.AddDynamic(this, &UAttackComponent::OnFormChanged_Handler);
+            FormManager->OnFormChanged.AddDynamic(this,
+                &UAttackComponent::OnFormChanged_Handler);
 
-            // 바인딩 직후, FormManager의 현재 폼을 가져와서 수동으로 초기화해줍니다.
-            // (InitializeForms 방송을 놓쳤을 경우를 대비)
-            const UFormDefinition* InitialDef = FormManager->FindDef(FormManager->CurrentForm);
+            const UFormDefinition* InitialDef =
+                FormManager->FindDef(FormManager->CurrentForm);
             if (InitialDef)
             {
                 OnFormChanged_Handler(FormManager->CurrentForm, InitialDef);
             }
         }
     }
-    InitializeColliderPool(5);
 
-    //if (!BoundAnim.IsValid())
-    //{
-    //    BindAnimDelegates();
-    //}
+    //애님 델리게이트 바인딩은 유지.
+    BindAnimDelegates();
 }
 
 USkeletalMeshComponent* UAttackComponent::GetMesh() const
@@ -81,58 +77,16 @@ UAnimInstance* UAttackComponent::GetAnim() const
 }
 
 //SetForm 함수 수정---
-// [수정 후] SetForm (데이터 기반으로 변경)
+//SetForm 더 이상 콜리전을 생성하지 않음.
 void UAttackComponent::SetForm(const UFormDefinition* Def)
 {
+    BindAnimDelegates();
     CurrentFormDef = Def;
-    //기존 폼의 콜리전을 파괴하지 않고 "비활성화" (풀로 반환)
-    DeactivateAllColliders();
-
-    BindAnimDelegates(); // 애님 델리게이트 바인딩
 
     if (!CurrentFormDef) return;
 
     USkeletalMeshComponent* Mesh = GetMesh();
     if (!Mesh) return;
-
-    // 1-2. 폼 정의(Form Definition)의 Hitboxes 배열을 순회
-    for (const FHitboxConfig& Config : CurrentFormDef->Hitboxes)
-    {
-        UShapeComponent* NewCollider = nullptr;
-
-        // 1-3. 설정에 따라 풀에서 콜리전 가져오기
-        if (Config.Shape == EHitboxShape::Sphere)
-        {
-            USphereComponent* Sphere = GetPooledSphereCollider();
-            if (Sphere)
-            {
-                Sphere->SetSphereRadius(Config.Size.X); // Size.X를 Radius로 사용
-                NewCollider = Sphere;
-            }
-        }
-        else // EHitboxShape::Box
-        {
-            UBoxComponent* Box = GetPooledBoxCollider();
-            if (Box)
-            {
-                Box->SetBoxExtent(Config.Size); // Size를 BoxExtent로 사용
-                NewCollider = Box;
-            }
-        }
-
-        // 1-4. 콜리전을 소켓에 부착하고 활성 목록에 추가
-        if (NewCollider)
-        {
-            // 소켓에 부착하기 *전에* 컴포넌트 자체의 상대 오프셋을 설정합니다.
-            // 최종 위치 = (소켓의 월드 위치) + (이 오프셋이 적용된 상대 위치)
-            NewCollider->SetRelativeLocationAndRotation(Config.RelativeLocation, Config.RelativeRotation);
-
-            // 소켓에 부착합니다. (규칙은 KeepRelativeTransform 유지)
-            NewCollider->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform, Config.SocketName);
-
-            ActiveColliders.Add(NewCollider);
-        }
-    }
 }
 
 void UAttackComponent::BindAnimDelegates()
@@ -207,10 +161,7 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
             }
         }
     }
-    // (ComboIndex가 0이 아니라면)
-    // (예: 1타가 끝났지만 ResetTimer가 돌기 전)
-    // bIsAttacking은 false지만, ResetTimer가 ComboIndex를 0으로 만들 때까지
-    // 1타가 다시 시작되지 않도록 아무것도 하지 않습니다.
+
 }
 
 
@@ -226,12 +177,8 @@ void UAttackComponent::AttackCompleted(const FInputActionValue&)
 
 void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
 {
-    // [디버그 2]
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[2] PlayCurrentComboMontage: Called"));
 
     if (!CurrentFormDef) {
-        // [디버그 2-E]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] CurrentFormDef is NULL!"));
         return;
     }
 
@@ -246,8 +193,6 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
 
     // [수정된 부분 1] .Montage 검사를 제거합니다.
     if (!Steps.IsValidIndex(ComboIndex)) {
-        // [디버그 2-E]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[2-ERROR] Invalid ComboIndex!"));
         ComboIndex = 0; return;
     }
 
@@ -287,12 +232,7 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
         ComboIndex = 0; return;
     }
 
-    // --- 선택 로직 끝 ---
-
-    // [디버그 3]
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("[3] Montage_Play: EXECUTED"));
-
-    // [수정된 부분 2] M 변수에 MontageToPlay를 할당합니다.
+    //M 변수에 MontageToPlay를 할당합니다.
     UAnimMontage* M = MontageToPlay;
     LastAttackMontage = M;
     Anim->Montage_Play(M, PlayRate);
@@ -323,6 +263,7 @@ void UAttackComponent::AdvanceComboImmediately()
     {
         if (LastAttackMontage) { Anim->Montage_Stop(0.05f, LastAttackMontage); }
     }*/
+    //애니메이션 보간을 위해 삭제
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
@@ -333,12 +274,10 @@ void UAttackComponent::AdvanceComboImmediately()
 
 void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    // 몽타주가 끝나면 이 스윙에서 적중한 목록을 초기화
-    HitActorsThisSwing.Empty();
     // 이전 몽타주의 End가 늦게 와도, '그 몽타주' 소유 타이머만 지움
     if (Montage == WindowOwnerMontage) { ClearComboWindows(); }
 
-    // [!!! 핵심 수정 1 !!!]
+
     // 만약 "체인 중" 플래그가 true라면 (AdvanceComboImmediately가 방금 호출됨),
     // 이 OnMontageEnded는 이전 몽타주가 '중단'된 콜백입니다.
     // 새 몽타주가 이미 bIsAttacking=true로 재생 중이므로,
@@ -349,12 +288,11 @@ void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
         return;
     }
 
-    // [!!! 핵심 수정 2 !!!]
+
     // 체인 중이 아닐 때 (즉, 몽타주가 자연스럽게 끝났거나, 피격 등으로 중단됨)
     // '공격 중' 상태 플래그를 false로 해제합니다.
     bIsAttacking = false;
 
-    // [!!! 핵심 수정 3 (버그 2 해결) !!!]
     // 몽타주가 '자연스럽게' 끝났다면 (binterrupted == false),
     // 연타 중(bAttackHeld == true)이더라도 콤보가 리셋되어야
     // AttackStarted가 ComboIndex 0으로 1타를 다시 시작하는 버그를 막을 수 있습니다.
@@ -374,39 +312,46 @@ void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 // 애님 노티파이(Notify) 수신 함수
 void UAttackComponent::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
 {
-    // ... (기존 콤보 로직: Notify_SaveAttack, Notify_ResetCombo 등) ...
-    // [디버그 4] (어떤 노티파이든 받으면 출력)
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Purple,
-        FString::Printf(TEXT("[4] OnNotifyBeginReceived: %s"), *NotifyName.ToString()));
+    AActor* Owner = GetOwner();
+    if (!Owner) return;
+
+    //[추가] WeaponComponent를 찾습니다.
+    UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>();
+    if (!WeaponComp) return;
+
+    //디버깅 메시지 WeaponComponent가 없는 경우 에러 로그
+    if (!WeaponComp)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AttackComponent] OnNotifyBeginReceived: FAILED to find WeaponComponent!"));
+        return;
+    }
+
 
     if (NotifyName == TEXT("StartAttack"))
     {
-        // [디버그 5](StartAttack 노티파이를 받으면 출력)
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[5] COLLISION ENABLED (StartAttack)"));
-        HitActorsThisSwing.Empty(); // 맞은 액터 목록 초기화
 
-        // 현재 폼이 가진 모든 콜리전 볼륨(히트박스)을 활성화합니다.
-        for (UShapeComponent* Collider : ActiveColliders)
+        //디버깅 메시지 "StartAttack" 노티파이 수신 및 위임 로그
+        if (GEngine)
         {
-            if (Collider)
-            {
-                Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-            }
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
+                TEXT("[AttackComponent] Notify: StartAttack -> Delegating to WeaponComponent"));
         }
+        //[수정] 콜리전 활성화를 WeaponComponent에 위임
+        WeaponComp->EnableCollision();
+
     }
     else if (NotifyName == TEXT("EndAttack"))
     {
-        // [디버그 5-End]
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Orange, TEXT("[5-End] COLLISION DISABLED (EndAttack)"));
-
-        // 모든 콜리전 볼륨(히트박스)을 비활성화합니다.
-        for (UShapeComponent* Collider : ActiveColliders)
+        //디버깅 메시지 "EndAttack" 노티파이 수신 및 위임 로그
+        if (GEngine)
         {
-            if (Collider)
-            {
-                Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            }
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
+                TEXT("[AttackComponent] Notify: EndAttack -> Delegating to WeaponComponent"));
         }
+
+        //[수정] 콜리전 비활성화를 WeaponComponent에 위임
+        WeaponComp->DisableCollision();
+ 
     }
 }
 void UAttackComponent::OnNotifyEndReceived(FName, const FBranchingPointNotifyPayload&) {}
@@ -495,178 +440,11 @@ void UAttackComponent::ResetComboHard()
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
 
-// 오버랩(히트) 함수
-void UAttackComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("=== OnAttackOverlap Triggered! ==="));
-
-    
-    AActor* Owner = GetOwner();
-    if (!Owner || OtherActor == Owner) return;
-    if (HitActorsThisSwing.Contains(OtherActor)) return;
-
-    // ... (데미지 적용 로직) ...
-    // ... (대미지 계산 로직, 4/5번 개선안 미적용 상태) ...
-    float DamageToApply = 10.f; // [개선안 5번 미적용 시 하드코딩된 대미지]
-
-    APawn* OwnerPawn = Cast<APawn>(Owner);
-    UGameplayStatics::ApplyDamage(OtherActor,
-        DamageToApply,
-        (OwnerPawn ? OwnerPawn->GetController() : nullptr),
-        Owner,
-        nullptr);
-
-    HitActorsThisSwing.Add(OtherActor);
-
-    // [!!! 기존 UE_LOG 대신 또는 함께 이 코드를 추가 !!!]
-    if (GEngine)
-    {
-        FString Msg = FString::Printf(TEXT("ATTACK HIT! %s -> %s (%f DMG)"),
-            *Owner->GetName(), *OtherActor->GetName(), DamageToApply);
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Msg);
-    }
-
-    // 기존 로그도 유용하므로 남겨둡니다.
-    UE_LOG(LogTemp, Warning, TEXT("Attack Hit via %s: %s"),
-        *OverlappedComponent->GetName(), *OtherActor->GetName());
-}
-
 /** 폼 변경 핸들러 구현 */
 void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
     ResetComboHard();
     // 캐릭터를 거치지 않고 직접 SetForm을 호출합니다.
     SetForm(Def);
-}
-
-// [새 함수] 콜리전 풀 초기화
-void UAttackComponent::InitializeColliderPool(int32 PoolSize)
-{
-    if (!GetOwner()) return;
-
-    for (int32 i = 0; i < PoolSize; ++i)
-    {
-        // 1. 박스 생성
-        if (UBoxComponent* Box = CreateNewBoxCollider())
-        {
-            BoxColliderPool.Add(Box);
-        }
-
-        // 2. 구체 생성
-        if (USphereComponent* Sphere = CreateNewSphereCollider())
-        {
-            SphereColliderPool.Add(Sphere);
-        }
-    }
-}
-
-// [새 함수] 풀에서 박스 가져오기
-UBoxComponent* UAttackComponent::GetPooledBoxCollider()
-{
-    // 현재 활성화되지 않은 (ActiveColliders에 없는) 콜리전 탐색
-    for (UBoxComponent* Box : BoxColliderPool)
-    {
-        if (Box && !ActiveColliders.Contains(Box))
-        {
-            return Box;
-        }
-    }
-
-    // 부족하므로 새로 생성
-    UBoxComponent* NewBox = CreateNewBoxCollider();
-    BoxColliderPool.Add(NewBox);
-    return NewBox;
-
-}
-
-// [새 함수] 풀에서 구체 가져오기
-USphereComponent* UAttackComponent::GetPooledSphereCollider()
-{
-    for (USphereComponent* Sphere : SphereColliderPool)
-    {
-        if (Sphere && !ActiveColliders.Contains(Sphere))
-        {
-            return Sphere;
-        }
-    }
-
-    // 부족 → 새로 생성
-    USphereComponent* NewSphere = CreateNewSphereCollider();
-    SphereColliderPool.Add(NewSphere);
-    return NewSphere;
-}
-
-// [수정 후] DeactivateAllColliders (DestroyComponent 제거)
-void UAttackComponent::DeactivateAllColliders()
-{
-    USkeletalMeshComponent* Mesh = GetMesh();
-    for (UShapeComponent* Collider : ActiveColliders)
-    {
-        if (!Collider) continue;
-
-        // 1) 충돌 비활성화
-        Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-        // 2) 소켓에서 분리 (상대 좌표 유지한 채)
-        //    KeepRelativeTransform 사용해야 다음 Attach 시 서로 영향을 안 줌
-        Collider->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-
-        // 3) 풀 복귀를 위해 초기화
-        //    상대 좌표 초기화는 Detach 상태에서도 의미 있음 (다음 Attach에 적용됨)
-        Collider->SetRelativeLocation(FVector::ZeroVector);
-        Collider->SetRelativeRotation(FRotator::ZeroRotator);
-
-        // 크기 초기화 (박스/스피어 모두)
-        if (UBoxComponent* Box = Cast<UBoxComponent>(Collider))
-        {
-            Box->SetBoxExtent(FVector::ZeroVector);
-        }
-        else if (USphereComponent* Sphere = Cast<USphereComponent>(Collider))
-        {
-            Sphere->SetSphereRadius(0.0f);
-        }
-    }
-    ActiveColliders.Empty(); // 활성 목록만 비움 (풀은 유지)
-}
-
-
-
-UBoxComponent* UAttackComponent::CreateNewBoxCollider()
-{
-    AActor* Owner = GetOwner();
-    if (!Owner) return nullptr;
-
-    UBoxComponent* NewBox = NewObject<UBoxComponent>(Owner);
-    if (!NewBox) return nullptr;
-
-    NewBox->RegisterComponent();
-    NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    NewBox->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-    NewBox->SetCollisionObjectType(ECC_WorldDynamic);
-    NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-    NewBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    NewBox->SetHiddenInGame(false);
-
-    return NewBox;
-}
-
-USphereComponent* UAttackComponent::CreateNewSphereCollider()
-{
-    AActor* Owner = GetOwner();
-    if (!Owner) return nullptr;
-
-    USphereComponent* NewSphere = NewObject<USphereComponent>(Owner);
-    if (!NewSphere) return nullptr;
-
-    NewSphere->RegisterComponent();
-    NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UAttackComponent::OnAttackOverlap);
-    NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
-    NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-    NewSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    NewSphere->SetHiddenInGame(false);
-
-    return NewSphere;
 }
 

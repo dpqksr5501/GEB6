@@ -12,9 +12,6 @@ class UFormDefinition;
 class USkeletalMeshComponent;
 class UAnimInstance;
 class UAnimMontage;
-class UShapeComponent; //공격 판정 콜리전을 사용하기 위해 전방선언
-class USphereComponent;
-class UBoxComponent;
 struct FInputActionValue;
 
 UENUM()
@@ -77,51 +74,16 @@ protected:
     USkeletalMeshComponent* GetMesh() const;
     UAnimInstance* GetAnim() const;
 
-
-    //콜리전 오버랩 함수 선언(이름 변경 없음)
-    UFUNCTION()
-    void OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-    UPROPERTY(Transient)
-    TArray<TObjectPtr<AActor>> HitActorsThisSwing;
-
     /** FormManager로부터 폼 변경 이벤트를 수신할 핸들러입니다. */
     UFUNCTION()
     void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
 
-    /** BeginPlay에서 호출되어 콜리전 풀을 생성합니다. */
-    void InitializeColliderPool(int32 PoolSize = 5); // 폼 당 최대 5개로 가정
-
-    /** 모든 활성 콜리전의 사용을 중지하고 풀로 되돌립니다. */
-    void DeactivateAllColliders();
-
-    /** 풀에서 사용 가능한 박스 콜리전을 가져옵니다. */
-    UBoxComponent* GetPooledBoxCollider();
-
-    /** 풀에서 사용 가능한 구체 콜리전을 가져옵니다. */
-    USphereComponent* GetPooledSphereCollider();
-
-    // 공용 생성 함수 풀 생성  부족 시 생성 모두 여기서 처리
-    UBoxComponent* CreateNewBoxCollider();
-    USphereComponent* CreateNewSphereCollider();
 
     /** (bIsAttacking과 별개로) 콤보가 다음 몽타주로 '연계되는 순간'인지 확인합니다. */
     UPROPERTY(Transient)
     bool bIsChaining = false;
 
-private:
-
-    /** 미리 생성해 둔 구체 콜리전 풀 */
-    UPROPERTY(Transient)
-    TArray<TObjectPtr<USphereComponent>> SphereColliderPool;
-
-    UPROPERTY(Transient)
-    TArray<TObjectPtr<UBoxComponent>> BoxColliderPool;
-   
-
-    /** 현재 폼에서 '활성화'되어 사용 중인 콜리전 목록 (풀의 일부) */
-    UPROPERTY(Transient)
-    TArray<TObjectPtr<UShapeComponent>> ActiveColliders;
+private:   
 
     //캐싱 : 몽타주별 계산된 FPS 저장하는 곳
     mutable TMap<const UAnimMontage*, float> CachedMontageFPS;
