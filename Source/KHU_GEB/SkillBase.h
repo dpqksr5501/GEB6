@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -27,8 +27,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 */
-	// SkillDefinitionø°º≠ ¡÷¿‘
-	virtual void InitializeFromDefinition(const USkillDefinition* Def) { /* Params ∫πªÁ µÓ */ }
+	// SkillDefinitionÏóêÏÑú Ï£ºÏûÖ
+	virtual void InitializeFromDefinition(const USkillDefinition* Def) { /* Params Î≥µÏÇ¨ Îì± */ }
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")

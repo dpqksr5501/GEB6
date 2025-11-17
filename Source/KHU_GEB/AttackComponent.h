@@ -1,4 +1,4 @@
-//AttackComponent.h
+ï»¿//AttackComponent.h
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
@@ -12,7 +12,7 @@ class UFormDefinition;
 class USkeletalMeshComponent;
 class UAnimInstance;
 class UAnimMontage;
-class UShapeComponent; //°ø°İ ÆÇÁ¤ Äİ¸®ÀüÀ» »ç¿ëÇÏ±â À§ÇØ Àü¹æ¼±¾ğ
+class UShapeComponent; //ê³µê²© íŒì • ì½œë¦¬ì „ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì „ë°©ì„ ì–¸
 class USphereComponent;
 class UBoxComponent;
 struct FInputActionValue;
@@ -25,7 +25,7 @@ class KHU_GEB_API UAttackComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-    // µ¥ÀÌÅÍ/»óÅÂ
+    // ë°ì´í„°/ìƒíƒœ
     UPROPERTY(Transient) const UFormDefinition* CurrentFormDef = nullptr;
     UPROPERTY(Transient) int32 ComboIndex = 0;
 
@@ -34,10 +34,10 @@ class KHU_GEB_API UAttackComponent : public UActorComponent
     UPROPERTY(Transient) bool bAdvancedThisWindow = false;
     UPROPERTY(Transient) bool bResetOnNext = false;
     UPROPERTY(Transient) EComboPolicy NextPolicy = EComboPolicy::None;
-    /** ÄÄÆ÷³ÍÆ®°¡ ÇöÀç °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ı ÁßÀÎÁö È®ÀÎÇÕ´Ï´Ù. */
+    /** ì»´í¬ë„ŒíŠ¸ê°€ í˜„ì¬ ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     
 
-    // ¾Ö´Ô ÃßÀû/·¹ÀÌ½º °¡µå
+    // ì• ë‹˜ ì¶”ì /ë ˆì´ìŠ¤ ê°€ë“œ
     UPROPERTY(Transient) TWeakObjectPtr<UAnimInstance> BoundAnim;
     UPROPERTY(Transient) TObjectPtr<UAnimMontage> LastAttackMontage = nullptr;
     UPROPERTY(Transient) TObjectPtr<UAnimMontage> WindowOwnerMontage = nullptr;
@@ -48,70 +48,70 @@ public:
 	UAttackComponent();
 
 private:
-    // Å¸ÀÌ¸Ó
+    // íƒ€ì´ë¨¸
     FTimerHandle Timer_Save, Timer_Reset;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-    // ³»ºÎ ·ÎÁ÷
+    // ë‚´ë¶€ ë¡œì§
     void PlayCurrentComboMontage(float PlayRate = 1.f);
     void ComputeNextIndex();
     void AdvanceComboImmediately();
 
-    // Save / Reset Ã¢±¸
+    // Save / Reset ì°½êµ¬
     void Notify_SaveAttack();
     void Notify_ResetCombo();
 
-    // ÇÁ·¹ÀÓ¡æÅ¸ÀÌ¸Ó
+    // í”„ë ˆì„â†’íƒ€ì´ë¨¸
     void ScheduleComboWindows(UAnimMontage* Montage, float PlayRate);
     void ClearComboWindows();
     float GetFPSFor(const UAnimMontage* Montage, float OverrideFPS) const;
 
-    // ¾Ö´Ô µ¨¸®°ÔÀÌÆ®
+    // ì• ë‹˜ ë¸ë¦¬ê²Œì´íŠ¸
     void BindAnimDelegates();
     void UnbindAnimDelegates();
 
-    // À¯Æ¿
+    // ìœ í‹¸
     USkeletalMeshComponent* GetMesh() const;
     UAnimInstance* GetAnim() const;
 
 
-    //Äİ¸®Àü ¿À¹ö·¦ ÇÔ¼ö ¼±¾ğ(ÀÌ¸§ º¯°æ ¾øÀ½)
+    //ì½œë¦¬ì „ ì˜¤ë²„ë© í•¨ìˆ˜ ì„ ì–¸(ì´ë¦„ ë³€ê²½ ì—†ìŒ)
     UFUNCTION()
     void OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
     UPROPERTY(Transient)
     TArray<TObjectPtr<AActor>> HitActorsThisSwing;
 
-    /** FormManager·ÎºÎÅÍ Æû º¯°æ ÀÌº¥Æ®¸¦ ¼ö½ÅÇÒ ÇÚµé·¯ÀÔ´Ï´Ù. */
+    /** FormManagerë¡œë¶€í„° í¼ ë³€ê²½ ì´ë²¤íŠ¸ë¥¼ ìˆ˜ì‹ í•  í•¸ë“¤ëŸ¬ì…ë‹ˆë‹¤. */
     UFUNCTION()
     void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
 
-    /** BeginPlay¿¡¼­ È£ÃâµÇ¾î Äİ¸®Àü Ç®À» »ı¼ºÇÕ´Ï´Ù. */
-    void InitializeColliderPool(int32 PoolSize = 5); // Æû ´ç ÃÖ´ë 5°³·Î °¡Á¤
+    /** BeginPlayì—ì„œ í˜¸ì¶œë˜ì–´ ì½œë¦¬ì „ í’€ì„ ìƒì„±í•©ë‹ˆë‹¤. */
+    void InitializeColliderPool(int32 PoolSize = 5); // í¼ ë‹¹ ìµœëŒ€ 5ê°œë¡œ ê°€ì •
 
-    /** ¸ğµç È°¼º Äİ¸®ÀüÀÇ »ç¿ëÀ» ÁßÁöÇÏ°í Ç®·Î µÇµ¹¸³´Ï´Ù. */
+    /** ëª¨ë“  í™œì„± ì½œë¦¬ì „ì˜ ì‚¬ìš©ì„ ì¤‘ì§€í•˜ê³  í’€ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤. */
     void DeactivateAllColliders();
 
-    /** Ç®¿¡¼­ »ç¿ë °¡´ÉÇÑ ¹Ú½º Äİ¸®ÀüÀ» °¡Á®¿É´Ï´Ù. */
+    /** í’€ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ë°•ìŠ¤ ì½œë¦¬ì „ì„ ê°€ì ¸ì˜µë‹ˆë‹¤. */
     UBoxComponent* GetPooledBoxCollider();
 
-    /** Ç®¿¡¼­ »ç¿ë °¡´ÉÇÑ ±¸Ã¼ Äİ¸®ÀüÀ» °¡Á®¿É´Ï´Ù. */
+    /** í’€ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ êµ¬ì²´ ì½œë¦¬ì „ì„ ê°€ì ¸ì˜µë‹ˆë‹¤. */
     USphereComponent* GetPooledSphereCollider();
 
-    // °ø¿ë »ı¼º ÇÔ¼ö Ç® »ı¼º  ºÎÁ· ½Ã »ı¼º ¸ğµÎ ¿©±â¼­ Ã³¸®
+    // ê³µìš© ìƒì„± í•¨ìˆ˜ í’€ ìƒì„±  ë¶€ì¡± ì‹œ ìƒì„± ëª¨ë‘ ì—¬ê¸°ì„œ ì²˜ë¦¬
     UBoxComponent* CreateNewBoxCollider();
     USphereComponent* CreateNewSphereCollider();
 
-    /** (bIsAttacking°ú º°°³·Î) ÄŞº¸°¡ ´ÙÀ½ ¸ùÅ¸ÁÖ·Î '¿¬°èµÇ´Â ¼ø°£'ÀÎÁö È®ÀÎÇÕ´Ï´Ù. */
+    /** (bIsAttackingê³¼ ë³„ê°œë¡œ) ì½¤ë³´ê°€ ë‹¤ìŒ ëª½íƒ€ì£¼ë¡œ 'ì—°ê³„ë˜ëŠ” ìˆœê°„'ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     UPROPERTY(Transient)
     bool bIsChaining = false;
 
 private:
 
-    /** ¹Ì¸® »ı¼ºÇØ µĞ ±¸Ã¼ Äİ¸®Àü Ç® */
+    /** ë¯¸ë¦¬ ìƒì„±í•´ ë‘” êµ¬ì²´ ì½œë¦¬ì „ í’€ */
     UPROPERTY(Transient)
     TArray<TObjectPtr<USphereComponent>> SphereColliderPool;
 
@@ -119,32 +119,32 @@ private:
     TArray<TObjectPtr<UBoxComponent>> BoxColliderPool;
    
 
-    /** ÇöÀç Æû¿¡¼­ 'È°¼ºÈ­'µÇ¾î »ç¿ë ÁßÀÎ Äİ¸®Àü ¸ñ·Ï (Ç®ÀÇ ÀÏºÎ) */
+    /** í˜„ì¬ í¼ì—ì„œ 'í™œì„±í™”'ë˜ì–´ ì‚¬ìš© ì¤‘ì¸ ì½œë¦¬ì „ ëª©ë¡ (í’€ì˜ ì¼ë¶€) */
     UPROPERTY(Transient)
     TArray<TObjectPtr<UShapeComponent>> ActiveColliders;
 
-    //Ä³½Ì : ¸ùÅ¸ÁÖº° °è»êµÈ FPS ÀúÀåÇÏ´Â °÷
+    //ìºì‹± : ëª½íƒ€ì£¼ë³„ ê³„ì‚°ëœ FPS ì €ì¥í•˜ëŠ” ê³³
     mutable TMap<const UAnimMontage*, float> CachedMontageFPS;
 
 public:
 
-    /*ÄÄÆ÷³ÍÆ®°¡ ÇöÀç °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ı ÁßÀÎÁö È®ÀÎÇÕ´Ï´Ù.*/
+    /*ì»´í¬ë„ŒíŠ¸ê°€ í˜„ì¬ ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.*/
     UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
     bool bIsAttacking = false;
 
-    // ¿ÜºÎ(Ä³¸¯ÅÍ) API
+    // ì™¸ë¶€(ìºë¦­í„°) API
     void SetForm(const UFormDefinition* Def);
-    void AttackStarted(const FInputActionValue&);    // ÀÔ·Â: ´©¸§
-    void AttackTriggered(const FInputActionValue&);  // ÀÔ·Â: È¦µå Áß
-    void AttackCompleted(const FInputActionValue&);  // ÀÔ·Â: ¶À
+    void AttackStarted(const FInputActionValue&);    // ì…ë ¥: ëˆ„ë¦„
+    void AttackTriggered(const FInputActionValue&);  // ì…ë ¥: í™€ë“œ ì¤‘
+    void AttackCompleted(const FInputActionValue&);  // ì…ë ¥: ë—Œ
 
-    // (¼±ÅÃ) ÀüÅõ Áß´Ü/¸®¼Â
+    // (ì„ íƒ) ì „íˆ¬ ì¤‘ë‹¨/ë¦¬ì…‹
     void ResetComboHard();
 
 
 
 protected:
-    // µ¨¸®°ÔÀÌÆ® ÇÚµé·¯
+    // ë¸ë¦¬ê²Œì´íŠ¸ í•¸ë“¤ëŸ¬
     UFUNCTION() void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
     UFUNCTION() void OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
     UFUNCTION() void OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,8 +10,9 @@ class USkeletalMesh;
 class UAnimInstance;
 class UAnimMontage;
 class USkillSet;
+class UFormStatData;
 
-// [»õ·Î Ãß°¡] È÷Æ®¹Ú½º ¸ğ¾çÀ» Á¤ÀÇÇÒ Enum
+// [ìƒˆë¡œ ì¶”ê°€] íˆíŠ¸ë°•ìŠ¤ ëª¨ì–‘ì„ ì •ì˜í•  Enum
 UENUM(BlueprintType)
 enum class EHitboxShape : uint8
 {
@@ -19,33 +20,33 @@ enum class EHitboxShape : uint8
 	Sphere
 };
 
-// [»õ·Î Ãß°¡] °³º° È÷Æ®¹Ú½º ¼³Á¤À» À§ÇÑ ±¸Á¶Ã¼
+// [ìƒˆë¡œ ì¶”ê°€] ê°œë³„ íˆíŠ¸ë°•ìŠ¤ ì„¤ì •ì„ ìœ„í•œ êµ¬ì¡°ì²´
 USTRUCT(BlueprintType)
 struct FHitboxConfig
 {
 	GENERATED_BODY()
 
-	/** ÀÌ È÷Æ®¹Ú½º¸¦ ºÎÂøÇÒ ½ºÄÌ·¹Å» ¸Ş½Ã ¼ÒÄÏ ÀÌ¸§ */
+	/** ì´ íˆíŠ¸ë°•ìŠ¤ë¥¼ ë¶€ì°©í•  ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ ì†Œì¼“ ì´ë¦„ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName SocketName = NAME_None;
 
-	/** È÷Æ®¹Ú½º ¸ğ¾ç (¹Ú½º ¶Ç´Â ±¸Ã¼) */
+	/** íˆíŠ¸ë°•ìŠ¤ ëª¨ì–‘ (ë°•ìŠ¤ ë˜ëŠ” êµ¬ì²´) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EHitboxShape Shape = EHitboxShape::Box;
 
 	/**
-	* ¸ğ¾ç¿¡ µû¸¥ Å©±â °ª:
+	* ëª¨ì–‘ì— ë”°ë¥¸ í¬ê¸° ê°’:
 	* - Box: BoxExtent (FVector(X, Y, Z))
 	* - Sphere: Radius (FVector(Radius, 0, 0))
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector Size = FVector(32.f);
 
-	/** ¼ÒÄÏ À§Ä¡¸¦ ±âÁØÀ¸·Î ÇÑ Ãß°¡ÀûÀÎ À§Ä¡ ¿ÀÇÁ¼ÂÀÔ´Ï´Ù. */
+	/** ì†Œì¼“ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•œ ì¶”ê°€ì ì¸ ìœ„ì¹˜ ì˜¤í”„ì…‹ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
 	FVector RelativeLocation = FVector::ZeroVector;
 
-	/** ¼ÒÄÏ È¸ÀüÀ» ±âÁØÀ¸·Î ÇÑ Ãß°¡ÀûÀÎ È¸Àü ¿ÀÇÁ¼ÂÀÔ´Ï´Ù. */
+	/** ì†Œì¼“ íšŒì „ì„ ê¸°ì¤€ìœ¼ë¡œ í•œ ì¶”ê°€ì ì¸ íšŒì „ ì˜¤í”„ì…‹ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 };
@@ -61,22 +62,22 @@ struct FAttackStep
 {
 	GENERATED_BODY()
 
-	// ÀÌ ¸ùÅ¸ÁÖ¿¡¼­ Save/Reset ÀÌ ¿­¸®´Â "ÇÁ·¹ÀÓ" ¹øÈ£
+	// ì´ ëª½íƒ€ì£¼ì—ì„œ Save/Reset ì´ ì—´ë¦¬ëŠ” "í”„ë ˆì„" ë²ˆí˜¸
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	int32 SaveFrame = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	int32 ResetFrame = 0;
 
-	// ¼±ÅÃ: ÇÁ·¹ÀÓ ¡æ ÃÊ º¯È¯¿¡ ¾µ FPS(0ÀÌ¸é ÀÚµ¿ ÃßÁ¤)
+	// ì„ íƒ: í”„ë ˆì„ â†’ ì´ˆ ë³€í™˜ì— ì“¸ FPS(0ì´ë©´ ìë™ ì¶”ì •)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
-	float OverrideFPS = 0.f; // 0: ÀÚµ¿, ±× ¿Ü: ÇØ´ç °ª »ç¿ë(¿¹: 30, 60)
+	float OverrideFPS = 0.f; // 0: ìë™, ê·¸ ì™¸: í•´ë‹¹ ê°’ ì‚¬ìš©(ì˜ˆ: 30, 60)
 
-	/** Ä³¸¯ÅÍ°¡ ¿òÁ÷ÀÌ´Â Áß¿¡ Àç»ıµÉ »óÃ¼ Àü¿ë ¸ùÅ¸ÁÖÀÔ´Ï´Ù. */
+	/** ìºë¦­í„°ê°€ ì›€ì§ì´ëŠ” ì¤‘ì— ì¬ìƒë  ìƒì²´ ì „ìš© ëª½íƒ€ì£¼ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_UpperBody = nullptr;
 
-	/** Ä³¸¯ÅÍ°¡ °¡¸¸È÷ ÀÖÀ» ¶§ Àç»ıµÉ Àü½Å ¸ùÅ¸ÁÖÀÔ´Ï´Ù. */
+	/** ìºë¦­í„°ê°€ ê°€ë§Œíˆ ìˆì„ ë•Œ ì¬ìƒë  ì „ì‹  ëª½íƒ€ì£¼ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_FullBody = nullptr;
 
@@ -106,16 +107,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<USkillSet> SkillSet;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	TObjectPtr<UFormStatData> StatData;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	TArray<FHitboxConfig> Hitboxes;
 
-	/** ÀÌ ÆûÀÏ ¶§ÀÇ ±âº» ÃÖ´ë ÀÌµ¿ ¼ÓµµÀÔ´Ï´Ù. */
+	/** ì´ í¼ì¼ ë•Œì˜ ê¸°ë³¸ ìµœëŒ€ ì´ë™ ì†ë„ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseWalkSpeed = 600.f; // ±âº»°ª 600À¸·Î ¼³Á¤
+	float BaseWalkSpeed = 600.f; // ê¸°ë³¸ê°’ 600ìœ¼ë¡œ ì„¤ì •
 
-	/** ÀÌ ÆûÀÏ ¶§ÀÇ ±âº» °¡¼ÓµµÀÔ´Ï´Ù. (0ÀÌ¸é Ä³¸¯ÅÍ ¹«ºê¸ÕÆ® ÄÄÆ÷³ÍÆ®ÀÇ ±âº»°ªÀ» »ç¿ë) */
+	/** ì´ í¼ì¼ ë•Œì˜ ê¸°ë³¸ ê°€ì†ë„ì…ë‹ˆë‹¤. (0ì´ë©´ ìºë¦­í„° ë¬´ë¸Œë¨¼íŠ¸ ì»´í¬ë„ŒíŠ¸ì˜ ê¸°ë³¸ê°’ì„ ì‚¬ìš©) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseAcceleration = 0.f; // 0.0fÀ¸·Î ¼³Á¤ÇÏ¿© ±âº»°ªÀ» À¯ÁöÇÏµµ·Ï ÇÔ
+	float BaseAcceleration = 0.f; // 0.0fìœ¼ë¡œ ì„¤ì •í•˜ì—¬ ê¸°ë³¸ê°’ì„ ìœ ì§€í•˜ë„ë¡ í•¨
 };
 
 UCLASS(BlueprintType)

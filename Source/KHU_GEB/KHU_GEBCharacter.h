@@ -21,6 +21,7 @@ class UFormManagerComponent;
 class UFormDefinition;
 class UAttackComponent;
 class USkillManagerComponent;
+class UStatManagerComponent;
 class UNiagaraComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -123,6 +124,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStatManagerComponent* StatManager;
 
 	//추가 코드 부분입니다.
 	//애님 인스턴스에 데이터를 제공할 플레이어 전용 변수 2개를 추가합니다.

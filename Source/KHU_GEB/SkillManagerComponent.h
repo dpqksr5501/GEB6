@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ClearAll();
 
-	// ÀÔ·Â ¹ÙÀÎµù¿¡¼­ È£Ãâ
+	// ì…ë ¥ ë°”ì¸ë”©ì—ì„œ í˜¸ì¶œ
 	UFUNCTION(BlueprintCallable) bool TryActivate(ESkillSlot Slot);
 	UFUNCTION(BlueprintCallable) bool TryStop(ESkillSlot Slot);
 };

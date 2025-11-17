@@ -14,6 +14,7 @@
 #include "FormManagerComponent.h"
 #include "AttackComponent.h"
 #include "SkillManagerComponent.h"
+#include "StatManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 #include "FormDefinition.h"
@@ -58,6 +59,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
+	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
 	if (ATTACK.Object) { AttackAction = ATTACK.Object; }
