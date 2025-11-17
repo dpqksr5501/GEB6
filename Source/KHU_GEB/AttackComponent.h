@@ -100,26 +100,18 @@ protected:
 
     /** 풀에서 사용 가능한 구체 콜리전을 가져옵니다. */
     USphereComponent* GetPooledSphereCollider();
-
-    // 공용 생성 함수 풀 생성  부족 시 생성 모두 여기서 처리
-    UBoxComponent* CreateNewBoxCollider();
-    USphereComponent* CreateNewSphereCollider();
 private:
+
+    UPROPERTY(Transient)
+    TArray<TObjectPtr<UBoxComponent>> BoxColliderPool;
 
     /** 미리 생성해 둔 구체 콜리전 풀 */
     UPROPERTY(Transient)
     TArray<TObjectPtr<USphereComponent>> SphereColliderPool;
 
-    UPROPERTY(Transient)
-    TArray<TObjectPtr<UBoxComponent>> BoxColliderPool;
-   
-
     /** 현재 폼에서 '활성화'되어 사용 중인 콜리전 목록 (풀의 일부) */
     UPROPERTY(Transient)
     TArray<TObjectPtr<UShapeComponent>> ActiveColliders;
-
-    //캐싱 : 몽타주별 계산된 FPS 저장하는 곳
-    mutable TMap<const UAnimMontage*, float> CachedMontageFPS;
 
 public:	
 
@@ -146,5 +138,3 @@ protected:
     UFUNCTION() void OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
 
 };
-
-

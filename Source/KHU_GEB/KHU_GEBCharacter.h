@@ -8,7 +8,6 @@
 #include "MyAnimDataProvider.h" // 1. 생성한 인터페이스 헤더를 포함합니다.
 #include "MonsterAnimInstanceBase.h" // 2. ECharacterState 열거형을 사용하기 위해 포함합니다.
 #include "FormDefinition.h"
-#include "Camera/CameraComponent.h"
 #include "KHU_GEBCharacter.generated.h"
 
 class USpringArmComponent;
@@ -73,33 +72,6 @@ private:
 
 	/** 현재 스프린트 중인지 여부 */
 	bool bIsSprinting;
-
-	/** 카메라 효과를 부드럽게 보간(Interp)하는 속도입니다. */
-	UPROPERTY(EditAnywhere, Category = "Camera Effects")
-	float CameraInterpSpeed = 10.0f;
-
-	// --- 카메라 붐(거리) 변수 ---
-	/** BeginPlay에서 저장되는 카메라 붐의 기본(Idle) 거리입니다. */
-	float DefaultCameraBoomLength;
-	/** Tick 함수가 매 프레임 도달하려는 목표 카메라 붐 거리입니다. */
-	float TargetCameraBoomLength;
-
-	// --- 카메라 FOV(광각) 변수 ---
-	/** BeginPlay에서 저장되는 카메라의 기본(Idle) FOV 값입니다. */
-	float DefaultFOV;
-	/** Tick 함수가 매 프레임 도달하려는 목표 FOV 값입니다. */
-	float TargetFOV;
-
-	// --- 포스트 프로세스(이펙트) 변수 ---
-	/** BeginPlay에서 저장되는 카메라의 기본 포스트 프로세스 설정입니다. (이펙트 끄기용) */
-	UPROPERTY() // UPROPERTY로 GC가 참조하게 함
-	FPostProcessSettings DefaultPostProcessSettings;
-
-	/** Tick 함수가 매 프레임 도달하려는 목표 SceneFringe(흐릿함) 강도입니다. */
-	float TargetFringeIntensity;
-
-	/** Tick 함수가 매 프레임 도달하려는 목표 Vignette(어두움) 강도입니다. */
-	float TargetVignetteIntensity;
 
 public:
 	/** Constructor */

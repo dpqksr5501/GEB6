@@ -148,90 +148,20 @@ void AKHU_GEBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//if (FormManager)
-	//{
-	//	// 폼이 바뀔 때마다 OnFormChanged_Handler 함수를 호출하도록 연결합니다.
-	//	FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged_Handler);
-	//	FormManager->InitializeForms();
-	//}
-
-	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
-
-	// 1. 카메라의 기본값(Idle 상태)을 변수에 저장합니다.
-	if (CameraBoom)
-	{
-		DefaultCameraBoomLength = CameraBoom->TargetArmLength;//(기존 400.0f)
-		TargetCameraBoomLength = DefaultCameraBoomLength;
-	}
-	if (FollowCamera)
-	{
-		DefaultFOV = FollowCamera->FieldOfView; // (기본 90.0f)
-		TargetFOV = DefaultFOV;
-		DefaultPostProcessSettings = FollowCamera->PostProcessSettings;
-
-		//포스트 프로세스 효과의 기본값(0.0)을 목표 변수에 저장합니다.
-		TargetFringeIntensity = 0.f; // (기본값 0)
-		TargetVignetteIntensity = 0.f; // (기본값 0)
-	}
-
-	// 2. 델리게이트 바인딩
 	if (FormManager)
 	{
+		// 폼이 바뀔 때마다 OnFormChanged_Handler 함수를 호출하도록 연결합니다.
 		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged_Handler);
 		FormManager->InitializeForms();
 	}
+
+	OnTakeAnyDamage.AddDynamic(this, &AKHU_GEBCharacter::HandleAnyDamage);
 }
 
 void AKHU_GEBCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// 1. 카메라 붐(거리)을 부드럽게 보간
-	if (CameraBoom && CameraBoom->TargetArmLength != TargetCameraBoomLength)
-	{
-		CameraBoom->TargetArmLength = FMath::FInterpTo(
-			CameraBoom->TargetArmLength,
-			TargetCameraBoomLength,
-			DeltaTime,
-			CameraInterpSpeed
-		);
-	}
-
-	// 2. 카메라 FOV 및 포스트 프로세스 보간 (수정된 로직)
-	if (FollowCamera)
-	{
-		// 2A. FOV 보간 (기존 코드)
-		if (FollowCamera->FieldOfView != TargetFOV)
-		{
-			FollowCamera->FieldOfView = FMath::FInterpTo(
-				FollowCamera->FieldOfView,
-				TargetFOV,
-				DeltaTime,
-				CameraInterpSpeed
-			);
-		}
-
-		// [!!! 2B. 포스트 프로세스 '강도'를 부드럽게 보간 (핵심 수정) !!!]
-
-		// Scene Fringe (흐릿함)
-		FollowCamera->PostProcessSettings.bOverride_SceneFringeIntensity = true; // [항상 덮어쓰기]
-		FollowCamera->PostProcessSettings.SceneFringeIntensity = FMath::FInterpTo(
-			FollowCamera->PostProcessSettings.SceneFringeIntensity, // 현재 값
-			TargetFringeIntensity,                                  // 목표 값 (0.0 또는 2.0)
-			DeltaTime,
-			CameraInterpSpeed
-		);
-
-		// Vignette (어두움)
-		FollowCamera->PostProcessSettings.bOverride_VignetteIntensity = true; // [항상 덮어쓰기]
-		FollowCamera->PostProcessSettings.VignetteIntensity = FMath::FInterpTo(
-			FollowCamera->PostProcessSettings.VignetteIntensity, // 현재 값
-			TargetVignetteIntensity,                                 // 목표 값 (0.0 또는 0.8)
-			DeltaTime,
-			CameraInterpSpeed
-		);
-	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
 
 }
@@ -382,7 +312,7 @@ void AKHU_GEBCharacter::DoJumpEnd()
 
 
 
-//인터페이스 함수 구현.
+//인터페이스 함수 4개를 파일 맨 아래에 새로 구현합니다.
 
 float AKHU_GEBCharacter::GetAnimSpeed_Implementation() const
 {
@@ -433,12 +363,10 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 	return CurrentPlayerState;
 }
 
-//폼 변경 시 및 달리기 관련 함수들
+//달리기 관련 함수들
 /** 폼이 변경될 때 호출되는 핸들러 */
 void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
 {
-	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-
 	if (!Def || !GetCharacterMovement())
 	{
 		return;
@@ -447,70 +375,15 @@ void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefi
 	// 1. 새 폼의 기본 속도를 DA에서 읽어와 변수에 저장합니다.
 	CurrentFormBaseSpeed = Def->BaseWalkSpeed;
 
-	// 2. 새 폼의 기본 가속도를 DA에서 읽어와 CharacterMovementComponent에 '직접' 설정합니다.
-	if (Def->BaseAcceleration > 0.f)
-	{
-		MoveComp->MaxAcceleration = Def->BaseAcceleration;
-	}
-	// (참고: 0.f이면, 컴포넌트의 기본값(예: 2048)을 그대로 사용하므로 다른 폼에 영향을 주지 않습니다.)
-
 	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
 	UpdateMovementSpeed();
-
-	// 2. 폼 변경 시 달리기 중이었다면, 카메라/효과를 새 폼에 맞게 재설정합니다.
-	if (bIsSprinting)
-	{
-		if (NewForm == EFormType::Swift)
-		{
-			// Swift 폼으로 달리기 시작 (기존 코드)
-			TargetCameraBoomLength = 550.f;
-			TargetFOV = 105.f;
-
-			//효과 목표값 설정
-			TargetFringeIntensity = 2.0f;   // Swift는 강하게
-			TargetVignetteIntensity = 0.8f; // Swift는 강하게
-		}
-		else
-		{
-			// 다른 폼으로 달리기 시작 (기존 코드)
-			TargetCameraBoomLength = 450.f;
-			TargetFOV = 95.f;
-
-			// [!!!] 효과 목표값 설정
-			TargetFringeIntensity = 1.0f;   // 일반 폼은 약하게
-			TargetVignetteIntensity = 0.4f; // 일반 폼은 약하게
-		}
-	}
 }
-
-//bIsSprinting
 
 /** 스프린트 시작 (Shift 누름) */
 void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
 {
 	bIsSprinting = true;
 	UpdateMovementSpeed();
-
-	// 1. 현재 폼 타입을 확인합니다.
-	EFormType CurrentForm = FormManager ? FormManager->CurrentForm : EFormType::Base;
-
-	// 2. 폼에 따라 목표 카메라 값을 설정합니다. (Tick에서 부드럽게 적용됨)
-	if (CurrentForm == EFormType::Swift)
-	{
-		TargetCameraBoomLength = 550.f; // Swift 폼 스프린트 (예: 550)
-		TargetFOV = 105.f;               // Swift 폼 FOV (예: 105)
-
-		TargetFringeIntensity = 2.0f;
-		TargetVignetteIntensity = 0.8f;
-	}
-	else
-	{
-		TargetCameraBoomLength = 450.f; // 일반 폼 스프린트 (예: 450)
-		TargetFOV = 95.f;                // 일반 폼 FOV (예: 95)
-
-		TargetFringeIntensity = 1.0f;
-		TargetVignetteIntensity = 0.4f;
-	}
 }
 
 /** 스프린트 종료 (Shift 뗌) */
@@ -518,13 +391,6 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 {
 	bIsSprinting = false;
 	UpdateMovementSpeed();
-
-	// 1. 목표 카메라 값을 '기본값'으로 되돌립니다.
-	TargetCameraBoomLength = DefaultCameraBoomLength;
-	TargetFOV = DefaultFOV;
-
-	TargetFringeIntensity = 0.f;
-	TargetVignetteIntensity = 0.f;
 }
 
 /**
