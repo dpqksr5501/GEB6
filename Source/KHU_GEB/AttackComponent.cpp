@@ -285,10 +285,10 @@ void UAttackComponent::AdvanceComboImmediately()
     // 현재 몽타주용 타이머 먼저 정리(레이스 가드)
     ClearComboWindows();
 
-    /*if (UAnimInstance* Anim = GetAnim())
+    if (UAnimInstance* Anim = GetAnim())
     {
         if (LastAttackMontage) { Anim->Montage_Stop(0.05f, LastAttackMontage); }
-    }*/
+    }
 
     bAdvancedThisWindow = true;
     bResetOnNext = false; NextPolicy = EComboPolicy::None;
