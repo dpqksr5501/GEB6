@@ -19,8 +19,6 @@ class KHU_GEB_API UFormManagerComponent : public UActorComponent
 public:
 	UFormManagerComponent();
 
-	const UFormDefinition* FindDef(EFormType T) const;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Form")
 	TObjectPtr<UFormSet> FormSet;
 
@@ -30,7 +28,7 @@ public:
 	UPROPERTY(BlueprintAssignable) FOnFormChanged OnFormChanged;
 
 private:
-	
+	const UFormDefinition* FindDef(EFormType T) const;
 	void ApplyMesh(const UFormDefinition* Def);	
 
 	void FindMesh();

@@ -6,8 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "MonsterAnimInstanceBase.generated.h"
 
-
-
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
 {
@@ -18,8 +16,7 @@ enum class ECharacterState : uint8
 	Die		UMETA(DisplayName = "Die")
 };
 
-class AMonsterBase; // 전방 선언
-class IMyAnimDataProvider; // 1. 인터페이스 전방 선언 추가
+class AMonsterBase;
 
 UCLASS()
 class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
@@ -57,12 +54,8 @@ public:
 	float AimPitch;
 
 protected:
-	//UPROPERTY()
-	//AMonsterBase* OwningMonster;
-
-	//인터페이스 포인터를 저장할 변수로 변경합니다.
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "Owner")
-	TScriptInterface<IMyAnimDataProvider> OwningDataProvider;
+	UPROPERTY()
+	AMonsterBase* OwningMonster;
 
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
