@@ -21,6 +21,7 @@ class UFormManagerComponent;
 class UFormDefinition;
 class UAttackComponent;
 class USkillManagerComponent;
+class UStatManagerComponent;
 class UNiagaraComponent;
 class UWeaponComponent; //[추가] WeaponComponent 전방 선언
 
@@ -77,7 +78,8 @@ protected:
 
 private:
 	/** 현재 폼의 기본 이동 속도 (DA에서 읽어옴) */
-	float CurrentFormBaseSpeed;
+	float CurrentFormWalkSpeed;
+	float CurrentFormSprintSpeed;
 
 	/** 현재 스프린트 중인지 여부 */
 	bool bIsSprinting;
@@ -125,10 +127,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkillManagerComponent* SkillManager;
 
-	//[추가] WeaponComponent 프로퍼티 선언
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStatManagerComponent* StatManager;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWeaponComponent> WeaponManager;
-
 
 	//추가 코드 부분입니다.
 	//애님 인스턴스에 데이터를 제공할 플레이어 전용 변수 2개를 추가합니다.
@@ -178,7 +181,7 @@ protected:
 
 	/** 폼이 변경되었을 때 FormManager로부터 호출됩니다. */
 	UFUNCTION()
-	void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
+	void OnFormChanged(EFormType NewForm, const UFormDefinition* Def);
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();

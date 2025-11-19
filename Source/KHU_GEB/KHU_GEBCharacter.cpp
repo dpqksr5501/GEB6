@@ -14,6 +14,7 @@
 #include "FormManagerComponent.h"
 #include "AttackComponent.h"
 #include "SkillManagerComponent.h"
+#include "StatManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
 #include "FormDefinition.h"
@@ -60,6 +61,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
+	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
 	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
@@ -86,7 +88,8 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	static ConstructorHelpers::FObjectFinder<UInputAction> SPRINT_ACTION(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Shift.IA_Shift'"));
 	if (SPRINT_ACTION.Object) {	SprintAction = SPRINT_ACTION.Object; }
 
-	CurrentFormBaseSpeed = 600.f; // 기본값 (DA_Base의 값과 일치시키는 것이 좋음)
+	CurrentFormWalkSpeed = 600.f;
+	CurrentFormSprintSpeed = 900.f;
 	bIsSprinting = false;
 
 
@@ -179,8 +182,13 @@ void AKHU_GEBCharacter::BeginPlay()
 	// 2. 델리게이트 바인딩
 	if (FormManager)
 	{
-		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged_Handler);
+		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged);
 		FormManager->InitializeForms();
+
+		if (StatManager && FormManager->FormSet)
+		{
+			StatManager->InitializeFromFormSet(FormManager->FormSet);
+		}
 	}
 }
 
@@ -436,41 +444,32 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 
 
 /** 폼이 변경될 때 호출되는 핸들러 */
-void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
+void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
 {
-
 	if (AttackManager)
 	{
-		// AttackComponent에는 폼 정의(콤보 스텝)를 전달
+		AttackManager->ResetComboHard();
 		AttackManager->SetForm(Def);
 	}
-	if (SkillManager)
-	{
-		// SkillManager에는 스킬셋을 전달
-		SkillManager->EquipFromSkillSet(Def ? Def->SkillSet.Get() : nullptr);
-	}
-	if (WeaponManager)
-	{
-		//[추가] WeaponComponent에는 폼의 '무기 데이터'를 전달
-		WeaponManager->SetWeaponDefinition(Def ? Def->WeaponData.Get() : nullptr);
-	}
 
-	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet.Get() : nullptr); }
 
-	if (!Def || !GetCharacterMovement())
+	if (WeaponManager) { WeaponManager->SetWeaponDefinition(Def ? Def->WeaponData.Get() : nullptr); }
+
+	if (StatManager)
 	{
-		return;
-	}
+		if (const FFormRuntimeStats* Stats = StatManager->GetStats(NewForm))
+		{
+			if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+			{
+				CurrentFormWalkSpeed = Stats->WalkSpeed;
+				CurrentFormSprintSpeed = Stats->SprintSpeed;
+				MoveComp->MaxAcceleration = Stats->Acceleration;
+			}
 
-	// 1. 새 폼의 기본 속도를 DA에서 읽어와 변수에 저장합니다.
-	CurrentFormBaseSpeed = Def->BaseWalkSpeed;
-
-	// 2. 새 폼의 기본 가속도를 DA에서 읽어와 CharacterMovementComponent에 '직접' 설정합니다.
-	if (Def->BaseAcceleration > 0.f)
-	{
-		MoveComp->MaxAcceleration = Def->BaseAcceleration;
+			// 나중에 데미지 줄 때 Stats->Attack, 맞을 때 Stats->Defense 사용
+		}
 	}
-	//0.f이면, 컴포넌트의 기본값(예: 2048)을 그대로 사용하므로 다른 폼에 영향을 주지 않습니다.
 
 	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
 	UpdateMovementSpeed();
@@ -518,7 +517,6 @@ void AKHU_GEBCharacter::OnFormChanged_Handler(EFormType NewForm, const UFormDefi
 			TargetVignetteIntensity = 0.4f; // 일반 폼은 약하게
 		}
 	}
-	/*if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet : nullptr); }*/
 }
 
 //bIsSprinting
@@ -582,31 +580,9 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
  */
 void AKHU_GEBCharacter::UpdateMovementSpeed()
 {
-	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-	if (!MoveComp)
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 	{
-		return;
-	}
-
-	if (bIsSprinting)
-	{
-		// 스프린트 중일 때
-		EFormType CurrentForm = FormManager ? FormManager->CurrentForm : EFormType::Base;
-
-		if (CurrentForm == EFormType::Swift)
-		{
-			// Swift 폼은 1200
-			MoveComp->MaxWalkSpeed = 1400.f;
-		}
-		else
-		{
-			// 나머지 폼은 900
-			MoveComp->MaxWalkSpeed = 900.f;
-		}
-	}
-	else
-	{
-		// 스프린트 중이 아닐 때 (기본 속도 적용)
-		MoveComp->MaxWalkSpeed = CurrentFormBaseSpeed;
+		if (bIsSprinting) {	MoveComp->MaxWalkSpeed = CurrentFormSprintSpeed; }
+		else { MoveComp->MaxWalkSpeed = CurrentFormWalkSpeed; }
 	}
 }

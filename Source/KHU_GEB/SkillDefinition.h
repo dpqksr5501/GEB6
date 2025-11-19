@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,7 +16,7 @@ struct FSkillParams
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Damage = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Cooldown = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Range = 600.f;
-	// ÇÊ¿ä ½Ã InstancedStruct·Î È®Àå °¡´É
+	// í•„ìš” ì‹œ InstancedStructë¡œ í™•ìž¥ ê°€ëŠ¥
 };
 
 UCLASS(BlueprintType)

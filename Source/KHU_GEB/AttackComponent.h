@@ -1,4 +1,4 @@
-//AttackComponent.h
+ï»¿//AttackComponent.h
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
@@ -22,7 +22,7 @@ class KHU_GEB_API UAttackComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-    // µ¥ÀÌÅÍ/»óÅÂ
+    // ë°ì´í„°/ìƒíƒœ
     UPROPERTY(Transient) const UFormDefinition* CurrentFormDef = nullptr;
     UPROPERTY(Transient) int32 ComboIndex = 0;
 
@@ -31,10 +31,10 @@ class KHU_GEB_API UAttackComponent : public UActorComponent
     UPROPERTY(Transient) bool bAdvancedThisWindow = false;
     UPROPERTY(Transient) bool bResetOnNext = false;
     UPROPERTY(Transient) EComboPolicy NextPolicy = EComboPolicy::None;
-    /** ÄÄÆ÷³ÍÆ®°¡ ÇöÀç °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ı ÁßÀÎÁö È®ÀÎÇÕ´Ï´Ù. */
+    /** ì»´í¬ë„ŒíŠ¸ê°€ í˜„ì¬ ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     
 
-    // ¾Ö´Ô ÃßÀû/·¹ÀÌ½º °¡µå
+    // ì• ë‹˜ ì¶”ì /ë ˆì´ìŠ¤ ê°€ë“œ
     UPROPERTY(Transient) TWeakObjectPtr<UAnimInstance> BoundAnim;
     UPROPERTY(Transient) TObjectPtr<UAnimMontage> LastAttackMontage = nullptr;
     UPROPERTY(Transient) TObjectPtr<UAnimMontage> WindowOwnerMontage = nullptr;
@@ -45,68 +45,63 @@ public:
 	UAttackComponent();
 
 private:
-    // Å¸ÀÌ¸Ó
+    // íƒ€ì´ë¨¸
     FTimerHandle Timer_Save, Timer_Reset;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-    // ³»ºÎ ·ÎÁ÷
+    // ë‚´ë¶€ ë¡œì§
     void PlayCurrentComboMontage(float PlayRate = 1.f);
     void ComputeNextIndex();
     void AdvanceComboImmediately();
 
-    // Save / Reset Ã¢±¸
+    // Save / Reset ì°½êµ¬
     void Notify_SaveAttack();
     void Notify_ResetCombo();
 
-    // ÇÁ·¹ÀÓ¡æÅ¸ÀÌ¸Ó
+    // í”„ë ˆì„â†’íƒ€ì´ë¨¸
     void ScheduleComboWindows(UAnimMontage* Montage, float PlayRate);
     void ClearComboWindows();
     float GetFPSFor(const UAnimMontage* Montage, float OverrideFPS) const;
 
-    // ¾Ö´Ô µ¨¸®°ÔÀÌÆ®
+    // ì• ë‹˜ ë¸ë¦¬ê²Œì´íŠ¸
     void BindAnimDelegates();
     void UnbindAnimDelegates();
 
-    // À¯Æ¿
+    // ìœ í‹¸
     USkeletalMeshComponent* GetMesh() const;
     UAnimInstance* GetAnim() const;
 
-    /** FormManager·ÎºÎÅÍ Æû º¯°æ ÀÌº¥Æ®¸¦ ¼ö½ÅÇÒ ÇÚµé·¯ÀÔ´Ï´Ù. */
-    UFUNCTION()
-    void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
-
-
-    /** (bIsAttacking°ú º°°³·Î) ÄŞº¸°¡ ´ÙÀ½ ¸ùÅ¸ÁÖ·Î '¿¬°èµÇ´Â ¼ø°£'ÀÎÁö È®ÀÎÇÕ´Ï´Ù. */
+    /** (bIsAttackingê³¼ ë³„ê°œë¡œ) ì½¤ë³´ê°€ ë‹¤ìŒ ëª½íƒ€ì£¼ë¡œ 'ì—°ê³„ë˜ëŠ” ìˆœê°„'ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     UPROPERTY(Transient)
     bool bIsChaining = false;
 
 private:   
 
-    //Ä³½Ì : ¸ùÅ¸ÁÖº° °è»êµÈ FPS ÀúÀåÇÏ´Â °÷
+    //ìºì‹± : ëª½íƒ€ì£¼ë³„ ê³„ì‚°ëœ FPS ì €ì¥í•˜ëŠ” ê³³
     mutable TMap<const UAnimMontage*, float> CachedMontageFPS;
 
 public:
 
-    /*ÄÄÆ÷³ÍÆ®°¡ ÇöÀç °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ı ÁßÀÎÁö È®ÀÎÇÕ´Ï´Ù.*/
+    /*ì»´í¬ë„ŒíŠ¸ê°€ í˜„ì¬ ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.*/
     UPROPERTY(Transient, BlueprintReadOnly, Category = "State")
     bool bIsAttacking = false;
 
-    // ¿ÜºÎ(Ä³¸¯ÅÍ) API
+    // ì™¸ë¶€(ìºë¦­í„°) API
     void SetForm(const UFormDefinition* Def);
-    void AttackStarted(const FInputActionValue&);    // ÀÔ·Â: ´©¸§
-    void AttackTriggered(const FInputActionValue&);  // ÀÔ·Â: È¦µå Áß
-    void AttackCompleted(const FInputActionValue&);  // ÀÔ·Â: ¶À
+    void AttackStarted(const FInputActionValue&);    // ì…ë ¥: ëˆ„ë¦„
+    void AttackTriggered(const FInputActionValue&);  // ì…ë ¥: í™€ë“œ ì¤‘
+    void AttackCompleted(const FInputActionValue&);  // ì…ë ¥: ë—Œ
 
-    // (¼±ÅÃ) ÀüÅõ Áß´Ü/¸®¼Â
+    // (ì„ íƒ) ì „íˆ¬ ì¤‘ë‹¨/ë¦¬ì…‹
     void ResetComboHard();
 
 
 
 protected:
-    // µ¨¸®°ÔÀÌÆ® ÇÚµé·¯
+    // ë¸ë¦¬ê²Œì´íŠ¸ í•¸ë“¤ëŸ¬
     UFUNCTION() void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
     UFUNCTION() void OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
     UFUNCTION() void OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
