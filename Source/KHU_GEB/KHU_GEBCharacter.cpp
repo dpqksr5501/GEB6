@@ -417,11 +417,6 @@ bool AKHU_GEBCharacter::GetAnimJumpInput_Implementation(bool bConsumeInput)
 // [수정 후] GetAnimCharacterState_Implementation (컴포넌트 직접 쿼리)
 ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 {
-	// 컴포넌트의 "공격/스킬" 상태를 우선적으로 확인합니다.
-	if (SkillManager /*&& SkillManager->IsUsingSkill()*/) // TODO: SkillManager 상태 확인
-	{
-		return ECharacterState::Skill1;
-	}
 
 	// AttackManager의 blsAttacking 플래그를 확인합니다.
 	if (AttackManager && AttackManager->bIsAttacking)
