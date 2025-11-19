@@ -23,6 +23,8 @@ class UAttackComponent;
 class USkillManagerComponent;
 class UStatManagerComponent;
 class UNiagaraComponent;
+class UWeaponComponent; //[추가] WeaponComponent 전방 선언
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -126,6 +128,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStatManagerComponent* StatManager;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWeaponComponent> WeaponManager;
 
 	//추가 코드 부분입니다.
 	//애님 인스턴스에 데이터를 제공할 플레이어 전용 변수 2개를 추가합니다.
