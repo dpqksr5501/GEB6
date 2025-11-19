@@ -41,9 +41,6 @@ struct FAttackStep
 	/** 캐릭터가 가만히 있을 때 재생될 전신 몽타주입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_FullBody = nullptr;
-
-	
-
 };
 
 UCLASS()
@@ -75,14 +72,6 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
-
-	/** 이 폼일 때의 기본 최대 이동 속도입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseWalkSpeed = 600.f; // 기본값 600으로 설정
-
-	/** 이 폼일 때의 기본 가속도입니다. (0이면 캐릭터 무브먼트 컴포넌트의 기본값을 사용) */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseAcceleration = 0.f; // 0.0f으로 설정하여 기본값을 유지하도록 함
 };
 
 UCLASS(BlueprintType)

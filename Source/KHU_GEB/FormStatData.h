@@ -20,9 +20,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats")
 	float DefensePerLevel = 10.f;
 
-	// 기본 이동속도
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats")
-	float MoveSpeed = 900.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats", meta = (ClampMin = "0.0"))
+	float WalkSpeed = 600.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats", meta = (ClampMin = "0.0"))
+	float SprintSpeed = 900.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats", meta = (ClampMin = "0.0"))
+	float Acceleration = 2048.f;
 
 	// 시작 레벨
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats", meta=(ClampMin="1"))

@@ -9,7 +9,9 @@ void FFormRuntimeStats::InitializeFromData(const UFormStatData* Data)
 
 	AttackPerLevel = Data->AttackPerLevel;
 	DefensePerLevel = Data->DefensePerLevel;
-	MoveSpeed = Data->MoveSpeed;
+	WalkSpeed = Data->WalkSpeed;
+	SprintSpeed = Data->SprintSpeed;
+	Acceleration = Data->Acceleration;
 
 	Level = Data->StartLevel;
 

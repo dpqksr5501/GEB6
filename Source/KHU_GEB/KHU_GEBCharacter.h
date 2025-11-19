@@ -78,7 +78,8 @@ protected:
 
 private:
 	/** 현재 폼의 기본 이동 속도 (DA에서 읽어옴) */
-	float CurrentFormBaseSpeed;
+	float CurrentFormWalkSpeed;
+	float CurrentFormSprintSpeed;
 
 	/** 현재 스프린트 중인지 여부 */
 	bool bIsSprinting;
@@ -180,7 +181,7 @@ protected:
 
 	/** 폼이 변경되었을 때 FormManager로부터 호출됩니다. */
 	UFUNCTION()
-	void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
+	void OnFormChanged(EFormType NewForm, const UFormDefinition* Def);
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();

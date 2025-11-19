@@ -74,11 +74,6 @@ protected:
     USkeletalMeshComponent* GetMesh() const;
     UAnimInstance* GetAnim() const;
 
-    /** FormManager�κ��� �� ���� �̺�Ʈ�� ������ �ڵ鷯�Դϴ�. */
-    UFUNCTION()
-    void OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def);
-
-
     /** (bIsAttacking과 별개로) 콤보가 다음 몽타주로 '연계되는 순간'인지 확인합니다. */
     UPROPERTY(Transient)
     bool bIsChaining = false;
