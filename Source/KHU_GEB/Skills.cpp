@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills.h"
@@ -6,48 +6,16 @@
 #include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/SkeletalMeshComponent.h"
-//¸ùÅ¸ÁÖ Àç»ı¿¡ ÇÊ¿äÇÑ Çì´õÆÄÀÏµéÀÔ´Ï´Ù.
-#include "GameFramework/Character.h"
-#include "Animation/AnimInstance.h"
-#include "FormManagerComponent.h"
-#include "FormDefinition.h"
-
 
 /*=============================Base=============================*/
-/** Base Æû ½ºÅ³: ¸ùÅ¸ÁÖ Àç»ı + State º¯°æ */
-void USkill_Base::ActivateSkill()
-{
-    Super::ActivateSkill(); // ·Î±× Ãâ·Â
 
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (!OwnerCharacter) return;
-
-    //Æû Á¤ÀÇ(DA)¿¡¼­ SkillMontage °¡Á®¿À±â
-    UFormManagerComponent* FormManager = OwnerCharacter->FindComponentByClass<UFormManagerComponent>();
-    if (!FormManager) return; // [¼öÁ¤] State º¹±¸ ·ÎÁ÷ »èÁ¦
-
-    const UFormDefinition* CurrentDef = FormManager->FindDef(FormManager->CurrentForm);
-    if (!CurrentDef || !CurrentDef->SkillMontage)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[USkill_Base] SkillMontage is NOT assigned..."));
-
-        return;
-    }
-
-    //¸ùÅ¸ÁÖ Àç»ı
-    UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-    if (AnimInstance && !AnimInstance->Montage_IsPlaying(CurrentDef->SkillMontage))
-    {
-        AnimInstance->Montage_Play(CurrentDef->SkillMontage);
-    }
-}
 
 /*=============================Range=============================*/
 void USkill_Range::ActivateSkill()
 {
     if (AActor* Owner = GetOwner())
     {
-        // FX: ¸Ş½¬ÀÇ ÀÔ ¼ÒÄÏ¿¡ ºÎÂø
+        // FX: ë©”ì‰¬ì˜ ì… ì†Œì¼“ì— ë¶€ì°©
         if (SkillNS)
         {
             if (USkeletalMeshComponent* Skel = Owner->FindComponentByClass<USkeletalMeshComponent>())
@@ -59,7 +27,7 @@ void USkill_Range::ActivateSkill()
         }
         Super::ActivateSkill();
 
-        // Ã¤³Î ½ÃÀÛ
+        // ì±„ë„ ì‹œì‘
         GetWorld()->GetTimerManager().SetTimer(TickHandle, this, &USkill_Range::TickBreath, TickInterval, true);
         GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Range::StopSkill, MaxDuration, false);
     }
@@ -76,7 +44,7 @@ void USkill_Range::StopSkill()
 
 void USkill_Range::TickBreath()
 {
-    // ÄÜ Æ®·¹ÀÌ½º: Àü¹æÀ¸·Î ¿©·¯ ¶óÀÎ/½ºÇÇ¾î Æ®·¹ÀÌ½º or Overlap
+    // ì½˜ íŠ¸ë ˆì´ìŠ¤: ì „ë°©ìœ¼ë¡œ ì—¬ëŸ¬ ë¼ì¸/ìŠ¤í”¼ì–´ íŠ¸ë ˆì´ìŠ¤ or Overlap
     AActor* Owner = GetOwner();
     if (!Owner) return;
 
@@ -84,9 +52,9 @@ void USkill_Range::TickBreath()
     const FVector Fwd = Owner->GetActorForwardVector();
     const float Range = Params.Range; //  :contentReference[oaicite:6]{index=6}
 
-    // °£´ÜÇÏ°Ô: ¿ø»Ô ¾ÈÀÇ ¾×ÅÍµé ÇÊÅÍ¸µ (ÀÇ»çÄÚµå)
+    // ê°„ë‹¨í•˜ê²Œ: ì›ë¿” ì•ˆì˜ ì•¡í„°ë“¤ í•„í„°ë§ (ì˜ì‚¬ì½”ë“œ)
     TArray<FHitResult> Hits;
-    // ... ¶óÀÎÆ®·¹ÀÌ½º ¿©·¯ ¹ø or SphereOverlapActors ÈÄ °¢µµ ÇÊÅÍ
+    // ... ë¼ì¸íŠ¸ë ˆì´ìŠ¤ ì—¬ëŸ¬ ë²ˆ or SphereOverlapActors í›„ ê°ë„ í•„í„°
     for (const FHitResult& H : Hits)
     {
         if (AActor* HitA = H.GetActor())
@@ -95,8 +63,8 @@ void USkill_Range::TickBreath()
             const float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(Fwd, Dir)));
             if (Angle <= ConeAngleDeg)
             {
-                // DamagePerTick = Params.Damage * TickInterval (È¤Àº °íÁ¤°ª)
-                // Àû µ¥¹ÌÁö Ã³¸®(ÀÓ½Ã): UGameplayStatics::ApplyDamage(HitA, DamagePerTick, ...)
+                // DamagePerTick = Params.Damage * TickInterval (í˜¹ì€ ê³ ì •ê°’)
+                // ì  ë°ë¯¸ì§€ ì²˜ë¦¬(ì„ì‹œ): UGameplayStatics::ApplyDamage(HitA, DamagePerTick, ...)
             }
         }
     }
@@ -109,60 +77,24 @@ void USkill_Range::TickBreath()
 // Skill_Shield.cpp
 void USkill_Guard::ActivateSkill()
 {
-    //¿ø·¡ ±âÁ¸ ÄÚµå ÀÔ´Ï´Ù.
-    //if (AActor* Owner = GetOwner())
-    //{
-    //    Owner->SetCanBeDamaged(false);   // ÀÓ½Ã ¸é¿ª
-    //    if (SkillNS)
-    //    {
-    //        SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-    //            SkillNS, Owner->GetRootComponent(), NAME_None,
-    //            FVector::ZeroVector, FRotator::ZeroRotator,
-    //            EAttachLocation::SnapToTarget, true);
-    //    }
-    //    Super::ActivateSkill();
-    //    GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Guard::StopSkill, Duration, false);
-    //}
-
-
-    AActor* Owner = GetOwner();
-    if (!Owner) return;
-
-    // 1. [Guard] ¹«Àû È°¼ºÈ­ (C++ ·ÎÁ÷)
-    Owner->SetCanBeDamaged(false);
-
-
-    // 3. [Guard] ÀÌÆåÆ® Àç»ı (±âÁ¸ ÄÚµå)
-    if (SkillNS)
+    if (AActor* Owner = GetOwner())
     {
-        SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-            SkillNS, Owner->GetRootComponent(), NAME_None,
-            FVector::ZeroVector, FRotator::ZeroRotator,
-            EAttachLocation::SnapToTarget, true);
+        Owner->SetCanBeDamaged(false);   // ì„ì‹œ ë©´ì—­
+        if (SkillNS)
+        {
+            SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                SkillNS, Owner->GetRootComponent(), NAME_None,
+                FVector::ZeroVector, FRotator::ZeroRotator,
+                EAttachLocation::SnapToTarget, true);
+        }
+        Super::ActivateSkill();
+        GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Guard::StopSkill, Duration, false);
     }
-    Super::ActivateSkill(); // ·Î±× Ãâ·Â
-
-    // 4. [Guard] 3ÃÊ(Duration) µÚ StopSkill È£Ãâ (±âÁ¸ ÄÚµå)
-    GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Guard::StopSkill, Duration, false);
 }
 
 void USkill_Guard::StopSkill()
 {
-    //±âÁ¸ ÄÚµåÀÔ´Ï´Ù.
-    /*if (AActor* Owner = GetOwner()) Owner->SetCanBeDamaged(true);
-    if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
-    GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
-
-    Super::StopSkill();*/
-
-    AActor* Owner = GetOwner();
-    if (Owner)
-    {
-        // 1. [Guard] ¹«Àû ÇØÁ¦
-        Owner->SetCanBeDamaged(true);
-    }
-
-    // 3.ÀÌÆåÆ® ¹× Å¸ÀÌ¸Ó Á¤¸® (±âÁ¸ ÄÚµå)
+    if (AActor* Owner = GetOwner()) Owner->SetCanBeDamaged(true);
     if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
     GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
 

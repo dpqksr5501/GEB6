@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,6 +10,7 @@ class USkeletalMesh;
 class UAnimInstance;
 class UAnimMontage;
 class USkillSet;
+class UFormStatData;
 class UWeaponData;
 
 
@@ -22,27 +23,24 @@ struct FAttackStep
 {
 	GENERATED_BODY()
 
-	// ÀÌ ¸ùÅ¸ÁÖ¿¡¼­ Save/Reset ÀÌ ¿­¸®´Â "ÇÁ·¹ÀÓ" ¹øÈ£
+	// ì´ ëª½íƒ€ì£¼ì—ì„œ Save/Reset ì´ ì—´ë¦¬ëŠ” "í”„ë ˆì„" ë²ˆí˜¸
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	int32 SaveFrame = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
 	int32 ResetFrame = 0;
 
-	// ¼±ÅÃ: ÇÁ·¹ÀÓ ¡æ ÃÊ º¯È¯¿¡ ¾µ FPS(0ÀÌ¸é ÀÚµ¿ ÃßÁ¤)
+	// ì„ íƒ: í”„ë ˆì„ â†’ ì´ˆ ë³€í™˜ì— ì“¸ FPS(0ì´ë©´ ìë™ ì¶”ì •)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0"))
-	float OverrideFPS = 0.f; // 0: ÀÚµ¿, ±× ¿Ü: ÇØ´ç °ª »ç¿ë(¿¹: 30, 60)
+	float OverrideFPS = 0.f; // 0: ìë™, ê·¸ ì™¸: í•´ë‹¹ ê°’ ì‚¬ìš©(ì˜ˆ: 30, 60)
 
-	/** Ä³¸¯ÅÍ°¡ ¿òÁ÷ÀÌ´Â Áß¿¡ Àç»ıµÉ »óÃ¼ Àü¿ë ¸ùÅ¸ÁÖÀÔ´Ï´Ù. */
+	/** ìºë¦­í„°ê°€ ì›€ì§ì´ëŠ” ì¤‘ì— ì¬ìƒë  ìƒì²´ ì „ìš© ëª½íƒ€ì£¼ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_UpperBody = nullptr;
 
-	/** Ä³¸¯ÅÍ°¡ °¡¸¸È÷ ÀÖÀ» ¶§ Àç»ıµÉ Àü½Å ¸ùÅ¸ÁÖÀÔ´Ï´Ù. */
+	/** ìºë¦­í„°ê°€ ê°€ë§Œíˆ ìˆì„ ë•Œ ì¬ìƒë  ì „ì‹  ëª½íƒ€ì£¼ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	TObjectPtr<UAnimMontage> Montage_FullBody = nullptr;
-
-	
-
 };
 
 UCLASS()
@@ -69,17 +67,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<USkillSet> SkillSet;
 
-	/*¿şÆù µ¥ÀÌÅÍ ¿¡¼Â*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	TObjectPtr<UFormStatData> StatData;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
-
-	/** ÀÌ ÆûÀÏ ¶§ÀÇ ±âº» ÃÖ´ë ÀÌµ¿ ¼ÓµµÀÔ´Ï´Ù. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseWalkSpeed = 600.f; // ±âº»°ª 600À¸·Î ¼³Á¤
-
-	/** ÀÌ ÆûÀÏ ¶§ÀÇ ±âº» °¡¼ÓµµÀÔ´Ï´Ù. (0ÀÌ¸é Ä³¸¯ÅÍ ¹«ºê¸ÕÆ® ÄÄÆ÷³ÍÆ®ÀÇ ±âº»°ªÀ» »ç¿ë) */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
-	float BaseAcceleration = 0.f; // 0.0fÀ¸·Î ¼³Á¤ÇÏ¿© ±âº»°ªÀ» À¯ÁöÇÏµµ·Ï ÇÔ
 };
 
 UCLASS(BlueprintType)

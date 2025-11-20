@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -29,7 +29,7 @@ class KHU_GEB_API USkill_Range : public USkillBase
     GENERATED_BODY()
 
 public:
-    // Æ©´× ÆÄ¶ó¹ÌÅÍ(Definition ±âº»°ª + °³º° ½ºÅ³ È®Àå)
+    // íŠœë‹ íŒŒë¼ë¯¸í„°(Definition ê¸°ë³¸ê°’ + ê°œë³„ ìŠ¤í‚¬ í™•ì¥)
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
     FName MouthSocket = "MouthSocket";
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
@@ -39,17 +39,17 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
     float ConeAngleDeg = 30.f;
 
-    // ºñÁÖ¾ó
+    // ë¹„ì£¼ì–¼
     UPROPERTY(EditAnywhere, Category = "Range|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
-    // ³»ºÎ
+    // ë‚´ë¶€
     UPROPERTY() TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
     FTimerHandle TickHandle, DurationHandle;
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override
     {
-        // ±âÁ¸ Params »ç¿ë (Damage/Range µî)  :contentReference[oaicite:5]{index=5}
+        // ê¸°ì¡´ Params ì‚¬ìš© (Damage/Range ë“±)  :contentReference[oaicite:5]{index=5}
         Params = Def ? Def->Params : FSkillParams{};
     }
 
@@ -58,7 +58,7 @@ public:
     virtual void StopSkill() override;
 
 private:
-    FSkillParams Params; // Damage/Range »ç¿ë
+    FSkillParams Params; // Damage/Range ì‚¬ìš©
     void TickBreath();
 };
 
@@ -88,7 +88,7 @@ public:
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override
     {
-        Params = Def ? Def->Params : FSkillParams{}; // Äğ´Ù¿î µî ³ªÁß¿¡ È°¿ë  :contentReference[oaicite:9]{index=9}
+        Params = Def ? Def->Params : FSkillParams{}; // ì¿¨ë‹¤ìš´ ë“± ë‚˜ì¤‘ì— í™œìš©  :contentReference[oaicite:9]{index=9}
     }
 
     virtual bool CanActivate() const override { return true; }

@@ -1,4 +1,4 @@
-//AttackComponent.cpp
+﻿//AttackComponent.cpp
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
@@ -23,24 +23,6 @@ UAttackComponent::UAttackComponent() {}
 void UAttackComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    // 소유자(캐릭터)에서 FormManager를 찾아 델리게이트에 바인딩합니다.
-    if (AActor* Owner = GetOwner())
-    {
-        if (UFormManagerComponent* FormManager =
-            Owner->FindComponentByClass<UFormManagerComponent>())
-        {
-            FormManager->OnFormChanged.AddDynamic(this,
-                &UAttackComponent::OnFormChanged_Handler);
-
-            const UFormDefinition* InitialDef =
-                FormManager->FindDef(FormManager->CurrentForm);
-            if (InitialDef)
-            {
-                OnFormChanged_Handler(FormManager->CurrentForm, InitialDef);
-            }
-        }
-    }
 
     //애님 델리게이트 바인딩은 유지.
     BindAnimDelegates();
@@ -159,7 +141,6 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
             }
         }
     }
-
 }
 
 
@@ -285,7 +266,6 @@ void UAttackComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
         bIsChaining = false; // 플래그만 리셋하고 종료
         return;
     }
-
 
     // 체인 중이 아닐 때 (즉, 몽타주가 자연스럽게 끝났거나, 피격 등으로 중단됨)
     // '공격 중' 상태 플래그를 false로 해제합니다.
@@ -437,12 +417,3 @@ void UAttackComponent::ResetComboHard()
 
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
 }
-
-/** 폼 변경 핸들러 구현 */
-void UAttackComponent::OnFormChanged_Handler(EFormType NewForm, const UFormDefinition* Def)
-{
-    ResetComboHard();
-    // 캐릭터를 거치지 않고 직접 SetForm을 호출합니다.
-    SetForm(Def);
-}
-
