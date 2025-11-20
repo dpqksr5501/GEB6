@@ -603,11 +603,15 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 			TargetCameraBoomLength = 450.f;
 			TargetFOV = 95.f;
 
-			// [!!!] 효과 목표값 설정
+			//효과 목표값 설정
 			TargetFringeIntensity = 1.0f;   // 일반 폼은 약하게
 			TargetVignetteIntensity = 0.4f; // 일반 폼은 약하게
 		}
 	}
+
+	//점프 횟수 설정(기본값 1)
+	JumpMaxCount = Def->MaxJumpCount;
+
 }
 
 //bIsSprinting
@@ -675,5 +679,35 @@ void AKHU_GEBCharacter::UpdateMovementSpeed()
 	{
 		if (bIsSprinting) {	MoveComp->MaxWalkSpeed = CurrentFormSprintSpeed; }
 		else { MoveComp->MaxWalkSpeed = CurrentFormWalkSpeed; }
+	}
+}
+
+
+
+
+
+void AKHU_GEBCharacter::OnJumped_Implementation()
+{
+	Super::OnJumped_Implementation(); // 필수 호출
+
+	// 현재 점프 횟수가 1보다 크다면? (즉, 2단 점프 중이라면)
+	// JumpCurrentCount는 점프할 때마다 1씩 늘어납니다. (1단=1, 2단=2)
+	if (JumpCurrentCount > 1)
+	{
+		// 현재 폼 데이터 가져오기
+		if (FormManager)
+		{
+			const UFormDefinition* Def = FormManager->FindDef(FormManager->CurrentForm);
+
+			// 2단 점프 몽타주가 설정되어 있다면 재생
+			if (Def && Def->AirJumpMontage)
+			{
+				// 몽타주 재생 (ABP의 Falling 상태를 덮어씀)
+				PlayAnimMontage(Def->AirJumpMontage);
+
+				// (선택 사항) 2단 점프 시 이펙트나 사운드도 여기서 재생 가능
+				// if (Def->AirJumpVFX) { ... }
+			}
+		}
 	}
 }

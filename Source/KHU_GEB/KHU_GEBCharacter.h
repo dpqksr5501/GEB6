@@ -202,6 +202,10 @@ protected:
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();
+
+	// ACharacter의 가상 함수 오버라이드 (점프가 성공했을 때 호출됨)
+	// Swift의 2단점프 구현을 위해 필요.
+	virtual void OnJumped_Implementation() override;
 	
 
 public:

@@ -92,6 +92,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
 	TObjectPtr<class UAnimMontage> DashMontage;
 
+	/** 최대 점프 가능 횟수 (기본 1, Swift는 2) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "JumpCount")
+	int32 MaxJumpCount = 1;
+
+	/** Swift가 공중 점프(2단 점프) 시 재생할 몽타주 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<class UAnimMontage> AirJumpMontage;
+
 };
 
 UCLASS(BlueprintType)
