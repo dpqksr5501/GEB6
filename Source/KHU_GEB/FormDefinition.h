@@ -72,6 +72,26 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
+
+
+
+	/** 대쉬할 때 캐릭터를 밀어내는 힘 (높을수록 멀리/빨리 감) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	float DashImpulse = 6000.0f;
+
+	/** 대쉬 쿨타임 (연속 사용 방지용, 선택 사항) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	float DashCooldown = 5.0f;
+
+
+	//대쉬 시 재생할 나이아가라 이펙트 (폼마다 다르게 설정 가능)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	TObjectPtr<class UNiagaraSystem> DashVFX;
+
+	//대쉬 시 재생할 애니메이션 몽타주
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	TObjectPtr<class UAnimMontage> DashMontage;
+
 };
 
 UCLASS(BlueprintType)

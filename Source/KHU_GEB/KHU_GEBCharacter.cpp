@@ -21,6 +21,8 @@
 #include "NiagaraComponent.h"
 #include "WeaponComponent.h" //[추가] WeaponComponent 헤더
 #include "WeaponData.h" //[추가] WeaponData 헤더
+#include "NiagaraFunctionLibrary.h" // 나이아가라 이펙트용
+
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -97,10 +99,15 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	CurrentPlayerState = ECharacterState::Idle;
 	bPlayerWantsToJump = false;
 
-
+	/*Swift Form일 때 대시 사용 시 사용할 나이아가라*/
 	SwiftSprintVFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwiftSprintVFX"));
 	SwiftSprintVFX->SetupAttachment(GetMesh()); // 캐릭터 메시에 부착
 	SwiftSprintVFX->bAutoActivate = false;
+
+	/*Special Form일 때 대시 사용 시 사용할 나이아가라*/
+	DashTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashTrailEffect"));
+	DashTrailComponent->SetupAttachment(GetMesh());
+	DashTrailComponent->bAutoActivate = false;
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -108,9 +115,9 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		//// Jumping
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 
 		//추가 코드
@@ -283,9 +290,98 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 //StartJump 함수를 새로 구현합니다.
 void AKHU_GEBCharacter::StartJump()
 {
-	bPlayerWantsToJump = true; // 애님 인스턴스가 읽어갈 플래그 ON
-	Jump(); // ACharacter의 실제 점프 실행
+	//원래코드
+	//bPlayerWantsToJump = true; // 애님 인스턴스가 읽어갈 플래그 ON
+	//Jump(); // ACharacter의 실제 점프 실행
+
+	//FormManager가 유효한지 확인
+	if (FormManager)
+	{
+		//현재 폼이 Special인지 확인
+		if (FormManager->CurrentForm == EFormType::Special ||
+			FormManager->CurrentForm == EFormType::Guard)
+		{
+			// Special 폼이라면 점프 대신 대쉬 실행
+			PerformSpecialDash();
+			return; // 여기서 함수 종료 (일반 점프 코드 실행 X)
+		}
+	}
+
+	// Special 폼이 아니라면 기존 점프 로직 수행
+	bPlayerWantsToJump = true;
+	Jump();
 }
+/*================================ Special Form의 대쉬 구현====================*/
+
+//대쉬 기능 구현
+void AKHU_GEBCharacter::PerformSpecialDash()
+{
+	if (!bCanDash) return;
+
+	// 1. 현재 폼 데이터 가져오기 (Guard면 Guard 데이터, Special이면 Special 데이터가 들어옴)
+	const UFormDefinition* Def = FormManager->FindDef(FormManager->CurrentForm);
+	if (!Def) return;
+
+	// 2. [핵심] 나이아가라 이펙트 교체 및 재생
+	if (DashTrailComponent && Def->DashVFX)
+	{
+		// 현재 폼에 설정된 이펙트로 에셋을 교체합니다.
+		DashTrailComponent->SetAsset(Def->DashVFX);
+
+		// 이펙트 켜기
+		DashTrailComponent->Activate(true);
+	}
+
+	// 3. [핵심] 몽타주 재생 (애니메이션)
+	if (Def->DashMontage)
+	{
+		PlayAnimMontage(Def->DashMontage);
+	}
+
+	// 4. 물리 이동 (Launch)
+	FVector LaunchDir = GetActorForwardVector();
+	LaunchCharacter(LaunchDir * Def->DashImpulse, true, true);
+
+	// 5. 정지 타이머 (0.15초 뒤 멈춤)
+	// * 팁: 몽타주가 있다면 몽타주 길이에 맞춰 멈추게 할 수도 있지만, 
+	// 보통 대쉬는 물리적인 이동 시간이 더 중요하므로 고정 시간을 추천합니다.
+	float DashDuration = 0.15f;
+	GetWorldTimerManager().SetTimer(TimerHandle_DashCooldown, this, &AKHU_GEBCharacter::StopDashMovement, DashDuration, false);
+
+	// 6. 쿨타임
+	if (Def->DashCooldown > 0.f)
+	{
+		bCanDash = false;
+		// 쿨타임 리셋 타이머 (예: 1초)
+		FTimerHandle Handle_Reset;
+		GetWorldTimerManager().SetTimer(Handle_Reset, this, &AKHU_GEBCharacter::ResetDash, Def->DashCooldown, false);
+	}
+}
+
+void AKHU_GEBCharacter::StopDashMovement()
+{
+	// 1. 강제로 제동 걸기 (이동 멈춤)
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+	}
+
+	// 2. 이펙트 끄기
+	// (바로 끄면 트레일이 뚝 끊길 수 있으므로, 보통은 놔두면 알아서 사라지게 하거나
+	// Deactivate()를 호출해서 '새로운 파티클 생성'만 멈추게 합니다)
+	if (DashTrailComponent)
+	{
+		DashTrailComponent->Deactivate();
+	}
+}
+
+void AKHU_GEBCharacter::ResetDash()
+{
+	bCanDash = true;
+}
+
+/*================================ Special Form의 대쉬 구현====================*/
 
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
@@ -381,7 +477,7 @@ void AKHU_GEBCharacter::DoLook(float Yaw, float Pitch)
 void AKHU_GEBCharacter::DoJumpStart()
 {
 	// signal the character to jump
-	Jump();
+	StartJump();
 }
 
 void AKHU_GEBCharacter::DoJumpEnd()
