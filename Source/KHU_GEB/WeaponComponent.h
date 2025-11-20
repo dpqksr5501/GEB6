@@ -69,7 +69,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
 private:
 	/** 풀에서 사용 가능한 박스 콜리전을 가져옵니다. */
 	UBoxComponent* GetPooledBoxCollider();

@@ -5,6 +5,7 @@
 #include "FormManagerComponent.h"
 #include "SkillManagerComponent.h"
 #include "HealthComponent.h"
+#include "WeaponComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
@@ -19,6 +20,13 @@ AEnemy_Base::AEnemy_Base()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - HealthComp creation failed"));
 	}
+	// WeaponComponent 생성 및 초기화
+	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
+
+	if (!WeaponComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp creation failed"));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -31,7 +39,18 @@ void AEnemy_Base::BeginPlay()
 	{
 		HealthComp->OnDeath.AddDynamic(this, &AEnemy_Base::OnDeath);
 	}
-	
+	if(WeaponComp && DefaultWeaponData)
+	{
+		WeaponComp->SetWeaponDefinition(DefaultWeaponData);
+		// UE_LOG로 SetWeaponDefinition 호출 여부 확인 및 DefaultWeaponData 정보 출력
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - SetWeaponDefinition called with DefaultWeaponData: %s"), *DefaultWeaponData->GetName());
+	}
+	else {
+		// WeaponComp가 없는지, DefaultWeaponData가 없는지 확인 및 로그 출력
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp or DefaultWeaponData is null. WeaponComp: %s, DefaultWeaponData: %s"),
+			WeaponComp ? *WeaponComp->GetName() : TEXT("null"),
+			DefaultWeaponData ? *DefaultWeaponData->GetName() : TEXT("null"));
+	}
 	// SkillClasses가 설정되어 있으면 자동으로 초기화
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
 	{
@@ -72,6 +91,9 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
 			HealthComp->ReduceHealth(ActualDamage);
 			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed."));
 		}
 	}
 	else {

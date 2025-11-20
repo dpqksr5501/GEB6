@@ -95,6 +95,11 @@ public:
     void AttackTriggered(const FInputActionValue&);  // 입력: 홀드 중
     void AttackCompleted(const FInputActionValue&);  // 입력: 뗌
 
+    // Enemy 전용
+    void EnemyAttackStarted();
+    void EnemyAttackTriggered();
+	void EnemyAttackCompleted();
+
     // (선택) 전투 중단/리셋
     void ResetComboHard();
 

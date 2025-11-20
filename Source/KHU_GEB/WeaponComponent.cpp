@@ -106,9 +106,13 @@ void UWeaponComponent::EnableCollision()
 	// 현재 폼이 가진 모든 콜리전 볼륨(히트박스)을 활성화
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
 		if (Collider)
 		{
 			Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			// 디버깅 메시지 각 콜리전 활성화 로그 UE_LOG로
+			UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
+
 		}
 	}
 }
@@ -135,6 +139,8 @@ void UWeaponComponent::DisableCollision()
 /** [복사] AttackComponent.cpp에서 가져옴 */
 void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// UE_LOG 디버깅용 OnAttackOverlap 진입 로그
+	UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] OnAttackOverlap triggered with %s"), *GetNameSafe(OtherActor));
 	AActor* Owner = GetOwner();
 	if (!Owner || OtherActor == Owner) return;
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
@@ -148,7 +154,9 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		(OwnerPawn ? OwnerPawn->GetController() : nullptr),
 		Owner,
 		nullptr);
-
+	// 누구와 충돌했는지 UE_LOG로 출력 (디버깅용)
+	UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] %s hit %s for %f damage."), *Owner->GetName(), *OtherActor->GetName(), DamageToApply);
+	
 	HitActorsThisSwing.Add(OtherActor);
 
 }

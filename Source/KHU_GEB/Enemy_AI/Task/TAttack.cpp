@@ -8,7 +8,9 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Engine/World.h"
 #include "Enemy_AI/Enemy_Base.h"
-#include "SkillManagerComponent.h"
+#include "WeaponComponent.h"
+#include "FormDefinition.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
 
 UTAttack::UTAttack()
 {
@@ -17,84 +19,103 @@ UTAttack::UTAttack()
 
 	// TickTask 함수가 호출되도록 bNotifyTick을 true로 설정합니다.
 	bNotifyTick = true;
+
+	// 초기화
+	CurrentMontage = nullptr;
+	CachedWeaponComp = nullptr;
 }
 
 EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// 부모 클래스의 ExecuteTask를 먼저 호출합니다.
 	Super::ExecuteTask(OwnerComp, NodeMemory);
+	
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
-
 	if (!BlackboardComp)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: BlackboardComponent is missing"));
 		return EBTNodeResult::Failed;
 	}
 
 	// AI 컨트롤러와 컨트롤러가 빙의 중인 캐릭터를 가져옵니다.
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (AIController == nullptr)
+	if (!AIController)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AIController is missing"));
 		return EBTNodeResult::Failed;
 	}
 
 	ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
-	if (Character == nullptr)
+	if (!Character)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Character is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// Enemy_Base로 캐스팅하여 스킬 시스템에 접근
+	// Enemy_Base로 캐스팅
 	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
-	if (EnemyBase == nullptr)
+	if (!EnemyBase)
 	{
-		return EBTNodeResult::Failed;	
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: EnemyBase casting failed"));
+		return EBTNodeResult::Failed;
 	}
 
-	// Equipped 배열에서 사용 가능한 스킬 찾기
-	USkillBase* SkillToUse = nullptr;
-	for (const auto& EquippedItem : EnemyBase->Equipped)
+	// WeaponComponent를 가져와서 캐시
+	CachedWeaponComp = EnemyBase->FindComponentByClass<UWeaponComponent>();
+	if (!CachedWeaponComp)
 	{
-		// 튜플의 두 번째 요소(스킬)를 가져오기
-		USkillBase* Skill = EquippedItem.Get<1>();
-		if (Skill != nullptr)
-		{
-			SkillToUse = Skill;
-			break;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: WeaponComponent is missing"));
+		return EBTNodeResult::Failed;
 	}
 
-	// 스킬이 있으면 스킬 사용, 없으면 기존 몽타주 재생
-	if (SkillToUse)
+	// DefaultFormDef 확인
+	if (!EnemyBase->DefaultFormDef)
 	{
-		// 스킬 활성화
-		SkillToUse->ActivateSkill();
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: DefaultFormDef is missing"));
+		return EBTNodeResult::Failed;
 	}
-	else
+
+	// AttackMontages 배열 확인
+	const TArray<FAttackStep>& AttackMontages = EnemyBase->DefaultFormDef->AttackMontages;
+	if (AttackMontages.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: Skill이 설정되지 않았습니다."));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: No AttackMontages found in DefaultFormDef"));
+		return EBTNodeResult::Failed;
 	}
-	// 캐릭터의 애님 인스턴스를 가져옵니다.
+
+	// 첫 번째 공격 몽타주의 FullBody 버전 가져오기
+	const FAttackStep& FirstAttack = AttackMontages[0];
+	CurrentMontage = FirstAttack.Montage_FullBody;
+
+	if (!CurrentMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Montage_FullBody is missing in first AttackStep"));
+		return EBTNodeResult::Failed;
+	}
+
+	// 애님 인스턴스 가져오기
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
-	if (AnimInstance == nullptr)
+	if (!AnimInstance)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AnimInstance is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// UpperMontage 변수가 BT 에디터에서 설정되었는지 확인합니다.
-	if (UpperMontage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: UpperMontage가 설정되지 않았습니다."));
-		return EBTNodeResult::Failed;
-	}
-	if (FullMontage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: FullMontage가 설정되지 않았습니다."));
-		return EBTNodeResult::Failed;
-	}
+	// 기존 바인딩 제거 (중복 방지)
+	AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
+	AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
 
-	// 몽타주를 재생합니다.
-	AnimInstance->Montage_Play(UpperMontage);
-	AnimInstance->Montage_Play(FullMontage);
+	// 새로 바인딩
+	AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UTAttack::OnNotifyBeginReceived);
+	AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UTAttack::OnNotifyEndReceived);
+
+	// 몽타주 재생
+	float MontageLength = AnimInstance->Montage_Play(CurrentMontage, 1.0f);
+	if (MontageLength <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Failed to play montage"));
+		return EBTNodeResult::Failed;
+	}
 
 	// 상태 변환
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
@@ -109,42 +130,107 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	// 부모 클래스의 TickTask를 먼저 호출합니다.
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// AI 컨트롤러와 캐릭터, 애님 인스턴스를 다시 가져옵니다.
+	// 유효성 검사
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (AIController == nullptr)
+	if (!AIController)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: AIController is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AIController is missing in TickTask"));
 		return;
 	}
 
 	ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
-	if (Character == nullptr)
+	if (!Character)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: Character is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: Character is missing in TickTask"));
 		return;
 	}
 
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
-	if (AnimInstance == nullptr)
+	if (!AnimInstance)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: AnimInstance is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: AnimInstance is missing in TickTask"));
 		return;
 	}
 
-	if (UpperMontage == nullptr || FullMontage == nullptr)
+	if (!CurrentMontage)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TAttack: Montage is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TAttack: CurrentMontage is missing in TickTask"));
 		return;
 	}
-	
-	// 지정된 몽타주가 현재 재생 중인지 확인합니다.
-	if (!AnimInstance->Montage_IsPlaying(UpperMontage) && !AnimInstance->Montage_IsPlaying(FullMontage))
+
+	// 몽타주가 재생 중인지 확인
+	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
-		// 몽타주 재생이 끝났으므로, 태스크를 성공으로 완료시킵니다.
+		// 몽타주 종료 시 델리게이트 정리
+		AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
+		AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
+
+		// 몽타주 재생이 끝났으므로 태스크 완료
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
+}
+
+EBTNodeResult::Type UTAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	// AI 컨트롤러와 캐릭터를 가져옵니다.
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (AIController)
+	{
+		ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
+		if (Character)
+		{
+			UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
+			if (AnimInstance && CurrentMontage)
+			{
+				// 델리게이트 해제 (AbortTask에서도 정리)
+				AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
+				AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
+
+				// 몽타주 중단
+				AnimInstance->Montage_Stop(0.2f, CurrentMontage);
+				UE_LOG(LogTemp, Log, TEXT("TAttack: Attack aborted, stopping montage"));
+			}
+
+			// WeaponComponent의 콜리전 강제 비활성화 (안전 장치)
+			if (CachedWeaponComp)
+			{
+				CachedWeaponComp->DisableCollision();
+				UE_LOG(LogTemp, Log, TEXT("TAttack: Disabled weapon collision on abort"));
+			}
+		}
+	}
+
+	// 변수 정리
+	CurrentMontage = nullptr;
+	CachedWeaponComp = nullptr;
+
+	return Super::AbortTask(OwnerComp, NodeMemory);
+}
+
+// Notify 처리 함수들
+UFUNCTION()
+void UTAttack::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
+{
+    if (!CachedWeaponComp) return;
+
+    if (NotifyName == TEXT("StartAttack"))
+    {
+        CachedWeaponComp->EnableCollision();
+        UE_LOG(LogTemp, Log, TEXT("TAttack: StartAttack notify - Collision enabled"));
+    }
+    else if (NotifyName == TEXT("EndAttack"))
+    {
+        CachedWeaponComp->DisableCollision();
+        UE_LOG(LogTemp, Log, TEXT("TAttack: EndAttack notify - Collision disabled"));
+    }
+}
+
+UFUNCTION()
+void UTAttack::OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
+{
+    // 필요시 구현
 }
