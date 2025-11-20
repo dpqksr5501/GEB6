@@ -16,7 +16,7 @@ class KHU_GEB_API USkill_Base : public USkillBase
     GENERATED_BODY()
 
 public:
-    virtual void ActivateSkill() override;
+    /*virtual void ActivateSkill() override;*/
     
 private:
 
