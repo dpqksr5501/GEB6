@@ -45,6 +45,10 @@ class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UNiagaraComponent* SwiftSprintVFX;
 
+	/** Special 폼 대쉬 시 활성화될 트레일 이펙트입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* DashTrailComponent;
+
 protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -111,6 +115,16 @@ private:
 	/** Tick 함수가 매 프레임 도달하려는 목표 Vignette(어두움) 강도입니다. */
 	float TargetVignetteIntensity;
 
+
+
+	// 대쉬 쿨타임 체크용 타이머 핸들(Special Form의 대쉬)
+	FTimerHandle TimerHandle_DashCooldown;
+	bool bCanDash = true;
+
+	// 대쉬가 끝났을 때 멈추게 할 함수
+	void StopDashMovement();
+	void ResetDash();
+
 public:
 	/** Constructor */
 	AKHU_GEBCharacter();
@@ -172,6 +186,9 @@ protected:
 	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
 	void StartJump();
 
+	// Special 폼 전용 대쉬 함수(스페이스바 입력 시 대쉬로 사용하기 위해서)
+	void PerformSpecialDash();
+
 
 	/** 스프린트 입력을 받았을 때 호출됩니다. (Started) */
 	void StartSprinting(const FInputActionValue& Value);
@@ -185,6 +202,10 @@ protected:
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();
+
+	// ACharacter의 가상 함수 오버라이드 (점프가 성공했을 때 호출됨)
+	// Swift의 2단점프 구현을 위해 필요.
+	virtual void OnJumped_Implementation() override;
 	
 
 public:

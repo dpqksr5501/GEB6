@@ -21,6 +21,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TMap<ESkillSlot, TObjectPtr<USkillBase>> Equipped;
+
 /*
 protected:
 	// Called when the game starts
