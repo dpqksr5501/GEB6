@@ -13,10 +13,8 @@ class USkillSet;
 class UFormStatData;
 class UWeaponData;
 
-
 UENUM(BlueprintType)
 enum class EFormType : uint8 { Base, Range, Swift, Guard, Special };
-
 
 USTRUCT(BlueprintType)
 struct FAttackStep
@@ -57,6 +55,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> AnimClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Jump")
+	TArray<TObjectPtr<UAnimMontage>> JumpMontages;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Attack")
 	TArray<FAttackStep> AttackMontages;

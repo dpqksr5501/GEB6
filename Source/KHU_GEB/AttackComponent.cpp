@@ -16,8 +16,6 @@
 #include "FormManagerComponent.h"
 #include "GameFramework/Character.h"
 
-
-
 UAttackComponent::UAttackComponent() {}
 
 void UAttackComponent::BeginPlay()
@@ -62,11 +60,12 @@ UAnimInstance* UAttackComponent::GetAnim() const
 //SetForm 더 이상 콜리전을 생성하지 않음.
 void UAttackComponent::SetForm(const UFormDefinition* Def)
 {
+    ResetComboHard();
     BindAnimDelegates();
+
     CurrentFormDef = Def;
-
     if (!CurrentFormDef) return;
-
+    
     USkeletalMeshComponent* Mesh = GetMesh();
     if (!Mesh) return;
 }
@@ -143,12 +142,12 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
     }
 }
 
-
 void UAttackComponent::AttackTriggered(const FInputActionValue&)
 {
     bAttackHeld = true;
     if (bCanChain && !bAdvancedThisWindow) { AdvanceComboImmediately(); }
 }
+
 void UAttackComponent::AttackCompleted(const FInputActionValue&)
 {
     bAttackHeld = false;
