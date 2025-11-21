@@ -14,11 +14,13 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class USceneComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UFormManagerComponent;
 class UFormDefinition;
+class UJumpComponent;
 class UAttackComponent;
 class USkillManagerComponent;
 class UStatManagerComponent;
@@ -45,6 +47,9 @@ class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UNiagaraComponent* SwiftSprintVFX;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* MeshRoot;
+
 protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -62,22 +67,23 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** Attack Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* SkillAction;
 
+	/** Transform Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormBase;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormRange;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSwift;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormGuard;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSpecial;
 
-
 	/** Sprint Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* SprintAction; // IA_Shift를 여기에 할당합니다.
+	UInputAction* SprintAction;
 
 private:
-	/** 현재 폼의 기본 이동 속도 (DA에서 읽어옴) */
+	/** 현재 폼의 기본 이동 속도 */
 	float CurrentFormWalkSpeed;
 	float CurrentFormSprintSpeed;
 
@@ -120,6 +126,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UJumpComponent* JumpManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAttackComponent> AttackManager;
@@ -167,12 +176,6 @@ protected:
 	void SwitchToGuard(const FInputActionValue& Value);
 	void SwitchToSpecial(const FInputActionValue& Value);
 
-
-
-	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
-	void StartJump();
-
-
 	/** 스프린트 입력을 받았을 때 호출됩니다. (Started) */
 	void StartSprinting(const FInputActionValue& Value);
 
@@ -185,7 +188,6 @@ protected:
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();
-	
 
 public:
 	/** Handles move inputs from either controls or UI interfaces */
@@ -226,5 +228,7 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
 };
 

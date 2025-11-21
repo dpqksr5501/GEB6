@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "HealthComponent.h"
 #include "FormManagerComponent.h"
+#include "JumpComponent.h"
 #include "AttackComponent.h"
 #include "SkillManagerComponent.h"
 #include "StatManagerComponent.h"
@@ -19,8 +20,9 @@
 #include "KHU_GEB.h"
 #include "FormDefinition.h"
 #include "NiagaraComponent.h"
-#include "WeaponComponent.h" //[추가] WeaponComponent 헤더
-#include "WeaponData.h" //[추가] WeaponData 헤더
+#include "WeaponComponent.h"
+#include "WeaponData.h"
+#include "Components/SceneComponent.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -56,9 +58,14 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	MeshRoot = CreateDefaultSubobject<USceneComponent>(TEXT("MeshRoot"));
+	MeshRoot->SetupAttachment(RootComponent);
+	GetMesh()->SetupAttachment(MeshRoot);
+
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
+	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
@@ -108,18 +115,11 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-
-		//추가 코드
-		//점프 바인딩을 수정
-		//ACharacter::Jump 대신 만든 StartJump 함수를 호출하게 하도록
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartJump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-
+		if (JumpManager)
+		{
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, JumpManager, &UJumpComponent::HandleSpacePressed);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, JumpManager, &UJumpComponent::HandleSpaceReleased);
+		}
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Move);
@@ -129,9 +129,12 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
 		// Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager.Get(), &UAttackComponent::AttackStarted); // AttackManager.Get()으로 수정
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager.Get(), &UAttackComponent::AttackTriggered); // AttackManager.Get()으로 수정
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager.Get(), &UAttackComponent::AttackCompleted); // AttackManager.Get()으로 수정
+		if (AttackManager)
+		{
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager.Get(), &UAttackComponent::AttackStarted);
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager.Get(), &UAttackComponent::AttackTriggered);
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager.Get(), &UAttackComponent::AttackCompleted);
+		}
 
 		// Skill
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::SkillStart);
@@ -280,14 +283,6 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	}
 }
 
-//StartJump 함수를 새로 구현합니다.
-void AKHU_GEBCharacter::StartJump()
-{
-	bPlayerWantsToJump = true; // 애님 인스턴스가 읽어갈 플래그 ON
-	Jump(); // ACharacter의 실제 점프 실행
-}
-
-
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -390,10 +385,6 @@ void AKHU_GEBCharacter::DoJumpEnd()
 	StopJumping();
 }
 
-
-
-//인터페이스 함수 구현.
-
 float AKHU_GEBCharacter::GetAnimSpeed_Implementation() const
 {
 	// ACharacter의 기본 함수인 GetVelocity().Size()를 사용합니다.
@@ -421,8 +412,6 @@ bool AKHU_GEBCharacter::GetAnimJumpInput_Implementation(bool bConsumeInput)
 	return Result;
 }
 
-
-// [수정 후] GetAnimCharacterState_Implementation (컴포넌트 직접 쿼리)
 ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 {
 	// 컴포넌트의 "공격/스킬" 상태를 우선적으로 확인합니다.
@@ -442,16 +431,12 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 	return CurrentPlayerState;
 }
 
-
 /** 폼이 변경될 때 호출되는 핸들러 */
 void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
 {
-	if (AttackManager)
-	{
-		AttackManager->ResetComboHard();
-		AttackManager->SetForm(Def);
-	}
+	if (JumpManager) { JumpManager->SetForm(NewForm, Def); }
 
+	if (AttackManager) { AttackManager->SetForm(Def); }
 	if (SkillManager) { SkillManager->EquipFromSkillSet(Def ? Def->SkillSet.Get() : nullptr); }
 
 	if (WeaponManager) { WeaponManager->SetWeaponDefinition(Def ? Def->WeaponData.Get() : nullptr); }
@@ -518,8 +503,6 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 		}
 	}
 }
-
-//bIsSprinting
 
 /** 스프린트 시작 (Shift 누름) */
 void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
