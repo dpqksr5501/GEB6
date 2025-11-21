@@ -109,10 +109,10 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	SwiftSprintVFX->SetupAttachment(GetMesh()); // 캐릭터 메시에 부착
 	SwiftSprintVFX->bAutoActivate = false;
 
-	/*Special Form일 때 대시 사용 시 사용할 나이아가라*/
-	DashTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashTrailEffect"));
-	DashTrailComponent->SetupAttachment(GetMesh());
-	DashTrailComponent->bAutoActivate = false;
+	///*Special Form일 때 대시 사용 시 사용할 나이아가라*/
+	//DashTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashTrailEffect"));
+	//DashTrailComponent->SetupAttachment(GetMesh());
+	//DashTrailComponent->bAutoActivate = false;
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -125,16 +125,6 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, JumpManager, &UJumpComponent::HandleSpacePressed);
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, JumpManager, &UJumpComponent::HandleSpaceReleased);
 		}
-		//// Jumping
-		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-
-		//추가 코드
-		//점프 바인딩을 수정
-		//ACharacter::Jump 대신 만든 StartJump 함수를 호출하게 하도록
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartJump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 
 
@@ -335,15 +325,15 @@ void AKHU_GEBCharacter::PerformSpecialDash()
 	const UFormDefinition* Def = FormManager->FindDef(FormManager->CurrentForm);
 	if (!Def) return;
 
-	// 2. [핵심] 나이아가라 이펙트 교체 및 재생
-	if (DashTrailComponent && Def->DashVFX)
-	{
-		// 현재 폼에 설정된 이펙트로 에셋을 교체합니다.
-		DashTrailComponent->SetAsset(Def->DashVFX);
+	//// 2. [핵심] 나이아가라 이펙트 교체 및 재생
+	//if (DashTrailComponent && Def->DashVFX)
+	//{
+	//	// 현재 폼에 설정된 이펙트로 에셋을 교체합니다.
+	//	DashTrailComponent->SetAsset(Def->DashVFX);
 
-		// 이펙트 켜기
-		DashTrailComponent->Activate(true);
-	}
+	//	// 이펙트 켜기
+	//	DashTrailComponent->Activate(true);
+	//}
 
 	// 3. [핵심] 몽타주 재생 (애니메이션)
 	if (Def->DashMontage)
@@ -383,10 +373,10 @@ void AKHU_GEBCharacter::StopDashMovement()
 	// 2. 이펙트 끄기
 	// (바로 끄면 트레일이 뚝 끊길 수 있으므로, 보통은 놔두면 알아서 사라지게 하거나
 	// Deactivate()를 호출해서 '새로운 파티클 생성'만 멈추게 합니다)
-	if (DashTrailComponent)
+	/*if (DashTrailComponent)
 	{
 		DashTrailComponent->Deactivate();
-	}
+	}*/
 }
 
 void AKHU_GEBCharacter::ResetDash()
