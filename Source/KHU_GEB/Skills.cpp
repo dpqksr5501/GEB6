@@ -226,31 +226,138 @@ void USkill_Swift::StopSkill()
 }
 
 /*=============================Guard=============================*/
-// Skill_Shield.cpp
+
 void USkill_Guard::ActivateSkill()
 {
-    if (AActor* Owner = GetOwner())
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner)
     {
-        Owner->SetCanBeDamaged(false);   // 임시 면역
-        if (SkillNS)
-        {
-            SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-                SkillNS, Owner->GetRootComponent(), NAME_None,
-                FVector::ZeroVector, FRotator::ZeroRotator,
-                EAttachLocation::SnapToTarget, true);
-        }
-        Super::ActivateSkill();
-        GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Guard::StopSkill, Duration, false);
+        return;
     }
+
+    if (!CanActivate())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Skill_Guard] ActivateSkill blocked (CanActivate=false)"));
+        return;
+    }
+
+    Super::ActivateSkill();
+
+    bIsActive = true;
+    bEndedByDepletion = false;
+
+    RemainingShields = FMath::Max(MaxShields, 0);
+    ConsumedShields = 0;
+
+    // 보호막 이펙트 켜기
+    if (SkillNS && !SpawnedNS)
+    {
+        SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
+            SkillNS,
+            Owner->GetRootComponent(),
+            NAME_None,
+            FVector::ZeroVector,
+            FRotator::ZeroRotator,
+            EAttachLocation::SnapToTarget,
+            true);
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Activated: MaxShields=%d"), RemainingShields);
 }
 
 void USkill_Guard::StopSkill()
 {
-    if (AActor* Owner = GetOwner()) Owner->SetCanBeDamaged(true);
-    if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
-    GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
+    // 이미 꺼져 있으면 한 번 더 호출돼도 아무 것도 안 함
+    if (!bIsActive)
+    {
+        Super::StopSkill();
+        return;
+    }
+
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+
+    // 이펙트 끄기
+    if (SpawnedNS)
+    {
+        SpawnedNS->Deactivate();
+        SpawnedNS = nullptr;
+    }
+
+    // 4. 보호막이 모두 없어지기 전에(=소진되기 전에) 우클릭을 해제했다면 반격 데미지
+    if (!bEndedByDepletion && ConsumedShields > 0 && World && Owner)
+    {
+        const float TotalDamage = Params.Damage * ConsumedShields;
+        if (TotalDamage > 0.f)
+        {
+            TArray<AActor*> IgnoreActors;
+            IgnoreActors.Add(Owner);
+
+            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Releasing: Consumed=%d, TotalDamage=%.1f"),
+                ConsumedShields, TotalDamage);
+
+            UGameplayStatics::ApplyRadialDamage(
+                World,
+                TotalDamage,                          // 보호막이 막은 히트 수 × Params.Damage
+                Owner->GetActorLocation(),
+                ExplosionRadius,
+                nullptr,                              // 기본 DamageType
+                IgnoreActors,
+                Owner,
+                Owner->GetInstigatorController(),
+                true                                  // Do full damage
+            );
+        }
+    }
+    else
+    {
+        if (bEndedByDepletion)
+        {
+            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Shields depleted. Skill ended without retaliation."));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Stopped with no shields consumed."));
+        }
+    }
+
+    // 상태 리셋
+    bIsActive = false;
+    RemainingShields = 0;
+    ConsumedShields = 0;
+    bEndedByDepletion = false;
 
     Super::StopSkill();
+}
+
+bool USkill_Guard::HandleIncomingDamage(float Damage,
+    const UDamageType* DamageType,
+    AController* InstigatedBy,
+    AActor* DamageCauser)
+{
+    // 스킬이 켜져 있지 않거나, 이미 보호막이 없는 경우엔 그냥 데미지를 먹게 둔다.
+    if (!bIsActive || RemainingShields <= 0)
+    {
+        return false;
+    }
+
+    // 한 번의 데미지를 한 장의 보호막으로 완전히 막음
+    RemainingShields = FMath::Max(RemainingShields - 1, 0);
+    ConsumedShields++;
+
+    UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
+        RemainingShields, ConsumedShields);
+
+    // 마지막 보호막까지 사용했다면, 조건 3: 스킬만 해제되고 반격 데미지는 없음
+    if (RemainingShields <= 0)
+    {
+        bEndedByDepletion = true;
+        StopSkill(); // 여기서 bIsActive가 false로 바뀌고 상태 초기화됨(반격 없음)
+    }
+
+    // true를 반환하면 캐릭터 쪽에서 실제 체력 감소 처리를 하지 않도록 할 것임
+    return true;
 }
 
 /*=============================Special=============================*/

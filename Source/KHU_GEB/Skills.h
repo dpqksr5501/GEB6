@@ -101,9 +101,15 @@ class KHU_GEB_API USkill_Guard : public USkillBase
 {
     GENERATED_BODY()
 public:
-    UPROPERTY(EditAnywhere, Category = "Guard")
-    float Duration = 3.0f;
+    /** 한 번 스킬을 사용할 때 가지고 있는 총 보호막 개수 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    int32 MaxShields = 3;
 
+    /** 우클릭을 떼었을 때, 소모된 보호막 수 × Params.Damage 를 줄 광역 공격 반경 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float ExplosionRadius = 400.f;
+
+    /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
@@ -111,16 +117,36 @@ public:
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override
     {
-        Params = Def ? Def->Params : FSkillParams{}; // 쿨다운 등 나중에 활용  :contentReference[oaicite:9]{index=9}
+        Params = Def ? Def->Params : FSkillParams{};
     }
 
-    virtual bool CanActivate() const override { return true; }
+    /** 이미 켜져 있을 땐 다시 못 켜도록 제한 */
+    virtual bool CanActivate() const override { return !bIsActive; }
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
+    /** 캐릭터의 HandleAnyDamage에서 호출해서, 데미지를 보호막으로 막을지 여부를 판단 */
+    bool HandleIncomingDamage(float Damage,
+        const UDamageType* DamageType,
+        AController* InstigatedBy,
+        AActor* DamageCauser);
+
+    bool IsActive() const { return bIsActive; }
+
 private:
-    FTimerHandle DurationHandle;
     FSkillParams Params;
+
+    /** 현재 남은 보호막 개수 */
+    int32 RemainingShields = 0;
+
+    /** 지금까지 사용(깎인)된 보호막 개수 */
+    int32 ConsumedShields = 0;
+
+    /** 우클릭을 누르고 있어 스킬이 켜져 있는지 여부 */
+    bool bIsActive = false;
+
+    /** 보호막이 전부 소모되어 자동으로 종료된 것인지(반격 데미지 없음) */
+    bool bEndedByDepletion = false;
 };
 
 /*=============================Special=============================*/
