@@ -69,7 +69,30 @@ class KHU_GEB_API USkill_Swift : public USkillBase
     GENERATED_BODY()
 
 public:
+    /** 한 번 점멸할 때 이동할 거리 (SkillDefinition의 Range로 덮어씌워질 수 있음) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
+    float DashDistance = 1000.f;
 
+    /** 시작~끝을 잇는 직육면체의 “가로(옆)” 반폭 (Y축) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
+    float BoxHalfWidth = 150.f;
+
+    /** 시작~끝을 잇는 직육면체의 “세로(위)” 반높이 (Z축) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
+    float BoxHalfHeight = 100.f;
+
+    /** 박스 데미지를 몇 번 샘플링할지 (클수록 같은 적에게 여러 번 데미지) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
+    int32 DamageSamples = 3;
+
+    virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
+    virtual bool CanActivate() const override;
+    virtual void ActivateSkill() override;
+    virtual void StopSkill() override;
+
+private:
+    /** SkillDefinition에서 받아온 Damage / Range 등 */
+    FSkillParams Params;
 };
 
 /*=============================Guard=============================*/
