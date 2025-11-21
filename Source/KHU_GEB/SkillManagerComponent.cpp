@@ -33,6 +33,7 @@ void USkillManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 */
 void USkillManagerComponent::EquipFromSkillSet(USkillSet* Set)
 {
+
 	ClearAll();
 	if (!Set) { UE_LOG(LogTemp, Warning, TEXT("[SkillManager] Equip: Set is null")); return; }
 	for (auto& It : Set->Skills)

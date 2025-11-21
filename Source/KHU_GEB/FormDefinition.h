@@ -73,6 +73,34 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
+
+
+
+	/** 대쉬할 때 캐릭터를 밀어내는 힘 (높을수록 멀리/빨리 감) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	float DashImpulse = 6000.0f;
+
+	/** 대쉬 쿨타임 (연속 사용 방지용, 선택 사항) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	float DashCooldown = 5.0f;
+
+
+	//대쉬 시 재생할 나이아가라 이펙트 (폼마다 다르게 설정 가능)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	TObjectPtr<class UNiagaraSystem> DashVFX;
+
+	//대쉬 시 재생할 애니메이션 몽타주
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Dash")
+	TObjectPtr<class UAnimMontage> DashMontage;
+
+	/** 최대 점프 가능 횟수 (기본 1, Swift는 2) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "JumpCount")
+	int32 MaxJumpCount = 1;
+
+	/** Swift가 공중 점프(2단 점프) 시 재생할 몽타주 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<class UAnimMontage> AirJumpMontage;
+
 };
 
 UCLASS(BlueprintType)
