@@ -8,6 +8,7 @@
 
 class UNiagaraSystem;
 class UNiagaraComponent;
+class AFireballProjectile;
 
 /*=============================Base=============================*/
 UCLASS(ClassGroup = (Skills), meta = (BlueprintSpawnableComponent))
@@ -29,10 +30,19 @@ class KHU_GEB_API USkill_Range : public USkillBase
     GENERATED_BODY()
 
 public:
-    /*virtual void ActivateSkill() override;*/
+    /** 발사할 화염구 액터 (보통 Projectile 블루프린트) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
+    TSubclassOf<AFireballProjectile> FireballClass;
 
-private:
+    /** 화염구를 발사할 소켓 이름 (캐릭터 Mesh에 이 이름의 소켓 필요) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
+    FName MuzzleSocketName = TEXT("MouthSocket");
 
+    /** 초기 발사 각도 오프셋 (Pitch, 도 단위). 음수면 위로, 양수면 아래로. */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
+    float LaunchPitchOffsetDegrees = -10.f;   // 기본값: 살짝 위로
+
+    virtual void ActivateSkill() override;
 };
 
 /*=============================Swift=============================*/

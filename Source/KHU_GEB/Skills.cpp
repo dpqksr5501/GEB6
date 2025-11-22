@@ -2,16 +2,18 @@
 
 
 #include "Skills.h"
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
-#include "GameFramework/Character.h"
 #include "ManaComponent.h"
+#include "FireballProjectile.h"
 #include "DrawDebugHelpers.h"
 
 /*=============================Base=============================*/
@@ -19,6 +21,82 @@
 
 /*=============================Range=============================*/
 
+void USkill_Range::ActivateSkill()
+{
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner) return;
+
+    if (!FireballClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Skill_Range] FireballClass is not set."));
+        return;
+    }
+
+    // 기본 마나/쿨타임 처리 (SkillBase::CanActivate는 SkillManager에서 이미 한 번 체크됨)
+    Super::ActivateSkill();
+
+    FVector  SpawnLocation = Owner->GetActorLocation();
+    FRotator SpawnRotation = Owner->GetActorRotation();
+
+    // 캐릭터의 입 소켓 기준으로 위치/방향 결정
+    if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+    {
+        if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
+        {
+            if (Mesh->DoesSocketExist(MuzzleSocketName))
+            {
+                SpawnLocation = Mesh->GetSocketLocation(MuzzleSocketName);
+                SpawnRotation = Mesh->GetSocketRotation(MuzzleSocketName);
+            }
+            else
+            {
+                // 소켓이 없으면 대충 머리 근처에서 전방으로
+                const FVector Forward = OwnerChar->GetActorForwardVector();
+                SpawnLocation = OwnerChar->GetActorLocation()
+                    + Forward * 50.f
+                    + FVector(0.f, 0.f, 50.f);
+                SpawnRotation = Forward.Rotation();
+            }
+        }
+    }
+
+    // 위/아래 발사 각도 조정 (기본 -10도 = 위로 약간)
+    SpawnRotation.Pitch += LaunchPitchOffsetDegrees;
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = Owner;
+    SpawnParams.Instigator = Cast<APawn>(Owner);
+
+    // AFireballProjectile로 스폰
+    if (AFireballProjectile* Fireball = World->SpawnActor<AFireballProjectile>(
+        FireballClass,
+        SpawnLocation,
+        SpawnRotation,
+        SpawnParams))
+    {
+        UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned: %s"), *GetNameSafe(Fireball));
+
+        // 1) Params.Damage 기반으로 Direct/Explosion 데미지 나누기
+        const float BaseDamage = Params.Damage;             // SkillDefinition의 Damage
+
+        Fireball->DirectDamage = BaseDamage * 1.0f;      // ★ 1배
+        Fireball->ExplosionDamage = BaseDamage * 0.5f;      // ★ 0.5배
+
+        // 2) 폭발 반경은 Range를 그대로 쓰도록 (원하면 에디터에서 덮어쓰면 됨)
+        if (Params.Range > 0.f)
+        {
+            Fireball->ExplosionRadius = Params.Range;
+        }
+
+        // 3) 발사 방향/속도 설정 (ProjectileMovement의 InitialSpeed 사용)
+        if (Fireball->ProjectileMovement)
+        {
+            const FVector Dir = SpawnRotation.Vector();
+            Fireball->ProjectileMovement->Velocity = Dir * Fireball->ProjectileMovement->InitialSpeed;
+        }
+    }
+}
 
 /*=============================Swift=============================*/
 
