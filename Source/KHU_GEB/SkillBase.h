@@ -8,6 +8,8 @@
 #include "SkillBase.generated.h"
 
 class UManaComponent;
+class UHealthComponent;
+class AActor;
 
 UCLASS( Abstract, Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API USkillBase : public UActorComponent
@@ -32,6 +34,14 @@ protected:
     mutable TWeakObjectPtr<UManaComponent> CachedManaComp;
 
     UManaComponent* GetManaComponent() const;
+
+    // HealthComponent를 통해 스킬 데미지를 넣는 공통 헬퍼
+    float DealSkillDamage(
+        AActor* Target,
+        float Amount,
+        bool bIgnoreDefense,
+        bool bPeriodic = false,
+        int32 HitCount = 1);
 
 public:
     // SkillDefinition에서 주입

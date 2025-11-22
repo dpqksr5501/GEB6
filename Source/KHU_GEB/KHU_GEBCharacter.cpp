@@ -278,17 +278,15 @@ void AKHU_GEBCharacter::Heal(float Amount)
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// 1) 먼저 Guard 스킬이 켜져 있다면, 이 데미지를 보호막으로 막을 기회를 줍니다.
+	// 1) Guard에게 먼저 기회 주기 (그대로 유지)
 	if (SkillManager)
 	{
 		if (USkillBase* ActiveSkill = SkillManager->Equipped.FindRef(ESkillSlot::Active))
 		{
 			if (USkill_Guard* GuardSkill = Cast<USkill_Guard>(ActiveSkill))
 			{
-				// true를 반환하면 "이 데미지는 완전히 막았다"는 의미 → 체력 감소 X
 				if (GuardSkill->HandleIncomingDamage(Damage, DamageType, InstigatedBy, DamageCauser))
 				{
-					// 디버그: 가로챈 것도 보고 싶으면 원하는 로그 추가
 					UE_LOG(LogTemp, Log, TEXT("[Character] Damage absorbed by Guard"));
 					return;
 				}
@@ -296,22 +294,29 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 		}
 	}
 
-	// 2) Guard가 없거나, 보호막이 없거나, 마나 부족으로 막지 못한 경우 → 원래대로 맞기
+	// 2) HealthComponent로 파이프라인 통일
 	if (HealthComp && Damage > 0.f)
 	{
-		HealthComp->ReduceHealth(Damage);
-	}
-	if (GEngine && DamageCauser)
-	{
-		// 시간(5.f): 5초간 화면에 표시
-		// 색상(FColor::Red): 빨간색
-		// 공격이 먹는지(좌클릭 시 콜리전 활성화가 되는지)
-		FString Msg = FString::Printf(TEXT("HIT! %s가 %s에게 %f 데미지를 받음!"),
-			*GetName(), // 내 이름 (예: BP_KHUCharacter)
-			*DamageCauser->GetName(), // 때린 액터 (예: BP_Tanker)
-			Damage); // 받은 데미지
+		FDamageSpec Spec;
+		Spec.RawDamage = Damage;
+		Spec.bIgnoreDefense = false;   // 평범한 공격은 방어력 적용 대상
+		Spec.bPeriodic = false;
+		Spec.HitCount = 1;
+		Spec.Instigator = DamageCauser;
+		Spec.SourceSkill = nullptr; // 일반 공격/환경 데미지는 스킬 없음
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
+		const float Final = HealthComp->ApplyDamageSpec(Spec);
+
+		if (GEngine && DamageCauser)
+		{
+			FString Msg = FString::Printf(
+				TEXT("HIT! %s가 %s에게 %f 데미지를 받음! (Final=%.1f)"),
+				*GetName(),
+				*DamageCauser->GetName(),
+				Damage,
+				Final);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
+		}
 	}
 }
 

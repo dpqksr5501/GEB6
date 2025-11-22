@@ -15,6 +15,7 @@
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
 #include "KHU_GEBCharacter.h"
+#include "HealthComponent.h" 
 #include "ManaComponent.h"
 #include "FireballProjectile.h"
 #include "DrawDebugHelpers.h"
@@ -51,6 +52,20 @@ void USkill_Range::ActivateSkill()
             {
                 SpawnLocation = Mesh->GetSocketLocation(MuzzleSocketName);
                 SpawnRotation = Mesh->GetSocketRotation(MuzzleSocketName);
+
+                // 입 소켓에서 나가는 나이아가라
+                if (CastNS)
+                {
+                    UNiagaraFunctionLibrary::SpawnSystemAttached(
+                        CastNS,
+                        Mesh,
+                        MuzzleSocketName,
+                        FVector::ZeroVector,
+                        FRotator::ZeroRotator,
+                        EAttachLocation::SnapToTarget,
+                        true  // AutoDestroy
+                    );
+                }
             }
             else
             {
@@ -60,6 +75,17 @@ void USkill_Range::ActivateSkill()
                     + Forward * 50.f
                     + FVector(0.f, 0.f, 50.f);
                 SpawnRotation = Forward.Rotation();
+
+                // 소켓이 없더라도 위치 기준으로 이펙트만은 재생
+                if (CastNS)
+                {
+                    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                        World,
+                        CastNS,
+                        SpawnLocation,
+                        SpawnRotation
+                    );
+                }
             }
         }
     }
@@ -97,6 +123,20 @@ void USkill_Range::ActivateSkill()
         {
             const FVector Dir = SpawnRotation.Vector();
             Fireball->ProjectileMovement->Velocity = Dir * Fireball->ProjectileMovement->InitialSpeed;
+        }
+
+        // 4) 화염구 비행 중 나이아가라 (꼬리/바디)
+        if (ProjectileNS)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAttached(
+                ProjectileNS,
+                Fireball->GetRootComponent(),
+                NAME_None,
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                EAttachLocation::KeepRelativeOffset,
+                true  // AutoDestroy
+            );
         }
     }
 }
@@ -182,21 +222,31 @@ void USkill_Swift::ActivateSkill()
                 for (const FOverlapResult& O : Overlaps)
                 {
                     AActor* Other = O.GetActor();
-                    if (!Other || Other == Owner)
-                    {
-                        continue;
-                    }
+                    if (!Other || Other == Owner) continue;
 
                     // ACharacter를 상속받는 적에게 데미지
-                    if (Cast<ACharacter>(Other))
+                    if (ACharacter* OtherChar = Cast<ACharacter>(Other))
                     {
-                        UGameplayStatics::ApplyDamage(
-                            Other,
-                            Params.Damage,                         // SkillDefinition의 Damage
-                            Owner->GetInstigatorController(),
-                            Owner,
-                            nullptr);
+                        // 고정 피해, 방어력 무시, Swift 스킬에서 직접 넣음
+                        DealSkillDamage(
+                            OtherChar,
+                            Params.Damage,
+                            /*bIgnoreDefense=*/true,
+                            /*bPeriodic=*/false,
+                            /*HitCount=*/DamageSamples);
+
+                        // Hit Niagara 재생
+                        if (HitNS)
+                        {
+                            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                                World,
+                                HitNS,
+                                OtherChar->GetActorLocation(),
+                                Owner->GetActorRotation()
+                            );
+                        }
                     }
+
                 }
             }
 
@@ -515,6 +565,17 @@ void USkill_Special::ActivateSkill()
             true);
     }
 
+    // 5) 힐/도트 효과 타이머
+    if (EffectTickInterval > 0.f)
+    {
+        World->GetTimerManager().SetTimer(
+            EffectTickTimerHandle,
+            this,
+            &USkill_Special::OnEffectTick,
+            EffectTickInterval,
+            true);
+    }
+
     UE_LOG(LogTemp, Log, TEXT("[Skill_Special] Activated (DarkFog spawned, duration=%.1f)"), Duration);
 }
 
@@ -635,6 +696,7 @@ void USkill_Special::EndSpecial()
     {
         World->GetTimerManager().ClearTimer(DurationTimerHandle);
         World->GetTimerManager().ClearTimer(SlowTickTimerHandle);
+        World->GetTimerManager().ClearTimer(EffectTickTimerHandle);
     }
 
     // 2) 플레이어 이동속도 배율 복구
@@ -668,4 +730,66 @@ void USkill_Special::EndSpecial()
 
     // 5) 공통 Stop 로그
     Super::StopSkill();
+}
+
+void USkill_Special::OnEffectTick()
+{
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner || !bIsActive)
+    {
+        return;
+    }
+
+    // 1) 플레이어 힐
+    if (SelfHealPerTick > 0.f)
+    {
+        if (UHealthComponent* Health = Owner->FindComponentByClass<UHealthComponent>())
+        {
+            Health->AddHealth(SelfHealPerTick);
+        }
+    }
+
+    // 2) 흑안개 안 적들에게 방어무시 도트 데미지
+    if (FogRadius <= 0.f || DotDamagePerTick <= 0.f)
+    {
+        return;
+    }
+
+    TArray<FOverlapResult> Overlaps;
+    FCollisionObjectQueryParams ObjParams;
+    ObjParams.AddObjectTypesToQuery(ECC_Pawn);
+
+    FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSpecialDot), false, Owner);
+
+    const bool bAnyHit = World->OverlapMultiByObjectType(
+        Overlaps,
+        Owner->GetActorLocation(),
+        FQuat::Identity,
+        ObjParams,
+        FCollisionShape::MakeSphere(FogRadius),
+        QueryParams);
+
+    if (!bAnyHit)
+    {
+        return;
+    }
+
+    for (const FOverlapResult& O : Overlaps)
+    {
+        AActor* Other = O.GetActor();
+        ACharacter* OtherChar = Cast<ACharacter>(Other);
+        if (!OtherChar || OtherChar == Owner)
+        {
+            continue;
+        }
+
+        // 고정 피해, 방어력 무시, 주기적 데미지 플래그
+        DealSkillDamage(
+            OtherChar,
+            DotDamagePerTick,
+            /*bIgnoreDefense=*/true,
+            /*bPeriodic=*/true,
+            /*HitCount=*/1);
+    }
 }

@@ -42,6 +42,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
     float LaunchPitchOffsetDegrees = -10.f;   // 기본값: 살짝 위로
 
+    /** 스킬 시전 시, 입 소켓에서 나갈 발사 이펙트 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
+    TObjectPtr<UNiagaraSystem> CastNS;
+    
+    /** 화염구 비행 중에 붙을 나이아가라(꼬리/코어 등) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
+    TObjectPtr<UNiagaraSystem> ProjectileNS;
+
     virtual void ActivateSkill() override;
 };
 
@@ -67,6 +75,10 @@ public:
     /** 박스 데미지를 몇 번 샘플링할지 (클수록 같은 적에게 여러 번 데미지) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     int32 DamageSamples = 3;
+
+    /** 범위 내의 적 위치에 생성될 나이아가라 (타격 이펙트) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift|FX")
+    TObjectPtr<UNiagaraSystem> HitNS;
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
     virtual bool CanActivate() const override;
@@ -162,6 +174,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
     float SlowTickInterval = 0.2f;
 
+    /** 2초마다 플레이어가 회복할 양 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float SelfHealPerTick = 10.f;
+
+    /** 2초마다 흑안개 안의 적에게 들어갈 고정 피해 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float DotDamagePerTick = 5.f;
+
+    /** 힐/도트 틱 간격(초). 기본 2초 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float EffectTickInterval = 2.f;
+
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override; // 입력 해제용 (지속 스킬이라 무시할 예정)
@@ -180,6 +204,9 @@ private:
     /** 슬로우 효과 갱신용 타이머 */
     FTimerHandle SlowTickTimerHandle;
 
+    /** 힐/도트 효과용 타이머 */
+    FTimerHandle EffectTickTimerHandle;
+
     /** Special을 쓴 플레이어 캐릭터 캐시 */
     TWeakObjectPtr<class AKHU_GEBCharacter> CachedOwnerChar;
 
@@ -191,6 +218,9 @@ private:
 
     /** 현재 흑안개 영역 안의 적들을 찾아 슬로우/복구 처리 */
     void UpdateFogEffects();
+
+    /** 힐/도트 틱 */
+    void OnEffectTick();
 
     /** Special을 실제로 종료(버프/슬로우/이펙트 정리) */
     void EndSpecial();

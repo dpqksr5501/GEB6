@@ -2,7 +2,7 @@
 #include "HealthComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "SkillBase.h" 
 
 UHealthComponent::UHealthComponent()
 {
@@ -93,4 +93,33 @@ void UHealthComponent::HandleDeathIfNeeded()
         // 필요 시: 소유 액터 처리 (Destroy 등)
         // if (AActor* Owner = GetOwner()) { Owner->Destroy(); }
     }
+}
+
+float UHealthComponent::ApplyDamageSpec(const FDamageSpec& Spec)
+{
+    if (Spec.RawDamage <= 0.f || MaxHealth <= 0.f)
+    {
+        return 0.f;
+    }
+
+    const float Raw = Spec.RawDamage;
+    float FinalDamage = Raw;
+
+    // TODO: 방어력/저항 등 계산은 나중에 여기서 처리
+    // if (!Spec.bIgnoreDefense) { FinalDamage = ApplyDefense(Raw); }
+
+    const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
+    const float Delta = NewHealth - Health;   // 데미지니까 음수일 것
+
+    // 체력/이벤트/죽음 처리 공통 로직
+    ApplyHealth(NewHealth, Delta);
+    HandleDeathIfNeeded();
+
+    // 델리게이트용 포인터 꺼내기
+    AActor* InstigatorActor = Spec.Instigator.Get();
+    USkillBase* SourceSkill = Spec.SourceSkill.Get();
+
+    OnDamageApplied.Broadcast(Health, FinalDamage, Raw, InstigatorActor, SourceSkill);
+
+    return FinalDamage;
 }

@@ -2,7 +2,10 @@
 
 
 #include "SkillBase.h"
+#include "GameFramework/Actor.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "HealthComponent.h"
 #include "ManaComponent.h"
 
 USkillBase::USkillBase() {}
@@ -99,4 +102,45 @@ void USkillBase::ActivateSkill()
 void USkillBase::StopSkill()
 {
     UE_LOG(LogTemp, Log, TEXT("[SkillBase] StopSkill on %s"), *GetNameSafe(this));
+}
+
+float USkillBase::DealSkillDamage(
+    AActor* Target,
+    float Amount,
+    bool bIgnoreDefense,
+    bool bPeriodic,
+    int32 HitCount)
+{
+    if (!Target || Amount <= 0.f)
+    {
+        return 0.f;
+    }
+
+    // 1) 우선 HealthComponent 경로 시도
+    if (UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>())
+    {
+        FDamageSpec Spec;
+        Spec.RawDamage = Amount;
+        Spec.bIgnoreDefense = bIgnoreDefense;
+        Spec.bPeriodic = bPeriodic;
+        Spec.HitCount = HitCount;
+        Spec.Instigator = GetOwner();
+        Spec.SourceSkill = this;
+
+        return Health->ApplyDamageSpec(Spec);
+    }
+
+    // 2) HealthComponent가 없다면, 기존 ApplyDamage로 대체
+    AActor* OwnerActor = GetOwner();
+    AController* InstigatorController =
+        OwnerActor ? OwnerActor->GetInstigatorController() : nullptr;
+
+    UGameplayStatics::ApplyDamage(
+        Target,
+        Amount,
+        InstigatorController,
+        OwnerActor,
+        nullptr);
+
+    return Amount;
 }
