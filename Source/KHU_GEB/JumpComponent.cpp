@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
+#include "MonsterBase.h"
 #include "KHU_GEBCharacter.h"
 
 UJumpComponent::UJumpComponent()
@@ -146,6 +147,15 @@ void UJumpComponent::SetForm(EFormType Form, const UFormDefinition* Def)
 	bIsJumping = false;
 	JumpCount = 0;
 
+
+	//Guard 끌어당기기 쓰다가 다른 폼으로 변했을 시 취소하는 로직
+	if (bGuardPullActive)
+	{
+		bGuardPullActive = false;
+		GuardPullTargets.Reset();
+		SetComponentTickEnabled(false);
+	}
+
 	// === Swift ===
 	if (bSwiftSpinning) { StopSwiftSpin(/*bResetRotation=*/true); }
 
@@ -155,6 +165,12 @@ void UJumpComponent::SetForm(EFormType Form, const UFormDefinition* Def)
 		if (UCharacterMovementComponent* MoveComp = CachedCharacter->GetCharacterMovement())
 		{
 			MoveComp->GravityScale = DefaultGravityScale;
+		}
+
+		// 활강 변수 끄기
+		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		{
+			MyChar->bIsRangeGliding = false;
 		}
 
 		switch (CurrentForm)
@@ -188,6 +204,12 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 	// 착지하면 점프 상태/카운트/회전 모두 리셋
 	bIsJumping = false;
 	JumpCount = 0;
+
+	//땅에 닿았으니 활강 모드 해제
+	if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
+	{
+		MyChar->bIsRangeGliding = false;
+	}
 
 	// Range에서 조정했던 중력 값 원복
 	if (CachedCharacter)
@@ -274,6 +296,12 @@ void UJumpComponent::HandleRangePressed()
 
 		bIsJumping = true;
 		JumpCount = 1;
+
+		//ABP에서 활강하는지 읽음
+		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		{
+			MyChar->bIsRangeGliding = true;
+		}
 	}
 	// 2) 공중: 급강하(착치)
 	else
@@ -397,6 +425,32 @@ void UJumpComponent::HandleGuardPressed()
 	{
 		// 끌어당길 대상이 없으면 쿨타임도 돌리지 않음
 		return;
+	}
+
+	//ABP에서 실행하기 위한 캐스팅과 0.15초 딜레이 후 ABP변수 변경
+	if (AKHU_GEBCharacter* MyPlayer = Cast<AKHU_GEBCharacter>(CachedCharacter))
+	{
+		MyPlayer->bSpaceActionInput = true;
+		FTimerHandle ResetTimerHandle;
+		MyPlayer->GetWorldTimerManager().SetTimer(
+			ResetTimerHandle,
+			MyPlayer,
+			&AKHU_GEBCharacter::AutoResetSpaceAction,
+			0.15f, // 0.15초 딜레이
+			false
+		);
+
+		MyPlayer->bIsMovementInputBlocked = true;
+
+		//2.1초 뒤에 이동 잠금 해제 예약
+		FTimerHandle MoveLockTimerHandle;
+		MyPlayer->GetWorldTimerManager().SetTimer(
+			MoveLockTimerHandle,
+			MyPlayer,
+			&AKHU_GEBCharacter::ReleaseMovementLock,
+			2.1f,
+			false
+		);
 	}
 
 	// 끌어당기기 시작

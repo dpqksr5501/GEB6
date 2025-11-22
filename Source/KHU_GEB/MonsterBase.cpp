@@ -201,7 +201,7 @@ void AMonsterBase::Landed(const FHitResult& Hit)
 
 
 
-//인터페이스 함수 4개를 새로 구현합니다. 11/12
+//인터페이스 함수 5개11/23
 
 float AMonsterBase::GetAnimSpeed_Implementation() const
 {
@@ -229,6 +229,18 @@ bool AMonsterBase::GetAnimJumpInput_Implementation(bool bConsumeInput)
 	{
 		bJumpInput = false; // 신호 리셋
 	}
+	return Result;
+}
+
+bool AMonsterBase::GetAnimSpaceActionInput_Implementation(bool bConsumeInput)
+{
+	const bool Result = bSpaceActionInput;
+
+	if (bConsumeInput)
+	{
+		bSpaceActionInput = false; // 값을 읽었으니 리셋(소모)
+	}
+
 	return Result;
 }
 

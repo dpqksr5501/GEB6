@@ -113,10 +113,11 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	SwiftSprintVFX->SetupAttachment(GetMesh()); // 캐릭터 메시에 부착
 	SwiftSprintVFX->bAutoActivate = false;
 
-	///*Special Form일 때 대시 사용 시 사용할 나이아가라*/
-	//DashTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashTrailEffect"));
-	//DashTrailComponent->SetupAttachment(GetMesh());
-	//DashTrailComponent->bAutoActivate = false;
+	//Guard 스페이스바
+	bSpaceActionInput = false;
+
+	//Range 활강
+	bIsRangeGliding = false;
 }
 
 void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -322,6 +323,13 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
+
+	//Guard 끌어당기기 멈추기
+	if (bIsMovementInputBlocked)
+	{
+		return;
+	}
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -484,6 +492,18 @@ ECharacterState AKHU_GEBCharacter::GetAnimCharacterState_Implementation() const
 	// CurrentPlayerState는 이제 Idle, Hit, Die 등만 관리합니다.
 	return CurrentPlayerState;
 }
+
+bool AKHU_GEBCharacter::GetAnimSpaceActionInput_Implementation(bool bConsumeInput)
+{
+	const bool Result = bSpaceActionInput;
+	if (bConsumeInput)
+	{
+		bSpaceActionInput = false; // 신호 소모(리셋)
+	}
+	return Result;
+}
+
+
 
 /** 폼이 변경될 때 호출되는 핸들러 */
 void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* Def)
@@ -648,4 +668,22 @@ void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
 		ActiveRangeSkill = nullptr;
 		bIsRangeAiming = false;
 	}
+}
+
+/*Guard Form일 때 움직임 고정하는 함수*/
+void AKHU_GEBCharacter::AutoResetSpaceAction()
+{
+	bSpaceActionInput = false;
+}
+
+/*Guard Form일 때 움직임 고정 해제하는 함수*/
+void AKHU_GEBCharacter::ReleaseMovementLock()
+{
+	bIsMovementInputBlocked = false;
+}
+
+//활강 상태 확인하는 인터페이스함수 구현
+bool AKHU_GEBCharacter::GetAnimIsRangeGliding_Implementation() const
+{
+	return bIsRangeGliding;
 }

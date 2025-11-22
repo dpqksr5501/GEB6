@@ -230,10 +230,31 @@ public:
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
 
 	/** 스킬에 의해 적용되는 이동속도 배율을 설정합니다. (1.0 = 기본속도) */
 	void SetSkillSpeedMultiplier(float InMultiplier);
 	float GetSkillSpeedMultiplier() const { return SkillSpeedMultiplier; }
+
+	//스페이스바 특수 행동 신호 저장용 변수 (ABP 처리를 위해서)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bSpaceActionInput;
+
+	//스페이스바 입력 변수를 신호 끄기 위한 함수
+	void AutoResetSpaceAction();
+
+	//Guard Form일 때 몬스터 끌어당길 때 움직임 고정하는 변수
+	bool bIsMovementInputBlocked = false;
+	//Guard Form일 때 몬스터 끌어당기고 움직임 해제하는 함수 
+	void ReleaseMovementLock();
+
+
+	//Range 폼 활강 상태 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bIsRangeGliding = false;
+
+	//Range를 위한 인터페이스 함수 구현 선언
+	virtual bool GetAnimIsRangeGliding_Implementation() const override;
 
 public:
 	/** Returns CameraBoom subobject **/
