@@ -265,5 +265,14 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
+
+private:
+	bool bIsRangeAiming = false;
+	TWeakObjectPtr<class USkill_Range> ActiveRangeSkill;
+
+public:
+	void OnRangeAimingStarted(USkill_Range* Skill);
+	void OnRangeAimingEnded(USkill_Range* Skill);
+	bool IsRangeAiming() const { return bIsRangeAiming; }
 };
 

@@ -28,10 +28,7 @@ UManaComponent* USkillBase::GetManaComponent() const
 
 void USkillBase::InitializeFromDefinition(const USkillDefinition* Def)
 {
-    if (!Def) return;
-
-    Params = Def->Params;
-    // 필요하면 여기서 NextAvailableTime 초기화 등
+    Params = Def ? Def->Params : FSkillParams{};
 }
 
 bool USkillBase::CanActivate() const

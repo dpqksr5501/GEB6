@@ -30,6 +30,8 @@ class KHU_GEB_API USkill_Range : public USkillBase
     GENERATED_BODY()
 
 public:
+    USkill_Range();   // ← 생성자 추가
+
     /** 발사할 화염구 액터 (보통 Projectile 블루프린트) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
     TSubclassOf<AFireballProjectile> FireballClass;
@@ -38,19 +40,70 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
     FName MuzzleSocketName = TEXT("MouthSocket");
 
-    /** 초기 발사 각도 오프셋 (Pitch, 도 단위). 음수면 위로, 양수면 아래로. */
+    /** (예전) 초기 발사 각도 오프셋 – 이제는 “기본 발사” fallback에만 사용 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float LaunchPitchOffsetDegrees = -10.f;   // 기본값: 살짝 위로
+    float LaunchPitchOffsetDegrees = -10.f;
 
     /** 스킬 시전 시, 입 소켓에서 나갈 발사 이펙트 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
     TObjectPtr<UNiagaraSystem> CastNS;
-    
+
     /** 화염구 비행 중에 붙을 나이아가라(꼬리/코어 등) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
     TObjectPtr<UNiagaraSystem> ProjectileNS;
 
+    /** 조준 중에 바닥에 보여줄 범위 표시 나이아가라(원형 영역 같은 이펙트) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    TObjectPtr<UNiagaraSystem> TargetAreaNS;
+
+    /** 조준 원(빨간 서클)의 실제 반경 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    float TargetRadius = 0.f;
+
+    /** 캐릭터를 중심으로 조준 원의 "중심"이 이동할 수 있는 최대 거리 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    float MaxAimDistance = 1332.f;
+
+    /** 조준 중 이동키로 원을 움직일 때 사용할 속도 (유닛/초) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    float AimMoveSpeed = 600.f;
+
+    /** 조준 원의 중앙을 땅에 붙일 때 쓸 라인트레이스 높이 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    float GroundTraceHalfHeight = 5000.f;
+
+    /** 지면에서 살짝 띄우기 위한 오프셋 (이펙트가 묻히지 않게) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
+    float GroundOffsetZ = 5.f;
+
+    virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
     virtual void ActivateSkill() override;
+    virtual void StopSkill() override;
+    virtual void TickComponent(
+        float DeltaTime,
+        ELevelTick TickType,
+        FActorComponentTickFunction* ThisTickFunction) override;
+
+    /** 조준 중 이동 입력을 받아 저장 (캐릭터 Move에서 호출) */
+    void HandleAimMoveInput(const FVector2D& Input);
+
+private:
+    bool bIsAiming = false;
+    bool bHasValidTarget = false;
+    FVector CurrentTargetLocation = FVector::ZeroVector;
+
+    UPROPERTY()
+    TObjectPtr<UNiagaraComponent> TargetAreaComp = nullptr;
+
+    FVector2D AimMoveInput = FVector2D::ZeroVector;
+
+    float GetCurrentTargetRadius() const;
+    float GetMaxAimDistance() const;
+
+    void SpawnOrUpdateIndicator();
+    void CleanupIndicator();
+    void SpawnProjectileTowards(const FVector& TargetLocation);
+    void SpawnDefaultProjectile();
 };
 
 /*=============================Swift=============================*/
@@ -62,7 +115,7 @@ class KHU_GEB_API USkill_Swift : public USkillBase
 public:
     /** 한 번 점멸할 때 이동할 거리 (SkillDefinition의 Range로 덮어씌워질 수 있음) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
-    float DashDistance = 1000.f;
+    float DashDistance = 0.f;
 
     /** 시작~끝을 잇는 직육면체의 “가로(옆)” 반폭 (Y축) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
@@ -74,7 +127,10 @@ public:
 
     /** 박스 데미지를 몇 번 샘플링할지 (클수록 같은 적에게 여러 번 데미지) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
-    int32 DamageSamples = 3;
+    int32 DamageSamples = 10;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
+    float DamagePerSample = 0.f;
 
     /** 범위 내의 적 위치에 생성될 나이아가라 (타격 이펙트) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift|FX")
@@ -84,6 +140,24 @@ public:
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
+
+private:
+    /** Swift에 맞은 타겟들 (10타 동안 계속 두들길 대상) */
+    UPROPERTY()
+    TArray<TWeakObjectPtr<ACharacter>> SwiftTargets;
+
+    /** 현재 몇 번째 타격인지 (1 ~ DamageSamples) */
+    int32 CurrentHitIndex = 0;
+
+    /** 타격 간격(초). 10타라면 0.08 ~ 0.1 정도가 체감 좋음 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift", meta = (AllowPrivateAccess = "true"))
+    float HitInterval = 0.08f;
+
+    /** 타격용 타이머 핸들 */
+    FTimerHandle SwiftDamageTimerHandle;
+
+    /** 타격 한 번 수행 (타이머 콜백) */
+    void HandleSwiftDamageTick();
 
 };
 
@@ -96,15 +170,18 @@ class KHU_GEB_API USkill_Guard : public USkillBase
 public:
     /** 한 번 스킬을 사용할 때 가지고 있는 총 보호막 개수 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
-    int32 MaxShields = 3;
-
-    /** 우클릭을 떼었을 때, 소모된 보호막 수 × Params.Damage 를 줄 광역 공격 반경 */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
-    float ExplosionRadius = 400.f;
+    int32 MaxShields = 10;
 
     /** 배리어 한 장이 깎일 때마다 소모할 마나량 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
-    float ManaPerShield = 10.f;
+    float ManaPerShield = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float DamagePerSheild = 0.f;
+
+    /** 우클릭을 떼었을 때, 소모된 보호막 수 × DamagePerSheild 를 줄 광역 공격 반경 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float ExplosionRadius = 0.f;
 
     /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
@@ -168,7 +245,7 @@ public:
 
     /** 흑안개 효과가 적용되는 반경 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
-    float FogRadius = 400.f;
+    float FogRadius = 0.f;
 
     /** 적 슬로우를 갱신할 주기(초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
@@ -176,16 +253,17 @@ public:
 
     /** 2초마다 플레이어가 회복할 양 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
-    float SelfHealPerTick = 10.f;
+    float SelfHealPerTick = 0.f;
 
     /** 2초마다 흑안개 안의 적에게 들어갈 고정 피해 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
-    float DotDamagePerTick = 5.f;
+    float DotDamagePerTick = 0.f;
 
     /** 힐/도트 틱 간격(초). 기본 2초 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
     float EffectTickInterval = 2.f;
 
+    virtual void InitializeFromDefinition(const USkillDefinition* Def);
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override; // 입력 해제용 (지속 스킬이라 무시할 예정)

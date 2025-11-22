@@ -130,10 +130,10 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, JumpManager, &UJumpComponent::HandleSpaceReleased);
 		}
 
-
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::Move);;
+
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
 		// Looking
@@ -422,6 +422,17 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
+	// Range 조준 중이면, 이동 대신 스킬에 입력 전달
+	if (bIsRangeAiming)
+	{
+		if (ActiveRangeSkill.IsValid())
+		{
+			ActiveRangeSkill->HandleAimMoveInput(MovementVector);
+		}
+		// 캐릭터는 실제로는 움직이지 않음
+		return;
+	}
+
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
 }
@@ -449,30 +460,35 @@ void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
+	if (IsRangeAiming()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Base);
 }
 
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
+	if (IsRangeAiming()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Range);
 }
 
 void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 {
+	if (IsRangeAiming()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Swift);
 }
 
 void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 {
+	if (IsRangeAiming()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Guard);
 }
 
 void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 {
+	if (IsRangeAiming()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Special);
 }
@@ -733,4 +749,19 @@ void AKHU_GEBCharacter::SetSkillSpeedMultiplier(float InMultiplier)
 {
 	SkillSpeedMultiplier = InMultiplier;
 	UpdateMovementSpeed();
+}
+
+void AKHU_GEBCharacter::OnRangeAimingStarted(USkill_Range* Skill)
+{
+	bIsRangeAiming = true;
+	ActiveRangeSkill = Skill;
+}
+
+void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
+{
+	if (ActiveRangeSkill.Get() == Skill)
+	{
+		ActiveRangeSkill = nullptr;
+		bIsRangeAiming = false;
+	}
 }
