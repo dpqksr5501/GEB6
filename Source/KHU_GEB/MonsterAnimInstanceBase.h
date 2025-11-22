@@ -50,6 +50,19 @@ public:
 	bool bIsFalling;
 
 
+	//ABP의 Transition Rule(화살표 조건)에서 사용할 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Action")
+	bool bSpaceAction_Anim;
+
+
+	// [추가] ABP 상태 머신 조건으로 쓸 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bIsRangeGliding_Anim;
+
+
+
+
+
 	//여기 변수들은 (AimYaw, AimPitch) 에임 오프셋을 쓸 수 있을 때를 대비해서 만들어뒀습니다.
 	//에임 좌/우
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")

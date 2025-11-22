@@ -121,16 +121,6 @@ private:
 	/** Tick 함수가 매 프레임 도달하려는 목표 Vignette(어두움) 강도입니다. */
 	float TargetVignetteIntensity;
 
-
-
-	// 대쉬 쿨타임 체크용 타이머 핸들(Special Form의 대쉬)
-	FTimerHandle TimerHandle_DashCooldown;
-	bool bCanDash = true;
-
-	// 대쉬가 끝났을 때 멈추게 할 함수
-	void StopDashMovement();
-	void ResetDash();
-
 public:
 	/** Constructor */
 	AKHU_GEBCharacter();
@@ -194,14 +184,6 @@ protected:
 	void SwitchToSpecial(const FInputActionValue& Value);
 
 
-
-	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
-	void StartJump();
-
-	// Special 폼 전용 대쉬 함수(스페이스바 입력 시 대쉬로 사용하기 위해서)
-	void PerformSpecialDash();
-
-
 	/** 스프린트 입력을 받았을 때 호출됩니다. (Started) */
 	void StartSprinting(const FInputActionValue& Value);
 
@@ -214,10 +196,6 @@ protected:
 
 	/** 현재 상태(폼, 스프린트 여부)에 맞춰 이동 속도를 업데이트합니다. */
 	void UpdateMovementSpeed();
-
-	// ACharacter의 가상 함수 오버라이드 (점프가 성공했을 때 호출됨)
-	// Swift의 2단점프 구현을 위해 필요.
-	virtual void OnJumped_Implementation() override;
 	
 
 public:
@@ -252,10 +230,31 @@ public:
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
 
 	/** 스킬에 의해 적용되는 이동속도 배율을 설정합니다. (1.0 = 기본속도) */
 	void SetSkillSpeedMultiplier(float InMultiplier);
 	float GetSkillSpeedMultiplier() const { return SkillSpeedMultiplier; }
+
+	//스페이스바 특수 행동 신호 저장용 변수 (ABP 처리를 위해서)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bSpaceActionInput;
+
+	//스페이스바 입력 변수를 신호 끄기 위한 함수
+	void AutoResetSpaceAction();
+
+	//Guard Form일 때 몬스터 끌어당길 때 움직임 고정하는 변수
+	bool bIsMovementInputBlocked = false;
+	//Guard Form일 때 몬스터 끌어당기고 움직임 해제하는 함수 
+	void ReleaseMovementLock();
+
+
+	//Range 폼 활강 상태 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bIsRangeGliding = false;
+
+	//Range를 위한 인터페이스 함수 구현 선언
+	virtual bool GetAnimIsRangeGliding_Implementation() const override;
 
 public:
 	/** Returns CameraBoom subobject **/
