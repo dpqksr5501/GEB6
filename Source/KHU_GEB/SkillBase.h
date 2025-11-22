@@ -7,36 +7,42 @@
 #include "SkillDefinition.h"
 #include "SkillBase.generated.h"
 
+class UManaComponent;
+
 UCLASS( Abstract, Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API USkillBase : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	USkillBase();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ESkillSlot Slot = ESkillSlot::Active;
-/*
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-*/
-	// SkillDefinition에서 주입
-	virtual void InitializeFromDefinition(const USkillDefinition* Def) { /* Params 복사 등 */ }
+protected:
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Skill")
+    FSkillParams Params;
+
+    // 다음에 스킬을 다시 쓸 수 있는 게임 시간
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Skill")
+    float NextAvailableTime = 0.f;
+
+    // 캐릭터의 마나 컴포넌트 캐시
+    mutable TWeakObjectPtr<UManaComponent> CachedManaComp;
+
+    UManaComponent* GetManaComponent() const;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	virtual bool CanActivate() const { return true; }
+    // SkillDefinition에서 주입
+    virtual void InitializeFromDefinition(const USkillDefinition* Def);
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	virtual void ActivateSkill();
+    // 1) 여기서 쿨타임 + 마나 둘 다 체크
+    virtual bool CanActivate() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	virtual void StopSkill();
+    // 2) 여기서 실제로 쿨타임 시작 + 마나 차감
+    virtual void ActivateSkill();
+
+    virtual void StopSkill();
+
 };

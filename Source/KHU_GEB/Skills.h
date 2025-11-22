@@ -29,37 +29,10 @@ class KHU_GEB_API USkill_Range : public USkillBase
     GENERATED_BODY()
 
 public:
-    // 튜닝 파라미터(Definition 기본값 + 개별 스킬 확장)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    FName MouthSocket = "MouthSocket";
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float TickInterval = 0.1f;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float MaxDuration = 3.0f;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float ConeAngleDeg = 30.f;
-
-    // 비주얼
-    UPROPERTY(EditAnywhere, Category = "Range|FX")
-    TObjectPtr<UNiagaraSystem> SkillNS;
-
-    // 내부
-    UPROPERTY() TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
-    FTimerHandle TickHandle, DurationHandle;
-
-    virtual void InitializeFromDefinition(const USkillDefinition* Def) override
-    {
-        // 기존 Params 사용 (Damage/Range 등)  :contentReference[oaicite:5]{index=5}
-        Params = Def ? Def->Params : FSkillParams{};
-    }
-
-    virtual bool CanActivate() const override { return true; }
-    virtual void ActivateSkill() override;
-    virtual void StopSkill() override;
+    /*virtual void ActivateSkill() override;*/
 
 private:
-    FSkillParams Params; // Damage/Range 사용
-    void TickBreath();
+
 };
 
 /*=============================Swift=============================*/
@@ -90,9 +63,6 @@ public:
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
-private:
-    /** SkillDefinition에서 받아온 Damage / Range 등 */
-    FSkillParams Params;
 };
 
 /*=============================Guard=============================*/
@@ -100,6 +70,7 @@ UCLASS(ClassGroup = (Skills), meta = (BlueprintSpawnableComponent))
 class KHU_GEB_API USkill_Guard : public USkillBase
 {
     GENERATED_BODY()
+
 public:
     /** 한 번 스킬을 사용할 때 가지고 있는 총 보호막 개수 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
@@ -109,19 +80,21 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 400.f;
 
+    /** 배리어 한 장이 깎일 때마다 소모할 마나량 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float ManaPerShield = 10.f;
+
     /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
-    UPROPERTY() TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
+    UPROPERTY()
+    TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
 
-    virtual void InitializeFromDefinition(const USkillDefinition* Def) override
-    {
-        Params = Def ? Def->Params : FSkillParams{};
-    }
+    virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
 
-    /** 이미 켜져 있을 땐 다시 못 켜도록 제한 */
-    virtual bool CanActivate() const override { return !bIsActive; }
+    /** 이미 켜져 있을 땐 다시 못 켜도록 + 쿨타임 체크 */
+    virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
@@ -134,19 +107,10 @@ public:
     bool IsActive() const { return bIsActive; }
 
 private:
-    FSkillParams Params;
-
-    /** 현재 남은 보호막 개수 */
     int32 RemainingShields = 0;
-
-    /** 지금까지 사용(깎인)된 보호막 개수 */
     int32 ConsumedShields = 0;
-
-    /** 우클릭을 누르고 있어 스킬이 켜져 있는지 여부 */
-    bool bIsActive = false;
-
-    /** 보호막이 전부 소모되어 자동으로 종료된 것인지(반격 데미지 없음) */
-    bool bEndedByDepletion = false;
+    bool  bIsActive = false;
+    bool  bEndedByDepletion = false;
 };
 
 /*=============================Special=============================*/

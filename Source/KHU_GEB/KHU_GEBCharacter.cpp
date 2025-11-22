@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "HealthComponent.h"
+#include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "JumpComponent.h"
 #include "AttackComponent.h"
@@ -23,6 +24,7 @@
 #include "WeaponComponent.h"
 #include "WeaponData.h"
 #include "Components/SceneComponent.h"
+#include "Skills.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -63,6 +65,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	GetMesh()->SetupAttachment(MeshRoot);
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
@@ -252,7 +255,9 @@ void AKHU_GEBCharacter::Tick(float DeltaTime)
 		);
 	}
 
-	//UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
+	if (ManaComp && GEngine)
+		GEngine->AddOnScreenDebugMessage(777, 1.f, FColor::Cyan,
+			FString::Printf(TEXT("Mana: %f"), ManaComp->CurrentMana));
 
 }
 
@@ -272,6 +277,25 @@ void AKHU_GEBCharacter::Heal(float Amount)
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	// 1) 먼저 Guard 스킬이 켜져 있다면, 이 데미지를 보호막으로 막을 기회를 줍니다.
+	if (SkillManager)
+	{
+		if (USkillBase* ActiveSkill = SkillManager->Equipped.FindRef(ESkillSlot::Active))
+		{
+			if (USkill_Guard* GuardSkill = Cast<USkill_Guard>(ActiveSkill))
+			{
+				// true를 반환하면 "이 데미지는 완전히 막았다"는 의미 → 체력 감소 X
+				if (GuardSkill->HandleIncomingDamage(Damage, DamageType, InstigatedBy, DamageCauser))
+				{
+					// 디버그: 가로챈 것도 보고 싶으면 원하는 로그 추가
+					UE_LOG(LogTemp, Log, TEXT("[Character] Damage absorbed by Guard"));
+					return;
+				}
+			}
+		}
+	}
+
+	// 2) Guard가 없거나, 보호막이 없거나, 마나 부족으로 막지 못한 경우 → 원래대로 맞기
 	if (HealthComp && Damage > 0.f)
 	{
 		HealthComp->ReduceHealth(Damage);

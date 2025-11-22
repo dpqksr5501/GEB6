@@ -18,6 +18,7 @@ class USceneComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UManaComponent;
 class UFormManagerComponent;
 class UFormDefinition;
 class UJumpComponent;
@@ -133,6 +134,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UManaComponent* ManaComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;

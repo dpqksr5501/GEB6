@@ -14,9 +14,9 @@ struct FSkillParams
 {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Damage = 0.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Cooldown = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Range = 600.f;
-	// 필요 시 InstancedStruct로 확장 가능
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float ManaCost = 50.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Cooldown = 1.f;
 };
 
 UCLASS(BlueprintType)

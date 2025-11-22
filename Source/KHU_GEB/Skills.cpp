@@ -11,70 +11,14 @@
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
+#include "ManaComponent.h"
 #include "DrawDebugHelpers.h"
 
 /*=============================Base=============================*/
 
 
 /*=============================Range=============================*/
-void USkill_Range::ActivateSkill()
-{
-    if (AActor* Owner = GetOwner())
-    {
-        // FX: 메쉬의 입 소켓에 부착
-        if (SkillNS)
-        {
-            if (USkeletalMeshComponent* Skel = Owner->FindComponentByClass<USkeletalMeshComponent>())
-            {
-                SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-                    SkillNS, Skel, MouthSocket, FVector::ZeroVector, FRotator::ZeroRotator,
-                    EAttachLocation::SnapToTarget, true);
-            }
-        }
-        Super::ActivateSkill();
 
-        // 채널 시작
-        GetWorld()->GetTimerManager().SetTimer(TickHandle, this, &USkill_Range::TickBreath, TickInterval, true);
-        GetWorld()->GetTimerManager().SetTimer(DurationHandle, this, &USkill_Range::StopSkill, MaxDuration, false);
-    }
-}
-
-void USkill_Range::StopSkill()
-{
-    GetWorld()->GetTimerManager().ClearTimer(TickHandle);
-    GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
-    if (SpawnedNS) { SpawnedNS->Deactivate(); SpawnedNS = nullptr; }
-
-    Super::StopSkill();
-}
-
-void USkill_Range::TickBreath()
-{
-    // 콘 트레이스: 전방으로 여러 라인/스피어 트레이스 or Overlap
-    AActor* Owner = GetOwner();
-    if (!Owner) return;
-
-    const FVector Start = Owner->GetActorLocation();
-    const FVector Fwd = Owner->GetActorForwardVector();
-    const float Range = Params.Range; //  :contentReference[oaicite:6]{index=6}
-
-    // 간단하게: 원뿔 안의 액터들 필터링 (의사코드)
-    TArray<FHitResult> Hits;
-    // ... 라인트레이스 여러 번 or SphereOverlapActors 후 각도 필터
-    for (const FHitResult& H : Hits)
-    {
-        if (AActor* HitA = H.GetActor())
-        {
-            const FVector Dir = (HitA->GetActorLocation() - Start).GetSafeNormal();
-            const float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(Fwd, Dir)));
-            if (Angle <= ConeAngleDeg)
-            {
-                // DamagePerTick = Params.Damage * TickInterval (혹은 고정값)
-                // 적 데미지 처리(임시): UGameplayStatics::ApplyDamage(HitA, DamagePerTick, ...)
-            }
-        }
-    }
-}
 
 /*=============================Swift=============================*/
 
@@ -83,10 +27,7 @@ void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
     Params = Def ? Def->Params : FSkillParams{};
 
     // SkillDefinition.Params.Range가 있으면 대쉬 거리로 사용
-    if (Params.Range > 0.f)
-    {
-        DashDistance = Params.Range;
-    }
+    if (Params.Range > 0.f) { DashDistance = Params.Range; }
 }
 
 bool USkill_Swift::CanActivate() const
@@ -99,10 +40,7 @@ void USkill_Swift::ActivateSkill()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
 
     if (!CanActivate())
     {
@@ -110,6 +48,7 @@ void USkill_Swift::ActivateSkill()
         return;
     }
 
+    // 쿨타임 시작 + 마나 1회 소모.
     Super::ActivateSkill();
 
     // ----- 시작/끝 위치 계산 -----
@@ -227,22 +166,59 @@ void USkill_Swift::StopSkill()
 
 /*=============================Guard=============================*/
 
+void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
+{
+    // 공통 파라미터( Damage, Range, ManaCost, Cooldown ) 로드
+    Super::InitializeFromDefinition(Def);
+
+    // Range를 기본 폭발 반경으로 사용 (원하면 에디터에서 덮어쓰기)
+    if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
+}
+
+bool USkill_Guard::CanActivate() const
+{
+    if (bIsActive)
+    {
+        UE_LOG(LogTemp, Verbose, TEXT("[Skill_Guard] CanActivate? false (already active)"));
+        return false;
+    }
+
+    UManaComponent* Mana = GetManaComponent();
+    if (!Mana)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Skill_Guard] CanActivate? false (no ManaComponent)"));
+        return false;
+    }
+
+    const float Current = Mana->GetCurrentMana();
+    const float Target = 100.f;
+    const float Tolerance = 0.1f; // float 오차 방지용
+
+    if (FMath::Abs(Current - Target) > Tolerance)
+    {
+        UE_LOG(LogTemp, Warning,
+            TEXT("[Skill_Guard] CanActivate? false (Mana must be 100. Current=%.1f)"),
+            Current);
+        return false;
+    }
+
+    // 쿨타임은 지금은 사용하지 않음 (필요하면 여기서 Now < NextAvailableTime 체크 추가)
+    return true;
+}
+
 void USkill_Guard::ActivateSkill()
 {
+    // 이미 켜져 있으면 다시 초기화하지 않고 무시
+    if (bIsActive)
+    {
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Guard] ActivateSkill called while already active. Ignoring."));
+        return;
+    }
+
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
-
-    if (!CanActivate())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[Skill_Guard] ActivateSkill blocked (CanActivate=false)"));
-        return;
-    }
-
-    Super::ActivateSkill();
+    if (!World || !Owner) return;
 
     bIsActive = true;
     bEndedByDepletion = false;
@@ -266,9 +242,39 @@ void USkill_Guard::ActivateSkill()
     UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Activated: MaxShields=%d"), RemainingShields);
 }
 
+bool USkill_Guard::HandleIncomingDamage(
+    float Damage,
+    const UDamageType* DamageType,
+    AController* InstigatedBy,
+    AActor* DamageCauser)
+{
+    // 스킬이 꺼져 있거나, 남은 배리어가 없으면 그냥 맞게 둔다.
+    if (!bIsActive || RemainingShields <= 0)
+    {
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Guard] HandleIncomingDamage: no shield (Active=%d, Remaining=%d)"),
+            bIsActive ? 1 : 0, RemainingShields);
+        return false;
+    }
+
+    // 배리어 1개 소모
+    RemainingShields = FMath::Max(RemainingShields - 1, 0);
+    ConsumedShields++;
+
+    UE_LOG(LogTemp, Log,
+        TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
+        RemainingShields, ConsumedShields);
+
+    // 여기서는 배리어가 0이 되어도 스킬을 자동 종료하지 않습니다.
+    // (요구사항: 스킬 종료는 "우클릭 해제" 시점만 담당)
+
+    // true를 반환하면 Character::HandleAnyDamage 쪽에서 체력 감소를 하지 않음 :contentReference[oaicite:4]{index=4}
+    return true;
+}
+
 void USkill_Guard::StopSkill()
 {
-    // 이미 꺼져 있으면 한 번 더 호출돼도 아무 것도 안 함
+    // 이미 꺼져 있으면 무시
     if (!bIsActive)
     {
         Super::StopSkill();
@@ -285,41 +291,46 @@ void USkill_Guard::StopSkill()
         SpawnedNS = nullptr;
     }
 
-    // 4. 보호막이 모두 없어지기 전에(=소진되기 전에) 우클릭을 해제했다면 반격 데미지
-    if (!bEndedByDepletion && ConsumedShields > 0 && World && Owner)
+    // --- 3-1. 마나를 0으로 설정 ---
+    if (UManaComponent* Mana = GetManaComponent())
+    {
+        const float Current = Mana->GetCurrentMana();
+        if (Current > 0.f)
+        {
+            // 현재 마나만큼 한 번에 소모 → 0이 됨
+            Mana->ConsumeMana(Current);
+        }
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Mana set to 0 on skill end (was %.1f)"), Current);
+    }
+
+    // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
+    if (World && Owner && ConsumedShields > 0 && Params.Damage > 0.f)
     {
         const float TotalDamage = Params.Damage * ConsumedShields;
-        if (TotalDamage > 0.f)
-        {
-            TArray<AActor*> IgnoreActors;
-            IgnoreActors.Add(Owner);
 
-            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Releasing: Consumed=%d, TotalDamage=%.1f"),
-                ConsumedShields, TotalDamage);
+        TArray<AActor*> IgnoreActors;
+        IgnoreActors.Add(Owner);
 
-            UGameplayStatics::ApplyRadialDamage(
-                World,
-                TotalDamage,                          // 보호막이 막은 히트 수 × Params.Damage
-                Owner->GetActorLocation(),
-                ExplosionRadius,
-                nullptr,                              // 기본 DamageType
-                IgnoreActors,
-                Owner,
-                Owner->GetInstigatorController(),
-                true                                  // Do full damage
-            );
-        }
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Stop: ConsumedShields=%d, TotalDamage=%.1f"),
+            ConsumedShields, TotalDamage);
+
+        UGameplayStatics::ApplyRadialDamage(
+            World,
+            TotalDamage,
+            Owner->GetActorLocation(),
+            ExplosionRadius,
+            nullptr,            // Default DamageType
+            IgnoreActors,
+            Owner,
+            Owner->GetInstigatorController(),
+            true);              // Do full damage
     }
     else
     {
-        if (bEndedByDepletion)
-        {
-            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Shields depleted. Skill ended without retaliation."));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Stopped with no shields consumed."));
-        }
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Stop: No shields consumed or no damage value. No explosion."));
     }
 
     // 상태 리셋
@@ -329,35 +340,6 @@ void USkill_Guard::StopSkill()
     bEndedByDepletion = false;
 
     Super::StopSkill();
-}
-
-bool USkill_Guard::HandleIncomingDamage(float Damage,
-    const UDamageType* DamageType,
-    AController* InstigatedBy,
-    AActor* DamageCauser)
-{
-    // 스킬이 켜져 있지 않거나, 이미 보호막이 없는 경우엔 그냥 데미지를 먹게 둔다.
-    if (!bIsActive || RemainingShields <= 0)
-    {
-        return false;
-    }
-
-    // 한 번의 데미지를 한 장의 보호막으로 완전히 막음
-    RemainingShields = FMath::Max(RemainingShields - 1, 0);
-    ConsumedShields++;
-
-    UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
-        RemainingShields, ConsumedShields);
-
-    // 마지막 보호막까지 사용했다면, 조건 3: 스킬만 해제되고 반격 데미지는 없음
-    if (RemainingShields <= 0)
-    {
-        bEndedByDepletion = true;
-        StopSkill(); // 여기서 bIsActive가 false로 바뀌고 상태 초기화됨(반격 없음)
-    }
-
-    // true를 반환하면 캐릭터 쪽에서 실제 체력 감소 처리를 하지 않도록 할 것임
-    return true;
 }
 
 /*=============================Special=============================*/
