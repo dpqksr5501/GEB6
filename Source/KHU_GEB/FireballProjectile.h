@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -38,31 +38,31 @@ protected:
         bool bFromSweep,
         const FHitResult& SweepResult);
 
-    /** ½ÇÁ¦ Æø¹ß Ã³¸®(Á÷Á¢ µ¥¹ÌÁö + ¹üÀ§ µ¥¹ÌÁö + ÀÌÆåÆ® + Destroy)¸¦ ´ã´ç */
+    /** ì‹¤ì œ í­ë°œ ì²˜ë¦¬(ì§ì ‘ ë°ë¯¸ì§€ + ë²”ìœ„ ë°ë¯¸ì§€ + ì´í™íŠ¸ + Destroy)ë¥¼ ë‹´ë‹¹ */
     void Explode(AActor* DirectHitActor);
 
 public:
-    /** Ãæµ¹¿ë ±¸Ã¼ Äİ¸®Àü */
+    /** ì¶©ëŒìš© êµ¬ì²´ ì½œë¦¬ì „ */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USphereComponent> CollisionComp;
 
-    /** ¹ß»çÃ¼ ÀÌµ¿ */
+    /** ë°œì‚¬ì²´ ì´ë™ */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
-    /** Æø¹ß ÀÌÆåÆ® (¼±ÅÃ) */
+    /** í­ë°œ ì´í™íŠ¸ (ì„ íƒ) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FX")
     TObjectPtr<UNiagaraSystem> ExplosionNS;
 
-    /** ±¸Ã¼¿¡ Á÷Á¢ ¸Â¾ÒÀ» ¶§ µé¾î°¥ ´ë¹ÌÁö */
+    /** êµ¬ì²´ì— ì§ì ‘ ë§ì•˜ì„ ë•Œ ë“¤ì–´ê°ˆ ëŒ€ë¯¸ì§€ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (ExposeOnSpawn = "true"))
     float DirectDamage = 0.f;
 
-    /** Æø¹ß ¹üÀ§¿¡ µé¾î°¡´Â ´ë¹ÌÁö */
+    /** í­ë°œ ë²”ìœ„ì— ë“¤ì–´ê°€ëŠ” ëŒ€ë¯¸ì§€ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (ExposeOnSpawn = "true"))
     float ExplosionDamage = 0.f;
 
-    /** Æø¹ß ¹İ°æ */
+    /** í­ë°œ ë°˜ê²½ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (ExposeOnSpawn = "true"))
     float ExplosionRadius = 200.f;
 };

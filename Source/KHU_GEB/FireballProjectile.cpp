@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "FireballProjectile.h"
@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "DrawDebugHelpers.h"
 
 AFireballProjectile::AFireballProjectile()
 {
@@ -15,14 +16,14 @@ AFireballProjectile::AFireballProjectile()
     CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
     CollisionComp->InitSphereRadius(15.f);
 
-    // ¡Ú Äİ¸®Àü È®½ÇÈ÷: QueryOnly + ´ëºÎºĞ Block
+    // ì½œë¦¬ì „ í™•ì‹¤íˆ: QueryOnly + ëŒ€ë¶€ë¶„ Block
     CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     CollisionComp->SetCollisionObjectType(ECC_WorldDynamic);
     CollisionComp->SetCollisionResponseToAllChannels(ECR_Block);
-    // ÇÊ¿äÇÏ´Ù¸é ¼ÒÈ¯ÀÚ ÆÀ µîÀº Ignore·Î ¹Ù²ãÁÖ¼¼¿ä.
+    // í•„ìš”í•˜ë‹¤ë©´ ì†Œí™˜ì íŒ€ ë“±ì€ Ignoreë¡œ ë°”ê¿”ì£¼ì„¸ìš”.
 
-    CollisionComp->SetNotifyRigidBodyCollision(true); // Hit ÀÌº¥Æ®
-    CollisionComp->SetGenerateOverlapEvents(true);    // Overlap ÀÌº¥Æ®
+    CollisionComp->SetNotifyRigidBodyCollision(true); // Hit ì´ë²¤íŠ¸
+    CollisionComp->SetGenerateOverlapEvents(true);    // Overlap ì´ë²¤íŠ¸
 
     CollisionComp->OnComponentHit.AddDynamic(this, &AFireballProjectile::OnHit);
     CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AFireballProjectile::OnBeginOverlap);
@@ -38,19 +39,19 @@ AFireballProjectile::AFireballProjectile()
     ProjectileMovement->bShouldBounce = false;
     ProjectileMovement->ProjectileGravityScale = 1.f;
 
-    InitialLifeSpan = 5.f; // 5ÃÊ ÈÄ ÀÚµ¿ ÆÄ±«
+    InitialLifeSpan = 5.f; // 5ì´ˆ í›„ ìë™ íŒŒê´´
 }
 
 void AFireballProjectile::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ½ÃÀüÀÚ¿ÍÀÇ Ãæµ¹ ¹«½Ã
+    // ì‹œì „ìì™€ì˜ ì¶©ëŒ ë¬´ì‹œ
     if (AActor* InstActor = GetInstigator())
     {
         CollisionComp->IgnoreActorWhenMoving(InstActor, true);
 
-        // Owner°¡ µû·Î ÀÖ´Ù¸é ÀÌ°Íµµ ¹«½Ã (º¸Åë Owner == Instigator ÀÌ±ä ÇÔ)
+        // Ownerê°€ ë”°ë¡œ ìˆë‹¤ë©´ ì´ê²ƒë„ ë¬´ì‹œ (ë³´í†µ Owner == Instigator ì´ê¸´ í•¨)
         if (AActor* OwnerActor = GetOwner())
         {
             if (OwnerActor != InstActor)
@@ -77,7 +78,7 @@ void AFireballProjectile::OnHit(
 
     AActor* MyInstigator = GetInstigator();
 
-    // ÀÚ±â ÀÚ½Å / ½ÃÀüÀÚ / Owner ¿¡ ´ê¾ÒÀ¸¸é Æø¹ßÇÏÁö ¾Ê°í ¹«½Ã
+    // ìê¸° ìì‹  / ì‹œì „ì / Owner ì— ë‹¿ì•˜ìœ¼ë©´ í­ë°œí•˜ì§€ ì•Šê³  ë¬´ì‹œ
     if (!OtherActor || OtherActor == this ||
         OtherActor == MyInstigator || OtherActor == GetOwner()) return;
 
@@ -112,7 +113,7 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
         *GetNameSafe(this),
         *GetNameSafe(DirectHitActor));
 
-    // 1) Á÷Á¢ ¸ÂÀº ´ë»ó¿¡°Ô DirectDamage
+    // 1) ì§ì ‘ ë§ì€ ëŒ€ìƒì—ê²Œ DirectDamage
     if (DirectHitActor && DirectHitActor != this && DirectHitActor != MyInstigator)
     {
         if (DirectDamage > 0.f)
@@ -126,7 +127,7 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
         }
     }
 
-    // 2) Æø¹ß µ¥¹ÌÁö (¹üÀ§)
+    // 2) í­ë°œ ë°ë¯¸ì§€ (ë²”ìœ„)
     if (ExplosionDamage > 0.f && ExplosionRadius > 0.f)
     {
         TArray<AActor*> IgnoreActors;
@@ -137,7 +138,7 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
         }
         if (DirectHitActor)
         {
-            // Á÷Á¢ ¸ÂÀº ´ë»óÀº Æø¹ß µ¥¹ÌÁö Áßº¹ ¹æÁö (¿øÇÏ¸é »©µµ µÊ)
+            // ì§ì ‘ ë§ì€ ëŒ€ìƒì€ í­ë°œ ë°ë¯¸ì§€ ì¤‘ë³µ ë°©ì§€ (ì›í•˜ë©´ ë¹¼ë„ ë¨)
             IgnoreActors.Add(DirectHitActor);
         }
 
@@ -151,9 +152,26 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
             this,
             MyInstigator ? MyInstigator->GetInstigatorController() : nullptr,
             true);
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+        // í­ë°œ ë²”ìœ„ë¥¼ ë””ë²„ê·¸ êµ¬ë¡œ í‘œì‹œ (2ì´ˆ ë™ì•ˆ)
+        DrawDebugSphere(
+            World,
+            GetActorLocation(),
+            ExplosionRadius,
+            32,
+            FColor::Red,
+            false,
+            2.0f,   // ì§€ì† ì‹œê°„
+            0,
+            2.0f    // ì„  ë‘ê»˜
+        );
+#endif
     }
 
-    // 3) Æø¹ß ÀÌÆåÆ®
+
+
+    // 3) í­ë°œ ì´í™íŠ¸
     if (ExplosionNS)
     {
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -163,6 +181,6 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
             GetActorRotation());
     }
 
-    // 4) È­¿°±¸ Á¦°Å
+    // 4) í™”ì—¼êµ¬ ì œê±°
     Destroy();
 }

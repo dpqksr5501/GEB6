@@ -31,6 +31,10 @@ struct FDamageSpec
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 HitCount = 1;
 
+	/** 이 플래그가 true면 RawDamage * HitCount를 “그대로 HP에서 빼는” 고정 도트 피해 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bFixedDot = false;
+
 	// 누가 때렸는지
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TWeakObjectPtr<AActor> Instigator;

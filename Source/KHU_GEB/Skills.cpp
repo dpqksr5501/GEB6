@@ -18,12 +18,83 @@
 #include "HealthComponent.h" 
 #include "ManaComponent.h"
 #include "FireballProjectile.h"
+#include "TimerManager.h"
 #include "DrawDebugHelpers.h"
+
+static void ApplyFixedDotDamage(
+    USkillBase* SourceSkill,
+    ACharacter* Target,
+    float DamagePerTick,
+    int32 HitCount = 1)
+{
+    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
+
+    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
+    if (!Health) return;
+
+    FDamageSpec Spec;
+    Spec.RawDamage = DamagePerTick;
+    Spec.bIgnoreDefense = true;     // 방어력 무시
+    Spec.bPeriodic = true;     // 주기적(DoT) 플래그
+    Spec.bFixedDot = true;     // 고정 도트 모드 ON
+    Spec.HitCount = HitCount;
+    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
+    Spec.SourceSkill = SourceSkill;
+
+    Health->ApplyDamageSpec(Spec);
+}
 
 /*=============================Base=============================*/
 
 
 /*=============================Range=============================*/
+
+USkill_Range::USkill_Range()
+{
+    PrimaryComponentTick.bCanEverTick = true;
+    PrimaryComponentTick.bStartWithTickEnabled = false;
+}
+
+void USkill_Range::InitializeFromDefinition(const USkillDefinition* Def)
+{
+    Super::InitializeFromDefinition(Def);
+
+    if (Params.Range > 0.f) { TargetRadius = Params.Range; }
+}
+
+void USkill_Range::SpawnOrUpdateIndicator()
+{
+    UWorld* World = GetWorld();
+    if (!World || !TargetAreaNS) return;
+
+    const float Radius = GetCurrentTargetRadius();
+    const float UniformScale = (Radius > 0.f) ? (Radius / 100.f) : 1.f; // 이펙트 사이즈에 맞게 조정
+
+    if (!TargetAreaComp)
+    {
+        TargetAreaComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            World,
+            TargetAreaNS,
+            CurrentTargetLocation,
+            FRotator::ZeroRotator,
+            FVector(UniformScale)
+        );
+    }
+    else
+    {
+        TargetAreaComp->SetWorldLocation(CurrentTargetLocation);
+        TargetAreaComp->SetWorldScale3D(FVector(UniformScale));
+    }
+}
+
+void USkill_Range::CleanupIndicator()
+{
+    if (TargetAreaComp)
+    {
+        TargetAreaComp->Deactivate();
+        TargetAreaComp = nullptr;
+    }
+}
 
 void USkill_Range::ActivateSkill()
 {
@@ -37,13 +108,347 @@ void USkill_Range::ActivateSkill()
         return;
     }
 
-    // 기본 마나/쿨타임 처리 (SkillBase::CanActivate는 SkillManager에서 이미 한 번 체크됨)
+    bIsAiming = true;
+    bHasValidTarget = false;
+    AimMoveInput = FVector2D::ZeroVector;
+    SetComponentTickEnabled(true);
+
+    if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+    {
+        // 초기 조준 위치: 앞쪽으로 Range의 절반 지점
+        const float Radius = GetCurrentTargetRadius();
+        FVector Forward = OwnerChar->GetActorForwardVector();
+        Forward.Z = 0.f;
+        if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
+
+        const FVector StartLoc = OwnerChar->GetActorLocation();
+        CurrentTargetLocation = StartLoc + Forward * (Radius * 0.5f);
+        
+        // 여기서 지면으로 스냅
+        const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
+        const FVector TraceEnd = CurrentTargetLocation - FVector(0.f, 0.f, GroundTraceHalfHeight);
+
+        FHitResult Hit;
+        FCollisionQueryParams CQParams(SCENE_QUERY_STAT(SkillRangeGroundInit), false, OwnerChar);
+
+        if (World->LineTraceSingleByChannel(
+            Hit,
+            TraceStart,
+            TraceEnd,
+            ECC_Visibility,
+            CQParams))
+        {
+            CurrentTargetLocation = Hit.ImpactPoint + FVector(0.f, 0.f, GroundOffsetZ);
+        }
+        // 실패하면 기존처럼 발 위치 높이 사용
+        else { CurrentTargetLocation.Z = StartLoc.Z; }
+
+        // 캐릭터 이동 멈추기
+        if (UCharacterMovementComponent* MoveComp = OwnerChar->GetCharacterMovement())
+        {
+            MoveComp->StopMovementImmediately();
+        }
+
+        // 캐릭터에게 "지금 Range 조준 중" 알리기
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
+        {
+            PlayerChar->OnRangeAimingStarted(this);
+        }
+    }
+    else { CurrentTargetLocation = Owner->GetActorLocation(); }
+
+    // 범위 표시 이펙트 스폰/갱신
+    SpawnOrUpdateIndicator();
+
+    // 입에서 나가는 캐스팅 이펙트 (원하시면 그대로 유지)
+    if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+    {
+        if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
+        {
+            if (Mesh->DoesSocketExist(MuzzleSocketName) && CastNS)
+            {
+                UNiagaraFunctionLibrary::SpawnSystemAttached(
+                    CastNS,
+                    Mesh,
+                    MuzzleSocketName,
+                    FVector::ZeroVector,
+                    FRotator::ZeroRotator,
+                    EAttachLocation::SnapToTarget,
+                    true
+                );
+            }
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Start Aiming (keyboard)."));
+}
+
+void USkill_Range::TickComponent(
+    float DeltaTime,
+    ELevelTick TickType,
+    FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    if (!bIsAiming) return;
+
+    ACharacter* OwnerChar = Cast<ACharacter>(GetOwner());
+    if (!OwnerChar) return;
+
+    AController* Controller = OwnerChar->GetController();
+    if (!Controller) return;
+
+    const float Radius = GetCurrentTargetRadius();   // 조준 원 크기
+    const float MaxDist = GetMaxAimDistance();        // 이동 가능한 최대 거리
+    const FVector OwnerLoc = OwnerChar->GetActorLocation();
+
+    // --- XY 평면에서 이동 (지형지물 무시) ---
+    if (!AimMoveInput.IsNearlyZero())
+    {
+        const FRotator Rotation = Controller->GetControlRotation();
+        const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+
+        const FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+        const FVector RightDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+        FVector MoveDir = ForwardDir * AimMoveInput.Y + RightDir * AimMoveInput.X;
+        MoveDir.Z = 0.f;
+
+        if (!MoveDir.IsNearlyZero())
+        {
+            const FVector Delta = MoveDir.GetSafeNormal() * AimMoveSpeed * DeltaTime;
+            CurrentTargetLocation += Delta;
+
+            // 캐릭터 기준 최대 거리 제한 (XY만)
+            FVector FlatOwner(OwnerLoc.X, OwnerLoc.Y, 0.f);
+            FVector FlatTarget(CurrentTargetLocation.X, CurrentTargetLocation.Y, 0.f);
+            FVector FlatDir = FlatTarget - FlatOwner;
+            const float Dist = FlatDir.Size();
+
+            if (MaxDist > 0.f && Dist > MaxDist)
+            {
+                FlatDir = FlatDir.GetSafeNormal() * MaxDist;
+                FlatTarget = FlatOwner + FlatDir;
+                CurrentTargetLocation.X = FlatTarget.X;
+                CurrentTargetLocation.Y = FlatTarget.Y;
+            }
+        }
+    }
+
+    // --- Z를 지형에 맞춰 보정 (중앙 포인트를 땅에 붙이기) ---
+    if (UWorld* World = GetWorld())
+    {
+        const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
+        const FVector TraceEnd = CurrentTargetLocation - FVector(0.f, 0.f, GroundTraceHalfHeight);
+
+        FHitResult Hit;
+        FCollisionQueryParams CQParams(SCENE_QUERY_STAT(SkillRangeGroundTick), false, OwnerChar);
+
+        if (World->LineTraceSingleByChannel(
+            Hit,
+            TraceStart,
+            TraceEnd,
+            ECC_Visibility,
+            CQParams))
+        {
+            CurrentTargetLocation = Hit.ImpactPoint + FVector(0.f, 0.f, GroundOffsetZ);
+        }
+        // 지면을 못 찾으면 최소한 캐릭터 발 높이 근처에 유지
+        else { CurrentTargetLocation.Z = OwnerLoc.Z; }
+    }
+
+    bHasValidTarget = true;
+
+    SpawnOrUpdateIndicator();
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    DrawDebugCircle(
+        GetWorld(),
+        CurrentTargetLocation,
+        Radius,
+        32,
+        FColor::Red,
+        false,
+        -1.f,
+        0,
+        5.f,
+        FVector(1, 0, 0),
+        FVector(0, 1, 0),
+        false
+    );
+#endif
+}
+
+void USkill_Range::StopSkill()
+{
+    AActor* Owner = GetOwner();
+    UWorld* World = GetWorld();
+
+    if (!bIsAiming)
+    {
+        Super::StopSkill();
+        return;
+    }
+
+    auto CleanupState = [&]()
+        {
+            bIsAiming = false;
+            bHasValidTarget = false;
+            AimMoveInput = FVector2D::ZeroVector;
+            CleanupIndicator();
+            SetComponentTickEnabled(false);
+
+            if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+            {
+                PlayerChar->OnRangeAimingEnded(this);
+            }
+        };
+
+    if (!World || !Owner)
+    {
+        CleanupState();
+        Super::StopSkill();
+        return;
+    }
+
+    // "조준 원 중심"이 곧 최종 타겟
+    FVector FinalTarget = CurrentTargetLocation;
+
+    // === 여기서 실제 비용 처리 (쿨타임 + 마나) ===
     Super::ActivateSkill();
+
+    // === 발사 ===
+    if (bHasValidTarget) { SpawnProjectileTowards(FinalTarget); }
+    else { SpawnDefaultProjectile(); }
+
+    UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Stop Aiming & Fire."));
+
+    CleanupState();
+    Super::StopSkill();
+}
+
+void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
+{
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner || !FireballClass) return;
+
+    FVector SpawnLocation = Owner->GetActorLocation();
+    FRotator SpawnRotation = Owner->GetActorRotation();
+
+    // 캐릭터의 입 소켓 기준
+    if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+    {
+        if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
+        {
+            if (Mesh->DoesSocketExist(MuzzleSocketName))
+            {
+                SpawnLocation = Mesh->GetSocketLocation(MuzzleSocketName);
+                SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
+
+                // 입에서 나가는 이펙트(이미 조준 시작 시 재생했다면 생략 가능)
+                // 여기서는 생략
+            }
+        }
+    }
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = Owner;
+    SpawnParams.Instigator = Cast<APawn>(Owner);
+
+    AFireballProjectile* Fireball = World->SpawnActor<AFireballProjectile>(
+        FireballClass,
+        SpawnLocation,
+        SpawnRotation,
+        SpawnParams);
+
+    if (!Fireball)
+    {
+        return;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned toward target."));
+
+    // 데미지/범위 세팅 (기존 로직 유지)
+    const float BaseDamage = Params.Damage;
+    Fireball->DirectDamage = BaseDamage * 1.0f;
+    Fireball->ExplosionDamage = BaseDamage * 0.5f;
+    if (Params.Range > 0.f) { Fireball->ExplosionRadius = Params.Range; }
+
+    // 비행 중 꼬리 이펙트
+    if (ProjectileNS)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAttached(
+            ProjectileNS,
+            Fireball->GetRootComponent(),
+            NAME_None,
+            FVector::ZeroVector,
+            FRotator::ZeroRotator,
+            EAttachLocation::KeepRelativeOffset,
+            true
+        );
+    }
+
+    // ==== 포물선 초기 속도 계산 ====
+    if (UProjectileMovementComponent* Proj = Fireball->ProjectileMovement)
+    {
+        const float Speed = Proj->InitialSpeed;
+        const FVector Start = SpawnLocation;
+        const FVector End = TargetLocation;
+
+        FVector ToTarget = End - Start;
+
+        FVector Flat = FVector(ToTarget.X, ToTarget.Y, 0.f);
+        const float DistXY = Flat.Size();
+        const float DeltaZ = End.Z - Start.Z;
+
+        const float GravityZ = World->GetGravityZ() * Proj->ProjectileGravityScale; // 음수
+        const float g = -GravityZ;
+
+        FVector InitialVelocity;
+
+        if (Speed > 0.f && DistXY > KINDA_SMALL_NUMBER && g > KINDA_SMALL_NUMBER)
+        {
+            const float Speed2 = Speed * Speed;
+            const float Speed4 = Speed2 * Speed2;
+
+            const float Disc = Speed4 - g * (g * DistXY * DistXY + 2.f * DeltaZ * Speed2);
+
+            if (Disc >= 0.f)
+            {
+                // 두 개의 해 중 하나 선택 (여기서는 낮은 탄도)
+                const float RootDisc = FMath::Sqrt(Disc);
+                const float TanTheta = (Speed2 - RootDisc) / (g * DistXY);
+
+                const float CosTheta = 1.f / FMath::Sqrt(1.f + TanTheta * TanTheta);
+                const float SinTheta = TanTheta * CosTheta;
+
+                const FVector DirXY = Flat.GetSafeNormal();
+
+                InitialVelocity =
+                    DirXY * (Speed * CosTheta) +
+                    FVector::UpVector * (Speed * SinTheta);
+            }
+            // 해당 속도로는 도달 불가 → 그냥 직선 발사
+            else { InitialVelocity = ToTarget.GetSafeNormal() * Speed; }
+        }
+        // 이상값 → 그냥 직선 발사
+        else { InitialVelocity = ToTarget.GetSafeNormal() * (Speed > 0.f ? Speed : 1000.f); }
+
+        Proj->Velocity = InitialVelocity;
+    }
+}
+
+void USkill_Range::SpawnDefaultProjectile()
+{
+    // 기존 ActivateSkill에서 하던 "그냥 앞쪽으로 발사" 로직을 여기로 옮김
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner || !FireballClass) return;
 
     FVector  SpawnLocation = Owner->GetActorLocation();
     FRotator SpawnRotation = Owner->GetActorRotation();
 
-    // 캐릭터의 입 소켓 기준으로 위치/방향 결정
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
@@ -52,80 +457,43 @@ void USkill_Range::ActivateSkill()
             {
                 SpawnLocation = Mesh->GetSocketLocation(MuzzleSocketName);
                 SpawnRotation = Mesh->GetSocketRotation(MuzzleSocketName);
-
-                // 입 소켓에서 나가는 나이아가라
-                if (CastNS)
-                {
-                    UNiagaraFunctionLibrary::SpawnSystemAttached(
-                        CastNS,
-                        Mesh,
-                        MuzzleSocketName,
-                        FVector::ZeroVector,
-                        FRotator::ZeroRotator,
-                        EAttachLocation::SnapToTarget,
-                        true  // AutoDestroy
-                    );
-                }
             }
             else
             {
-                // 소켓이 없으면 대충 머리 근처에서 전방으로
                 const FVector Forward = OwnerChar->GetActorForwardVector();
                 SpawnLocation = OwnerChar->GetActorLocation()
                     + Forward * 50.f
                     + FVector(0.f, 0.f, 50.f);
                 SpawnRotation = Forward.Rotation();
-
-                // 소켓이 없더라도 위치 기준으로 이펙트만은 재생
-                if (CastNS)
-                {
-                    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                        World,
-                        CastNS,
-                        SpawnLocation,
-                        SpawnRotation
-                    );
-                }
             }
         }
     }
 
-    // 위/아래 발사 각도 조정 (기본 -10도 = 위로 약간)
     SpawnRotation.Pitch += LaunchPitchOffsetDegrees;
 
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = Owner;
     SpawnParams.Instigator = Cast<APawn>(Owner);
 
-    // AFireballProjectile로 스폰
     if (AFireballProjectile* Fireball = World->SpawnActor<AFireballProjectile>(
         FireballClass,
         SpawnLocation,
         SpawnRotation,
         SpawnParams))
     {
-        UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned: %s"), *GetNameSafe(Fireball));
+        const float BaseDamage = Params.Damage;
+        Fireball->DirectDamage = BaseDamage * 1.0f;
+        Fireball->ExplosionDamage = BaseDamage * 0.5f;
 
-        // 1) Params.Damage 기반으로 Direct/Explosion 데미지 나누기
-        const float BaseDamage = Params.Damage;             // SkillDefinition의 Damage
+        if (Params.Range > 0.f) { Fireball->ExplosionRadius = Params.Range; }
 
-        Fireball->DirectDamage = BaseDamage * 1.0f;      // ★ 1배
-        Fireball->ExplosionDamage = BaseDamage * 0.5f;      // ★ 0.5배
-
-        // 2) 폭발 반경은 Range를 그대로 쓰도록 (원하면 에디터에서 덮어쓰면 됨)
-        if (Params.Range > 0.f)
-        {
-            Fireball->ExplosionRadius = Params.Range;
-        }
-
-        // 3) 발사 방향/속도 설정 (ProjectileMovement의 InitialSpeed 사용)
         if (Fireball->ProjectileMovement)
         {
             const FVector Dir = SpawnRotation.Vector();
-            Fireball->ProjectileMovement->Velocity = Dir * Fireball->ProjectileMovement->InitialSpeed;
+            Fireball->ProjectileMovement->Velocity =
+                Dir * Fireball->ProjectileMovement->InitialSpeed;
         }
 
-        // 4) 화염구 비행 중 나이아가라 (꼬리/바디)
         if (ProjectileNS)
         {
             UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -135,19 +503,36 @@ void USkill_Range::ActivateSkill()
                 FVector::ZeroVector,
                 FRotator::ZeroRotator,
                 EAttachLocation::KeepRelativeOffset,
-                true  // AutoDestroy
+                true
             );
         }
     }
+}
+
+float USkill_Range::GetCurrentTargetRadius() const
+{
+    // 이제 SkillDefinition.Params.Range 는 "폭발 반경"만 쓰고
+    // 조준 원 크기는 이 값만 사용합니다.
+    return TargetRadius;
+}
+
+float USkill_Range::GetMaxAimDistance() const
+{
+    return MaxAimDistance;
+}
+
+void USkill_Range::HandleAimMoveInput(const FVector2D& Input)
+{
+    AimMoveInput = Input;
 }
 
 /*=============================Swift=============================*/
 
 void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
 {
-    Params = Def ? Def->Params : FSkillParams{};
+    Super::InitializeFromDefinition(Def);
 
-    // SkillDefinition.Params.Range가 있으면 대쉬 거리로 사용
+    if (Params.Damage > 0.f) { DamagePerSample = Params.Damage; }
     if (Params.Range > 0.f) { DashDistance = Params.Range; }
 }
 
@@ -177,16 +562,17 @@ void USkill_Swift::ActivateSkill()
 
     FVector Forward = Owner->GetActorForwardVector();
     Forward.Z = 0.f;
-    if (!Forward.Normalize())
-    {
-        Forward = FVector::ForwardVector;
-    }
+    if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
 
     const FVector EndLocation = StartLocation + Forward * DashDistance;
 
     // ----- 큰 직육면체(Oriented Box) 안의 적에게 데미지 -----
+   // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
     const FVector Segment = EndLocation - StartLocation;
     const float Distance = Segment.Size();
+
+    SwiftTargets.Reset();
+    CurrentHitIndex = 0;
 
     if (Distance > KINDA_SMALL_NUMBER)
     {
@@ -196,68 +582,44 @@ void USkill_Swift::ActivateSkill()
 
         // X: 진행 방향, Y: 좌우, Z: 상하
         const float ExtraForwardPadding = 50.f; // 살짝 여유
-        const FVector HalfExtent(Distance * 0.5f + ExtraForwardPadding,
+        const FVector HalfExtent(
+            Distance * 0.5f + ExtraForwardPadding,
             BoxHalfWidth,
             BoxHalfHeight);
 
-        const int32 NumSamples = FMath::Max(DamageSamples, 1);
+        TArray<FOverlapResult> Overlaps;
+        FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSwift), false, Owner);
+        FCollisionObjectQueryParams ObjParams;
+        ObjParams.AddObjectTypesToQuery(ECC_Pawn); // Pawn (적들)만 확인
 
-        for (int32 i = 0; i < NumSamples; ++i)
+        const bool bAnyHit = World->OverlapMultiByObjectType(
+            Overlaps,
+            BoxCenter,
+            BoxRotation,
+            ObjParams,
+            FCollisionShape::MakeBox(HalfExtent),
+            QueryParams);
+
+        if (bAnyHit)
         {
-            TArray<FOverlapResult> Overlaps;
-            FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSwift), false, Owner);
-            FCollisionObjectQueryParams ObjParams;
-            ObjParams.AddObjectTypesToQuery(ECC_Pawn); // Pawn (적들)만 확인
-
-            const bool bAnyHit = World->OverlapMultiByObjectType(
-                Overlaps,
-                BoxCenter,
-                BoxRotation,
-                ObjParams,
-                FCollisionShape::MakeBox(HalfExtent),
-                QueryParams);
-
-            if (bAnyHit)
+            for (const FOverlapResult& O : Overlaps)
             {
-                for (const FOverlapResult& O : Overlaps)
+                AActor* Other = O.GetActor();
+                if (!Other || Other == Owner) continue;
+
+                if (ACharacter* OtherChar = Cast<ACharacter>(Other))
                 {
-                    AActor* Other = O.GetActor();
-                    if (!Other || Other == Owner) continue;
-
-                    // ACharacter를 상속받는 적에게 데미지
-                    if (ACharacter* OtherChar = Cast<ACharacter>(Other))
-                    {
-                        // 고정 피해, 방어력 무시, Swift 스킬에서 직접 넣음
-                        DealSkillDamage(
-                            OtherChar,
-                            Params.Damage,
-                            /*bIgnoreDefense=*/true,
-                            /*bPeriodic=*/false,
-                            /*HitCount=*/DamageSamples);
-
-                        // Hit Niagara 재생
-                        if (HitNS)
-                        {
-                            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                                World,
-                                HitNS,
-                                OtherChar->GetActorLocation(),
-                                Owner->GetActorRotation()
-                            );
-                        }
-                    }
-
+                    SwiftTargets.AddUnique(OtherChar);
                 }
             }
+        }
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-            // 디버그: 만들어지는 직육면체 확인
-            DrawDebugBox(World, BoxCenter, HalfExtent, BoxRotation, FColor::Cyan, false, 0.2f);
+        DrawDebugBox(World, BoxCenter, HalfExtent, BoxRotation, FColor::Cyan, false, 0.2f);
 #endif
-        }
     }
 
-    // ----- 실제 점멸 이동: 적(ACharacter)을 통과하도록 Pawn 충돌 무시 -----
+    // ----- 실제 점멸 이동 (기존 코드 그대로) -----
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (UCapsuleComponent* Capsule = OwnerChar->GetCapsuleComponent())
@@ -265,29 +627,36 @@ void USkill_Swift::ActivateSkill()
             const ECollisionResponse OriginalPawnResponse =
                 Capsule->GetCollisionResponseToChannel(ECC_Pawn);
 
-            // 적(=Pawn)과의 충돌은 무시 (통과)
             Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 
             FHitResult Hit;
             Owner->SetActorLocation(EndLocation, true, &Hit, ETeleportType::TeleportPhysics);
 
-            // 원래 설정 복원
             Capsule->SetCollisionResponseToChannel(ECC_Pawn, OriginalPawnResponse);
         }
-        else
-        {
-            // 캡슐이 없으면 그냥 스윕 없이 텔레포트
-            Owner->SetActorLocation(EndLocation, false, nullptr, ETeleportType::TeleportPhysics);
-        }
+        else { Owner->SetActorLocation(EndLocation); }
+    }
+    else { Owner->SetActorLocation(EndLocation); }
+
+    // ----- 수집된 타겟들을 DamageSamples번에 걸쳐 때리기 -----
+    if (SwiftTargets.Num() > 0 && DamageSamples > 0)
+    {
+        const float Interval = FMath::Max(HitInterval, KINDA_SMALL_NUMBER);
+        World->GetTimerManager().SetTimer(
+            SwiftDamageTimerHandle,
+            this,
+            &USkill_Swift::HandleSwiftDamageTick,
+            Interval,
+            true);
+
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Swift] Start multi hit: Targets=%d, Hits=%d, Interval=%.2f"),
+            SwiftTargets.Num(), DamageSamples, Interval);
     }
     else
     {
-        // 캐릭터가 아니면 간단히 이동
-        Owner->SetActorLocation(EndLocation, false, nullptr, ETeleportType::TeleportPhysics);
+        UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] No targets found for multi hit."));
     }
-
-    // 한 번에 끝나는 스킬이라 바로 종료
-    StopSkill();
 }
 
 void USkill_Swift::StopSkill()
@@ -295,14 +664,71 @@ void USkill_Swift::StopSkill()
     Super::StopSkill();
 }
 
+void USkill_Swift::HandleSwiftDamageTick()
+{
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner)
+    {
+        World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+        return;
+    }
+
+    ++CurrentHitIndex;
+
+    // Hit 인덱스가 DamageSamples를 넘으면 종료
+    if (CurrentHitIndex > DamageSamples)
+    {
+        World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+        UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit finished."));
+        return;
+    }
+
+    // 타겟 목록을 돌면서 한 번씩 데미지
+    for (int32 i = SwiftTargets.Num() - 1; i >= 0; --i)
+    {
+        ACharacter* TargetChar = SwiftTargets[i].Get();
+        if (!TargetChar)
+        {
+            SwiftTargets.RemoveAtSwap(i);
+            continue;
+        }
+
+        // 고정 피해, 방어력 무시, 1타씩 직접 넣기
+        DealSkillDamage(
+            TargetChar,
+            DamagePerSample,
+            /*bIgnoreDefense=*/true,
+            /*bPeriodic=*/false,
+            /*HitCount=*/1); // 우리 쪽에서 10번 반복 호출하므로 HitCount는 1로
+
+        // Hit 이펙트
+        if (HitNS)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                World,
+                HitNS,
+                TargetChar->GetActorLocation(),
+                TargetChar->GetActorRotation());
+        }
+    }
+
+    // 더 이상 유효 타겟이 없으면 타이머 정리
+    if (SwiftTargets.Num() == 0)
+    {
+        World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+        UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit stopped (no more targets)."));
+    }
+}
+
 /*=============================Guard=============================*/
 
 void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
 {
-    // 공통 파라미터( Damage, Range, ManaCost, Cooldown ) 로드
     Super::InitializeFromDefinition(Def);
 
-    // Range를 기본 폭발 반경으로 사용 (원하면 에디터에서 덮어쓰기)
+    if (Params.ManaCost > 0.f) { ManaPerShield = Params.ManaCost; }
+    if (Params.Damage > 0.f) { DamagePerSheild = Params.Range; }
     if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
 }
 
@@ -385,6 +811,11 @@ bool USkill_Guard::HandleIncomingDamage(
         UE_LOG(LogTemp, Verbose,
             TEXT("[Skill_Guard] HandleIncomingDamage: no shield (Active=%d, Remaining=%d)"),
             bIsActive ? 1 : 0, RemainingShields);
+
+        bEndedByDepletion = true;
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
+
         return false;
     }
 
@@ -396,10 +827,20 @@ bool USkill_Guard::HandleIncomingDamage(
         TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
         RemainingShields, ConsumedShields);
 
-    // 여기서는 배리어가 0이 되어도 스킬을 자동 종료하지 않습니다.
-    // (요구사항: 스킬 종료는 "우클릭 해제" 시점만 담당)
+    if (UManaComponent* Mana = GetManaComponent())
+    {
+        if (ManaPerShield > 0.f)
+        {
+            const float Before = Mana->GetCurrentMana();
+            Mana->ConsumeMana(ManaPerShield);
+            const float After = Mana->GetCurrentMana();
 
-    // true를 반환하면 Character::HandleAnyDamage 쪽에서 체력 감소를 하지 않음 :contentReference[oaicite:4]{index=4}
+            UE_LOG(LogTemp, Log,
+                TEXT("[Skill_Guard] Consumed mana per shield: %.1f -> %.1f (Delta=%.1f)"),
+                Before, After, Before - After);
+        }
+    }
+
     return true;
 }
 
@@ -436,9 +877,9 @@ void USkill_Guard::StopSkill()
     }
 
     // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
-    if (World && Owner && ConsumedShields > 0 && Params.Damage > 0.f)
+    if (World && Owner && ConsumedShields > 0 && DamagePerSheild > 0.f && !bEndedByDepletion)
     {
-        const float TotalDamage = Params.Damage * ConsumedShields;
+        const float TotalDamage = DamagePerSheild * ConsumedShields;
 
         TArray<AActor*> IgnoreActors;
         IgnoreActors.Add(Owner);
@@ -475,6 +916,14 @@ void USkill_Guard::StopSkill()
 
 /*=============================Special=============================*/
 
+void USkill_Special::InitializeFromDefinition(const USkillDefinition* Def)
+{
+    Super::InitializeFromDefinition(Def);
+
+    if (Params.Damage > 0.f) { SelfHealPerTick = Params.Damage * 2.f; DotDamagePerTick = Params.Damage; }
+    if (Params.Range > 0.f) { FogRadius = Params.Range; }
+}
+
 bool USkill_Special::CanActivate() const
 {
     // 이미 켜져 있으면 다시는 못 켬
@@ -492,10 +941,7 @@ void USkill_Special::ActivateSkill()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
 
     // SkillManager에서 한 번 CanActivate를 호출하지만,
     // 혹시 모를 중복 호출 방지를 위해 한 번 더 체크
@@ -581,8 +1027,8 @@ void USkill_Special::ActivateSkill()
 
 void USkill_Special::StopSkill()
 {
-    // ★ 입력(우클릭 해제)으로 들어오는 Stop은 무시하고,
-    //    오직 지속시간 타이머가 끝날 때만 실제 종료되도록 합니다.
+    // 입력(우클릭 해제)으로 들어오는 Stop은 무시하고,
+    // 오직 지속시간 타이머가 끝날 때만 실제 종료되도록 합니다.
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Special] StopSkill called (probably from input). Ignoring; duration-based skill."));
 }
@@ -599,21 +1045,12 @@ void USkill_Special::UpdateFogEffects()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner || !bIsActive)
-    {
-        return;
-    }
+    if (!World || !Owner || !bIsActive) return;
 
     // 흑안개 중심 위치
     FVector Center;
-    if (SpawnedNS)
-    {
-        Center = SpawnedNS->GetComponentLocation();
-    }
-    else
-    {
-        Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset);
-    }
+    if (SpawnedNS) { Center = SpawnedNS->GetComponentLocation(); }
+    else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
 
     // 현재 영역 안에 있는 적들
     TArray<FOverlapResult> Overlaps;
@@ -638,10 +1075,7 @@ void USkill_Special::UpdateFogEffects()
         {
             AActor* Other = O.GetActor();
             ACharacter* OtherChar = Cast<ACharacter>(Other);
-            if (!OtherChar || OtherChar == Owner)
-            {
-                continue;
-            }
+            if (!OtherChar || OtherChar == Owner) continue;
 
             CurrentlyInside.Add(OtherChar);
 
@@ -681,10 +1115,7 @@ void USkill_Special::UpdateFogEffects()
 /** Special 종료: 버프/슬로우/이펙트/타이머 정리 */
 void USkill_Special::EndSpecial()
 {
-    if (!bIsActive)
-    {
-        return;
-    }
+    if (!bIsActive) return;
 
     bIsActive = false;
 
@@ -736,10 +1167,7 @@ void USkill_Special::OnEffectTick()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner || !bIsActive)
-    {
-        return;
-    }
+    if (!World || !Owner || !bIsActive) return;
 
     // 1) 플레이어 힐
     if (SelfHealPerTick > 0.f)
@@ -751,10 +1179,7 @@ void USkill_Special::OnEffectTick()
     }
 
     // 2) 흑안개 안 적들에게 방어무시 도트 데미지
-    if (FogRadius <= 0.f || DotDamagePerTick <= 0.f)
-    {
-        return;
-    }
+    if (FogRadius <= 0.f || DotDamagePerTick <= 0.f) return;
 
     TArray<FOverlapResult> Overlaps;
     FCollisionObjectQueryParams ObjParams;
@@ -770,26 +1195,25 @@ void USkill_Special::OnEffectTick()
         FCollisionShape::MakeSphere(FogRadius),
         QueryParams);
 
-    if (!bAnyHit)
-    {
-        return;
-    }
+    if (!bAnyHit) return;
+
+    // 이 틱에 이미 맞춘 캐릭터를 기록
+    TSet<ACharacter*> UniqueTargets;
 
     for (const FOverlapResult& O : Overlaps)
     {
         AActor* Other = O.GetActor();
         ACharacter* OtherChar = Cast<ACharacter>(Other);
-        if (!OtherChar || OtherChar == Owner)
-        {
-            continue;
-        }
+        if (!OtherChar || OtherChar == Owner) continue;
 
-        // 고정 피해, 방어력 무시, 주기적 데미지 플래그
-        DealSkillDamage(
+        if (UniqueTargets.Contains(OtherChar)) continue;
+        UniqueTargets.Add(OtherChar);
+
+        // 도트용 고정 피해 모드 사용 (한 틱당 한 번)
+        ApplyFixedDotDamage(
+            this,
             OtherChar,
-            DotDamagePerTick,
-            /*bIgnoreDefense=*/true,
-            /*bPeriodic=*/true,
-            /*HitCount=*/1);
+            DotDamagePerTick,  // 예: 5
+            1);
     }
 }

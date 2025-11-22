@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ManaComponent.h"
@@ -8,7 +8,7 @@ UManaComponent::UManaComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ¿¡µğÅÍ¿¡¼­ °ª ¹Ù²Ù±â Àü ±âº»°ª
+	// ì—ë””í„°ì—ì„œ ê°’ ë°”ê¾¸ê¸° ì „ ê¸°ë³¸ê°’
 	MaxMana = 100.f;
 	RegenPerSecond = 5.f;
 	CurrentMana = MaxMana;
@@ -18,7 +18,7 @@ void UManaComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ·±Å¸ÀÓ ½ÃÀÛ ½Ã ÇÑ ¹ø ´õ ¾ÈÀüÇÏ°Ô ÃÊ±âÈ­
+	// ëŸ°íƒ€ì„ ì‹œì‘ ì‹œ í•œ ë²ˆ ë” ì•ˆì „í•˜ê²Œ ì´ˆê¸°í™”
 	CurrentMana = FMath::Max(0.f, MaxMana);
 	HandleManaChanged();
 }
@@ -27,7 +27,7 @@ void UManaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ÃÊ´ç RegenPerSecond¸¸Å­ È¸º¹
+	// ì´ˆë‹¹ RegenPerSecondë§Œí¼ íšŒë³µ
 	if (RegenPerSecond > 0.f && CurrentMana < MaxMana)
 	{
 		const float Delta = RegenPerSecond * DeltaTime;
@@ -66,7 +66,7 @@ bool UManaComponent::ConsumeMana(float Amount)
 {
 	if (Amount <= 0.f)
 	{
-		return true; // 0 ÀÌÇÏ¸é ±×³É Åë°ú
+		return true; // 0 ì´í•˜ë©´ ê·¸ëƒ¥ í†µê³¼
 	}
 
 	if (!HasEnoughMana(Amount))

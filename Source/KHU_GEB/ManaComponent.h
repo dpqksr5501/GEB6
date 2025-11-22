@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,44 +16,44 @@ class KHU_GEB_API UManaComponent : public UActorComponent
 public:
 	UManaComponent();
 
-	/** ÇöÀç ÃÖ´ë ¸¶³ª */
+	/** í˜„ì¬ ìµœëŒ€ ë§ˆë‚˜ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
 	float MaxMana = 100.f;
 
-	/** ÃÊ´ç È¸º¹µÇ´Â ¸¶³ª·® (0ÀÌ¸é È¸º¹ ¾È ÇÔ) */
+	/** ì´ˆë‹¹ íšŒë³µë˜ëŠ” ë§ˆë‚˜ëŸ‰ (0ì´ë©´ íšŒë³µ ì•ˆ í•¨) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
 	float RegenPerSecond = 5.f;
 
-	/** ÇöÀç ¸¶³ª (·±Å¸ÀÓ Àü¿ë) */
+	/** í˜„ì¬ ë§ˆë‚˜ (ëŸ°íƒ€ì„ ì „ìš©) */
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Mana")
 	float CurrentMana;
 
-	/** ¸¶³ª°¡ º¯°æµÇ¾úÀ» ¶§ ºê·ÎµåÄ³½ºÆ® (UI °»½Å ¿ëµµ µî) */
+	/** ë§ˆë‚˜ê°€ ë³€ê²½ë˜ì—ˆì„ ë•Œ ë¸Œë¡œë“œìºìŠ¤íŠ¸ (UI ê°±ì‹  ìš©ë„ ë“±) */
 	UPROPERTY(BlueprintAssignable, Category = "Mana")
 	FOnManaChanged OnManaChanged;
 
 protected:
 	virtual void BeginPlay() override;
 
-	/** ³»ºÎ¿¡¼­ Current/Max°¡ ¹Ù²ğ ¶§¸¶´Ù ºÒ·¯¼­ µ¨¸®°ÔÀÌÆ® ºê·ÎµåÄ³½ºÆ® */
+	/** ë‚´ë¶€ì—ì„œ Current/Maxê°€ ë°”ë€” ë•Œë§ˆë‹¤ ë¶ˆëŸ¬ì„œ ë¸ë¦¬ê²Œì´íŠ¸ ë¸Œë¡œë“œìºìŠ¤íŠ¸ */
 	void HandleManaChanged();
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	/** ÃÖ´ë ¸¶³ª¸¦ ¼³Á¤ (¿É¼ÇÀ¸·Î ÇöÀç ¸¶³ªµµ °°ÀÌ ¸®¼Â) */
+	/** ìµœëŒ€ ë§ˆë‚˜ë¥¼ ì„¤ì • (ì˜µì…˜ìœ¼ë¡œ í˜„ì¬ ë§ˆë‚˜ë„ ê°™ì´ ë¦¬ì…‹) */
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	void SetMaxMana(float NewMaxMana, bool bResetCurrent = true);
 
-	/** ¾ç¼ö¸é È¸º¹, À½¼ö¸é °¨¼Ò (Clamp 0 ~ MaxMana) */
+	/** ì–‘ìˆ˜ë©´ íšŒë³µ, ìŒìˆ˜ë©´ ê°ì†Œ (Clamp 0 ~ MaxMana) */
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	void AddMana(float DeltaMana);
 
-	/** Amount¸¸Å­ ¸¶³ª¸¦ ¼Ò¸ğ. ºÎÁ·ÇÏ¸é false ¸®ÅÏ */
+	/** Amountë§Œí¼ ë§ˆë‚˜ë¥¼ ì†Œëª¨. ë¶€ì¡±í•˜ë©´ false ë¦¬í„´ */
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	bool ConsumeMana(float Amount);
 
-	/** Amount¸¸Å­ ¾µ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¸ È®ÀÎ */
+	/** Amountë§Œí¼ ì“¸ ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë§Œ í™•ì¸ */
 	UFUNCTION(BlueprintPure, Category = "Mana")
 	bool HasEnoughMana(float Amount) const;
 

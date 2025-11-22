@@ -97,13 +97,33 @@ void UHealthComponent::HandleDeathIfNeeded()
 
 float UHealthComponent::ApplyDamageSpec(const FDamageSpec& Spec)
 {
+    float FinalDamage = 0.f;
+
+    // 0) 고정 도트 피해 모드: RawDamage * HitCount를 그대로 HP에서 차감
+    if (Spec.bFixedDot)
+    {
+        const int32 Count = FMath::Max(Spec.HitCount, 1);
+        FinalDamage = Spec.RawDamage * Count;
+
+        if (FinalDamage <= 0.f)
+        {
+            return 0.f;
+        }
+
+        const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
+        const float Delta = NewHealth - Health; // 음수
+        ApplyHealth(NewHealth, Delta);          // 내부에서 OnHealthChanged, OnDeath 호출
+
+        return FinalDamage;
+    }
+
     if (Spec.RawDamage <= 0.f || MaxHealth <= 0.f)
     {
         return 0.f;
     }
 
     const float Raw = Spec.RawDamage;
-    float FinalDamage = Raw;
+    FinalDamage = Raw;
 
     // TODO: 방어력/저항 등 계산은 나중에 여기서 처리
     // if (!Spec.bIgnoreDefense) { FinalDamage = ApplyDefense(Raw); }
