@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "HealthComponent.h"
+#include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "JumpComponent.h"
 #include "AttackComponent.h"
@@ -23,6 +24,7 @@
 #include "WeaponComponent.h"
 #include "WeaponData.h"
 #include "Components/SceneComponent.h"
+#include "Skills.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -63,6 +65,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	GetMesh()->SetupAttachment(MeshRoot);
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
@@ -99,6 +102,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	CurrentFormSprintSpeed = 900.f;
 	bIsSprinting = false;
 
+	SkillSpeedMultiplier = 1.0f;
 
 	//인터페이스용 변수 2개를 초기화합니다.
 	CurrentPlayerState = ECharacterState::Idle;
@@ -252,7 +256,9 @@ void AKHU_GEBCharacter::Tick(float DeltaTime)
 		);
 	}
 
-	//UE_LOG(LogTemp, Warning, TEXT("Form = %d"), (int32)FormManager->CurrentForm);
+	if (ManaComp && GEngine)
+		GEngine->AddOnScreenDebugMessage(777, 1.f, FColor::Cyan,
+			FString::Printf(TEXT("Mana: %f"), ManaComp->CurrentMana));
 
 }
 
@@ -272,21 +278,45 @@ void AKHU_GEBCharacter::Heal(float Amount)
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	// 1) Guard에게 먼저 기회 주기 (그대로 유지)
+	if (SkillManager)
+	{
+		if (USkillBase* ActiveSkill = SkillManager->Equipped.FindRef(ESkillSlot::Active))
+		{
+			if (USkill_Guard* GuardSkill = Cast<USkill_Guard>(ActiveSkill))
+			{
+				if (GuardSkill->HandleIncomingDamage(Damage, DamageType, InstigatedBy, DamageCauser))
+				{
+					UE_LOG(LogTemp, Log, TEXT("[Character] Damage absorbed by Guard"));
+					return;
+				}
+			}
+		}
+	}
+
+	// 2) HealthComponent로 파이프라인 통일
 	if (HealthComp && Damage > 0.f)
 	{
-		HealthComp->ReduceHealth(Damage);
-	}
-	if (GEngine && DamageCauser)
-	{
-		// 시간(5.f): 5초간 화면에 표시
-		// 색상(FColor::Red): 빨간색
-		// 공격이 먹는지(좌클릭 시 콜리전 활성화가 되는지)
-		FString Msg = FString::Printf(TEXT("HIT! %s가 %s에게 %f 데미지를 받음!"),
-			*GetName(), // 내 이름 (예: BP_KHUCharacter)
-			*DamageCauser->GetName(), // 때린 액터 (예: BP_Tanker)
-			Damage); // 받은 데미지
+		FDamageSpec Spec;
+		Spec.RawDamage = Damage;
+		Spec.bIgnoreDefense = false;   // 평범한 공격은 방어력 적용 대상
+		Spec.bPeriodic = false;
+		Spec.HitCount = 1;
+		Spec.Instigator = DamageCauser;
+		Spec.SourceSkill = nullptr; // 일반 공격/환경 데미지는 스킬 없음
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
+		const float Final = HealthComp->ApplyDamageSpec(Spec);
+
+		if (GEngine && DamageCauser)
+		{
+			FString Msg = FString::Printf(
+				TEXT("HIT! %s가 %s에게 %f 데미지를 받음! (Final=%.1f)"),
+				*GetName(),
+				*DamageCauser->GetName(),
+				Damage,
+				Final);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
+		}
 	}
 }
 
@@ -660,16 +690,16 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 	}
 }
 
-/**
- * 현재 폼의 기본 속도와 스프린트 여부에 따라
- * UCharacterMovementComponent의 MaxWalkSpeed를 설정합니다.
- */
 void AKHU_GEBCharacter::UpdateMovementSpeed()
 {
 	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 	{
-		if (bIsSprinting) {	MoveComp->MaxWalkSpeed = CurrentFormSprintSpeed; }
-		else { MoveComp->MaxWalkSpeed = CurrentFormWalkSpeed; }
+		float BaseSpeed = bIsSprinting ? CurrentFormSprintSpeed : CurrentFormWalkSpeed;
+
+		// 스킬 배율 반영
+		float FinalSpeed = BaseSpeed * SkillSpeedMultiplier;
+
+		MoveComp->MaxWalkSpeed = FinalSpeed;
 	}
 }
 
@@ -697,4 +727,10 @@ void AKHU_GEBCharacter::OnJumped_Implementation()
 			}
 		}
 	}
+}
+
+void AKHU_GEBCharacter::SetSkillSpeedMultiplier(float InMultiplier)
+{
+	SkillSpeedMultiplier = InMultiplier;
+	UpdateMovementSpeed();
 }

@@ -18,6 +18,7 @@ class USceneComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UManaComponent;
 class UFormManagerComponent;
 class UFormDefinition;
 class UJumpComponent;
@@ -90,6 +91,9 @@ private:
 	/** 현재 스프린트 중인지 여부 */
 	bool bIsSprinting;
 
+	/** 스킬로 인한 이동속도 배율 (1.0이 기본) */
+	float SkillSpeedMultiplier = 1.0f;
+
 	/** 카메라 효과를 부드럽게 보간(Interp)하는 속도입니다. */
 	UPROPERTY(EditAnywhere, Category = "Camera Effects")
 	float CameraInterpSpeed = 10.0f;
@@ -133,6 +137,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UManaComponent* ManaComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;
@@ -245,6 +252,10 @@ public:
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+
+	/** 스킬에 의해 적용되는 이동속도 배율을 설정합니다. (1.0 = 기본속도) */
+	void SetSkillSpeedMultiplier(float InMultiplier);
+	float GetSkillSpeedMultiplier() const { return SkillSpeedMultiplier; }
 
 public:
 	/** Returns CameraBoom subobject **/

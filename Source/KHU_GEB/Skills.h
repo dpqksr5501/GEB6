@@ -8,6 +8,7 @@
 
 class UNiagaraSystem;
 class UNiagaraComponent;
+class AFireballProjectile;
 
 /*=============================Base=============================*/
 UCLASS(ClassGroup = (Skills), meta = (BlueprintSpawnableComponent))
@@ -29,37 +30,27 @@ class KHU_GEB_API USkill_Range : public USkillBase
     GENERATED_BODY()
 
 public:
-    // 튜닝 파라미터(Definition 기본값 + 개별 스킬 확장)
+    /** 발사할 화염구 액터 (보통 Projectile 블루프린트) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    FName MouthSocket = "MouthSocket";
+    TSubclassOf<AFireballProjectile> FireballClass;
+
+    /** 화염구를 발사할 소켓 이름 (캐릭터 Mesh에 이 이름의 소켓 필요) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float TickInterval = 0.1f;
+    FName MuzzleSocketName = TEXT("MouthSocket");
+
+    /** 초기 발사 각도 오프셋 (Pitch, 도 단위). 음수면 위로, 양수면 아래로. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float MaxDuration = 3.0f;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range")
-    float ConeAngleDeg = 30.f;
+    float LaunchPitchOffsetDegrees = -10.f;   // 기본값: 살짝 위로
 
-    // 비주얼
-    UPROPERTY(EditAnywhere, Category = "Range|FX")
-    TObjectPtr<UNiagaraSystem> SkillNS;
+    /** 스킬 시전 시, 입 소켓에서 나갈 발사 이펙트 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
+    TObjectPtr<UNiagaraSystem> CastNS;
+    
+    /** 화염구 비행 중에 붙을 나이아가라(꼬리/코어 등) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
+    TObjectPtr<UNiagaraSystem> ProjectileNS;
 
-    // 내부
-    UPROPERTY() TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
-    FTimerHandle TickHandle, DurationHandle;
-
-    virtual void InitializeFromDefinition(const USkillDefinition* Def) override
-    {
-        // 기존 Params 사용 (Damage/Range 등)  :contentReference[oaicite:5]{index=5}
-        Params = Def ? Def->Params : FSkillParams{};
-    }
-
-    virtual bool CanActivate() const override { return true; }
     virtual void ActivateSkill() override;
-    virtual void StopSkill() override;
-
-private:
-    FSkillParams Params; // Damage/Range 사용
-    void TickBreath();
 };
 
 /*=============================Swift=============================*/
@@ -85,14 +76,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     int32 DamageSamples = 3;
 
+    /** 범위 내의 적 위치에 생성될 나이아가라 (타격 이펙트) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift|FX")
+    TObjectPtr<UNiagaraSystem> HitNS;
+
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
-private:
-    /** SkillDefinition에서 받아온 Damage / Range 등 */
-    FSkillParams Params;
 };
 
 /*=============================Guard=============================*/
@@ -100,6 +92,7 @@ UCLASS(ClassGroup = (Skills), meta = (BlueprintSpawnableComponent))
 class KHU_GEB_API USkill_Guard : public USkillBase
 {
     GENERATED_BODY()
+
 public:
     /** 한 번 스킬을 사용할 때 가지고 있는 총 보호막 개수 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
@@ -109,19 +102,21 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 400.f;
 
+    /** 배리어 한 장이 깎일 때마다 소모할 마나량 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float ManaPerShield = 10.f;
+
     /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
-    UPROPERTY() TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
+    UPROPERTY()
+    TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
 
-    virtual void InitializeFromDefinition(const USkillDefinition* Def) override
-    {
-        Params = Def ? Def->Params : FSkillParams{};
-    }
+    virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
 
-    /** 이미 켜져 있을 땐 다시 못 켜도록 제한 */
-    virtual bool CanActivate() const override { return !bIsActive; }
+    /** 이미 켜져 있을 땐 다시 못 켜도록 + 쿨타임 체크 */
+    virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
@@ -134,19 +129,10 @@ public:
     bool IsActive() const { return bIsActive; }
 
 private:
-    FSkillParams Params;
-
-    /** 현재 남은 보호막 개수 */
     int32 RemainingShields = 0;
-
-    /** 지금까지 사용(깎인)된 보호막 개수 */
     int32 ConsumedShields = 0;
-
-    /** 우클릭을 누르고 있어 스킬이 켜져 있는지 여부 */
-    bool bIsActive = false;
-
-    /** 보호막이 전부 소모되어 자동으로 종료된 것인지(반격 데미지 없음) */
-    bool bEndedByDepletion = false;
+    bool  bIsActive = false;
+    bool  bEndedByDepletion = false;
 };
 
 /*=============================Special=============================*/
@@ -156,5 +142,86 @@ class KHU_GEB_API USkill_Special : public USkillBase
     GENERATED_BODY()
 
 public:
+    /** 플레이어를 중심으로 따라다닐 흑안개 나이아가라 시스템 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    TObjectPtr<UNiagaraSystem> DarkFogNS;
 
+    /** 흑안개를 붙일 소켓 이름 (없으면 루트/메시에 부착) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    FName AttachSocketName = NAME_None;
+
+    /** 플레이어 기준 상대 위치 (기본: 발 밑) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    FVector RelativeOffset = FVector(0.f, 0.f, -50.f);
+
+    /** 스킬이 유지되는 시간(초) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
+    float Duration = 5.0f;
+
+    /** 스킬이 켜져 있는 동안 플레이어 이동속도 배율 (1.5 = 50% 증가) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
+    float SelfMoveSpeedMultiplier = 1.5f;
+
+    /** 흑안개 안의 적 이동속도 배율 (0.5 = 50% 감소) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
+    float EnemyMoveSpeedMultiplier = 0.5f;
+
+    /** 흑안개 효과가 적용되는 반경 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
+    float FogRadius = 400.f;
+
+    /** 적 슬로우를 갱신할 주기(초) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
+    float SlowTickInterval = 0.2f;
+
+    /** 2초마다 플레이어가 회복할 양 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float SelfHealPerTick = 10.f;
+
+    /** 2초마다 흑안개 안의 적에게 들어갈 고정 피해 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float DotDamagePerTick = 5.f;
+
+    /** 힐/도트 틱 간격(초). 기본 2초 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
+    float EffectTickInterval = 2.f;
+
+    virtual bool CanActivate() const override;
+    virtual void ActivateSkill() override;
+    virtual void StopSkill() override; // 입력 해제용 (지속 스킬이라 무시할 예정)
+
+private:
+    /** 현재 Special 이 켜져 있는지 여부 */
+    bool bIsActive = false;
+
+    /** 실제로 붙어서 따라다니는 나이아가라 컴포넌트 */
+    UPROPERTY()
+    TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
+
+    /** 지속시간 관리용 타이머 */
+    FTimerHandle DurationTimerHandle;
+
+    /** 슬로우 효과 갱신용 타이머 */
+    FTimerHandle SlowTickTimerHandle;
+
+    /** 힐/도트 효과용 타이머 */
+    FTimerHandle EffectTickTimerHandle;
+
+    /** Special을 쓴 플레이어 캐릭터 캐시 */
+    TWeakObjectPtr<class AKHU_GEBCharacter> CachedOwnerChar;
+
+    /** 슬로우가 적용된 적들의 원래 속도 저장 */
+    TMap<TWeakObjectPtr<class ACharacter>, float> OriginalEnemySpeeds;
+
+    /** 지속시간이 끝났을 때 호출 */
+    void OnDurationEnded();
+
+    /** 현재 흑안개 영역 안의 적들을 찾아 슬로우/복구 처리 */
+    void UpdateFogEffects();
+
+    /** 힐/도트 틱 */
+    void OnEffectTick();
+
+    /** Special을 실제로 종료(버프/슬로우/이펙트 정리) */
+    void EndSpecial();
 };
