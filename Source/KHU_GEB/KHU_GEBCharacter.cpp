@@ -102,6 +102,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	CurrentFormSprintSpeed = 900.f;
 	bIsSprinting = false;
 
+	SkillSpeedMultiplier = 1.0f;
 
 	//인터페이스용 변수 2개를 초기화합니다.
 	CurrentPlayerState = ECharacterState::Idle;
@@ -684,16 +685,16 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 	}
 }
 
-/**
- * 현재 폼의 기본 속도와 스프린트 여부에 따라
- * UCharacterMovementComponent의 MaxWalkSpeed를 설정합니다.
- */
 void AKHU_GEBCharacter::UpdateMovementSpeed()
 {
 	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 	{
-		if (bIsSprinting) {	MoveComp->MaxWalkSpeed = CurrentFormSprintSpeed; }
-		else { MoveComp->MaxWalkSpeed = CurrentFormWalkSpeed; }
+		float BaseSpeed = bIsSprinting ? CurrentFormSprintSpeed : CurrentFormWalkSpeed;
+
+		// 스킬 배율 반영
+		float FinalSpeed = BaseSpeed * SkillSpeedMultiplier;
+
+		MoveComp->MaxWalkSpeed = FinalSpeed;
 	}
 }
 
@@ -721,4 +722,10 @@ void AKHU_GEBCharacter::OnJumped_Implementation()
 			}
 		}
 	}
+}
+
+void AKHU_GEBCharacter::SetSkillSpeedMultiplier(float InMultiplier)
+{
+	SkillSpeedMultiplier = InMultiplier;
+	UpdateMovementSpeed();
 }
