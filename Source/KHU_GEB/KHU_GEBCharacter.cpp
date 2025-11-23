@@ -98,6 +98,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	static ConstructorHelpers::FObjectFinder<UInputAction> SPRINT_ACTION(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Shift.IA_Shift'"));
 	if (SPRINT_ACTION.Object) {	SprintAction = SPRINT_ACTION.Object; }
 
+
 	CurrentFormWalkSpeed = 600.f;
 	CurrentFormSprintSpeed = 900.f;
 	bIsSprinting = false;
@@ -164,6 +165,9 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartSprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::StopSprinting);
 		
+
+		//피격 테스트
+		EnhancedInputComponent->BindAction(TestHitAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::OnTestHitInput);
 	}
 	else
 	{
@@ -276,8 +280,7 @@ void AKHU_GEBCharacter::Heal(float Amount)
 	}
 }
 
-void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
-	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// 1) Guard에게 먼저 기회 주기 (그대로 유지)
 	if (SkillManager)
@@ -308,17 +311,13 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage,
 
 		const float Final = HealthComp->ApplyDamageSpec(Spec);
 
-		if (GEngine && DamageCauser)
+		//피격 테스트
+		if (HealthComp->Health > 0.0f)
 		{
-			FString Msg = FString::Printf(
-				TEXT("HIT! %s가 %s에게 %f 데미지를 받음! (Final=%.1f)"),
-				*GetName(),
-				*DamageCauser->GetName(),
-				Damage,
-				Final);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Msg);
+			PlayHitReaction();
 		}
 	}
+
 }
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
@@ -686,4 +685,38 @@ void AKHU_GEBCharacter::ReleaseMovementLock()
 bool AKHU_GEBCharacter::GetAnimIsRangeGliding_Implementation() const
 {
 	return bIsRangeGliding;
+}
+
+
+/////////////피격 테스트
+void AKHU_GEBCharacter::OnTestHitInput(const FInputActionValue& Value)
+{
+	// 나 자신에게 데미지 10을 입힘 -> HandleAnyDamage가 호출됨
+	UGameplayStatics::ApplyDamage(this, 10.0f, GetController(), this, UDamageType::StaticClass());
+}
+
+//피격 몽타주 재생
+void AKHU_GEBCharacter::PlayHitReaction()
+{
+	//매니저 유효성 검사
+	if (!FormManager) return;
+
+	//현재 폼에 해당하는 데이터 에셋(FormDefinition) 찾기
+	const UFormDefinition* Def = FormManager->FindDef(FormManager->CurrentForm);
+	if (!Def) {	return;	}
+
+
+	// 데이터가 없거나, 피격 몽타주가 비어있으면 리턴
+	if (!Def || !Def->HitReactMontage) {return;}
+
+	//애니메이션 인스턴스 가져오기
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		//설정된 단일 몽타주 재생
+		// (에디터에서 이 몽타주가 'HitSlot' + 'Additive'로 설정되어 있어야 공격과 섞임)
+		AnimInstance->Montage_Play(Def->HitReactMontage);
+	}
+
+	// 공격 중단(ResetComboHard) 호출 안 함 -> 공격 모션 유지하면서 움찔거림
 }

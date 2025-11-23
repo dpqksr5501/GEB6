@@ -2,8 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-// ECharacterState 열거형을 사용하기 위해 MonsterAnimInstanceBase.h를 포함합니다.
-#include "MonsterAnimInstanceBase.h" 
+#include "MonsterAnimInstanceBase.h" // ECharacterState 열거형을 사용하기 위해 MonsterAnimInstanceBase.h를 포함합니다.
 #include "MyAnimDataProvider.generated.h"
 
 UINTERFACE(MinimalAPI)
