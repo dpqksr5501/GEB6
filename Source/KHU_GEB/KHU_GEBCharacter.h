@@ -273,5 +273,18 @@ public:
 	void OnRangeAimingStarted(USkill_Range* Skill);
 	void OnRangeAimingEnded(USkill_Range* Skill);
 	bool IsRangeAiming() const { return bIsRangeAiming; }
+
+
+///////////////피격 몽타주 재생 테스트 코드
+protected:
+	// [추가] 테스트용 'L' 키 입력 액션
+	UPROPERTY(EditAnywhere, Category = "Input|Test")
+	class UInputAction* TestHitAction;
+
+	void OnTestHitInput(const FInputActionValue& Value);
+
+public:
+	// 피격 처리 함수
+	void PlayHitReaction();
 };
 

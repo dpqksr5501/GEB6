@@ -7,6 +7,9 @@
 UHealthComponent::UHealthComponent()
 {
     PrimaryComponentTick.bCanEverTick = false; // 틱 안 쓰면 false 권장
+
+    MaxHealth = 100.f; //테스트를 위해서 추가 11/24
+    Health = 100.f; //테스트를 위해서 추가 11/24
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,

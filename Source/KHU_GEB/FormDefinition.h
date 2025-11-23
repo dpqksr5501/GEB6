@@ -78,9 +78,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "JumpCount")
 	int32 MaxJumpCount = 1;
 
-	///** Swift가 공중 점프(2단 점프) 시 재생할 몽타주 */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	//TObjectPtr<class UAnimMontage> AirJumpMontage;
+	/**공격을 끊지 않고 재생할 애디티브 피격 몽타주 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Reaction")
+	TObjectPtr<UAnimMontage> HitReactMontage;
 
 };
 
