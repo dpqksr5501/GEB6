@@ -103,4 +103,11 @@ public:
 	// 강제로 레벨 조정하고 싶을 때 (예: 퀘스트 보상 등)
 	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
 	void AddLevel(EFormType FormType, int32 Amount = 1);
+
+
+	///////
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Level")
+	int32 GetLevelStat(EFormType FormType) const;
+
+
 };
