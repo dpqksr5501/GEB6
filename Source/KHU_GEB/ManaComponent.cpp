@@ -27,6 +27,8 @@ void UManaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (IsRegenBlocked()) return;
+
 	// 초당 RegenPerSecond만큼 회복
 	if (RegenPerSecond > 0.f && CurrentMana < MaxMana)
 	{
@@ -91,4 +93,14 @@ bool UManaComponent::HasEnoughMana(float Amount) const
 void UManaComponent::HandleManaChanged()
 {
 	OnManaChanged.Broadcast(CurrentMana, MaxMana);
+}
+
+void UManaComponent::AddRegenBlock()
+{
+	++RegenBlockCount;
+}
+
+void UManaComponent::RemoveRegenBlock()
+{
+	RegenBlockCount = FMath::Max(0, RegenBlockCount - 1);
 }

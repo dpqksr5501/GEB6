@@ -728,7 +728,7 @@ void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
     Super::InitializeFromDefinition(Def);
 
     if (Params.ManaCost > 0.f) { ManaPerShield = Params.ManaCost; }
-    if (Params.Damage > 0.f) { DamagePerSheild = Params.Range; }
+    if (Params.Damage > 0.f) { DamagePerSheild = Params.Damage; }
     if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
 }
 
@@ -783,6 +783,8 @@ void USkill_Guard::ActivateSkill()
     RemainingShields = FMath::Max(MaxShields, 0);
     ConsumedShields = 0;
 
+    if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
+
     // 보호막 이펙트 켜기
     if (SkillNS && !SpawnedNS)
     {
@@ -811,11 +813,6 @@ bool USkill_Guard::HandleIncomingDamage(
         UE_LOG(LogTemp, Verbose,
             TEXT("[Skill_Guard] HandleIncomingDamage: no shield (Active=%d, Remaining=%d)"),
             bIsActive ? 1 : 0, RemainingShields);
-
-        bEndedByDepletion = true;
-        UE_LOG(LogTemp, Log,
-            TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
-
         return false;
     }
 
@@ -826,6 +823,13 @@ bool USkill_Guard::HandleIncomingDamage(
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
         RemainingShields, ConsumedShields);
+
+    if (RemainingShields <= 0)
+    {
+        bEndedByDepletion = true;
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
+    }
 
     if (UManaComponent* Mana = GetManaComponent())
     {
@@ -874,6 +878,8 @@ void USkill_Guard::StopSkill()
         }
         UE_LOG(LogTemp, Log,
             TEXT("[Skill_Guard] Mana set to 0 on skill end (was %.1f)"), Current);
+
+        Mana->RemoveRegenBlock();
     }
 
     // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
