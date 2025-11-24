@@ -49,6 +49,8 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
         bSpaceAction_Anim = IMyAnimDataProvider::Execute_GetAnimSpaceActionInput(OwningDataProvider.GetObject(), false);
         //인터페이스를 통해 활강 변수 가져오기
         bIsRangeGliding_Anim = IMyAnimDataProvider::Execute_GetAnimIsRangeGliding(OwningDataProvider.GetObject());
+        //LockOn 상태 확인 변수
+        bIsLockedOn_Anim = IMyAnimDataProvider::Execute_GetAnimIsLockedOn(OwningDataProvider.GetObject());
     }
     else if (OwnerPawn) // OwnerPawn은 APawn* 타입입니다.
     {
@@ -84,6 +86,29 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
             YawDeltaSpeed = FMath::FInterpTo(YawDeltaSpeed, 0.f, DeltaSeconds, 4.0f);
         }
 
+        //LockOn 시 사용
+        if (Speed > 3.0f)
+        {
+            // 1. 현재 속도의 회전값(Velocity Rotation)을 구합니다.
+            FRotator VelocityRot = OwnerPawn->GetVelocity().ToOrientationRotator();
+
+            // 2. 내 몸의 회전값(Actor Rotation)을 구합니다.
+            FRotator ActorRot = OwnerPawn->GetActorRotation();
+
+            // 3. 두 회전값의 차이(Delta)를 구합니다. (속도 각도 - 몸 각도)
+            FRotator DeltaRot = VelocityRot - ActorRot;
+
+            // 4. 각도가 -180 ~ 180 범위 안으로 들어오도록 정규화(Normalize)합니다.
+            DeltaRot.Normalize();
+
+            // 5. 그 중 Yaw(좌우 회전) 값만 가져오면 그것이 바로 Direction입니다.
+            Direction = DeltaRot.Yaw;
+        }
+        else
+        {
+            Direction = 0.0f;
+        }
+
         // ... (AimOffset 계산 로직 - 필요시 OwnerPawn의 GetControlRotation() 사용) ...
     }
     else
@@ -93,9 +118,6 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
         YawDeltaSpeed = 0.f;
         bIsFalling = false;
         bJumpInput_Anim = false;
-        AimYaw = 0.f;
-        AimPitch = 0.f;
     }
-    
-
 }
+

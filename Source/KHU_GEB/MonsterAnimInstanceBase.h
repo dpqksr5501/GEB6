@@ -60,21 +60,16 @@ public:
 	bool bIsRangeGliding_Anim;
 
 
+	//락온 활성화 여부 (ABP의 Transition 조건으로 사용)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|LockOn")
+	bool bIsLockedOn_Anim;
 
+	//이동 방향 (-180 ~ 180도). 2D BS의 가로축(Horizontal Axis)에 연결
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|LockOn")
+	float Direction;
 
-
-	//여기 변수들은 (AimYaw, AimPitch) 에임 오프셋을 쓸 수 있을 때를 대비해서 만들어뒀습니다.
-	//에임 좌/우
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
-	float AimYaw;
-
-	//에임 상/하
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|AimOffset")
-	float AimPitch;
 
 protected:
-	//UPROPERTY()
-	//AMonsterBase* OwningMonster;
 
 	//인터페이스 포인터를 저장할 변수로 변경합니다.
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "Owner")

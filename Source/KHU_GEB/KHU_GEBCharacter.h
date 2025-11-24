@@ -165,6 +165,16 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State")
 	bool bPlayerWantsToJump; // 몬스터의 bJumpInput과 동일한 역할
 
+
+
+	//------------------Lock On 시 카메라 거리 변경해주는 함수들
+	//외부에서 카메라 목표 거리를 변경할 수 있게 해주는 함수
+	void SetTargetCameraBoomLength(float NewLength) { TargetCameraBoomLength = NewLength; }
+
+	//기본 거리가 얼마였는지 확인하는 함수 (복구용)
+	float GetDefaultCameraBoomLength() const { return DefaultCameraBoomLength; }
+	//--------------------------------------------------------
+
 protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -236,12 +246,13 @@ public:
 	void Heal(float Amount);
 
 
-	//인터페이스(IMyAnimDataProvider)의 함수 4개를 구현하겠다고 선언합니다.
+	//인터페이스(IMyAnimDataProvider)의 함수 선언
 	virtual float GetAnimSpeed_Implementation() const override;
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
 	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
+	virtual bool GetAnimIsLockedOn_Implementation() const override;
 
 	/** 스킬에 의해 적용되는 이동속도 배율을 설정합니다. (1.0 = 기본속도) */
 	void SetSkillSpeedMultiplier(float InMultiplier);
@@ -286,7 +297,7 @@ public:
 	bool IsRangeAiming() const { return bIsRangeAiming; }
 
 
-///////////////피격 몽타주 재생 테스트 코드
+///////////////피격 몽타주 재생 테스트 코드 (피격 테스트 시작)
 protected:
 	// [추가] 테스트용 'L' 키 입력 액션
 	UPROPERTY(EditAnywhere, Category = "Input|Test")
@@ -297,6 +308,7 @@ protected:
 public:
 	// 피격 처리 함수
 	void PlayHitReaction();
+/////////////////피격 테스트 끝
 
 	AActor* GetLockOnTarget() const;
 
