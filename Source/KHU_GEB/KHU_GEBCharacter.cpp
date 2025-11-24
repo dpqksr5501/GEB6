@@ -14,6 +14,7 @@
 #include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "JumpComponent.h"
+#include "LockOnComponent.h"
 #include "AttackComponent.h"
 #include "SkillManagerComponent.h"
 #include "StatManagerComponent.h"
@@ -69,11 +70,15 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
+	LockOnComp = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
 	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> LOCKON(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_LockOn.IA_LockOn'"));
+	if (LOCKON.Object) { LockOnAction = LOCKON.Object; }
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
 	if (ATTACK.Object) { AttackAction = ATTACK.Object; }
 
@@ -141,6 +146,12 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
+		// LockOn
+		if (LockOnAction && LockOnComp)
+		{
+			EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::HandleLockOnToggle);
+		}
+
 		// Attack
 		if (AttackManager)
 		{
@@ -160,11 +171,9 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FormGuard, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToGuard);
 		EnhancedInputComponent->BindAction(FormSpecial, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpecial);
 
-
 		// 달리기
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartSprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::StopSprinting);
-		
 
 		//피격 테스트
 		EnhancedInputComponent->BindAction(TestHitAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::OnTestHitInput);
@@ -322,12 +331,8 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, con
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
-
 	//Guard 끌어당기기 멈추기
-	if (bIsMovementInputBlocked)
-	{
-		return;
-	}
+	if (bIsMovementInputBlocked) return;
 
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -343,8 +348,17 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 		return;
 	}
 
-	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+	// 여기서부터는 일반 이동/락온 이동
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		// 1차 버전: 그냥 기존 DoMove 사용
+		// (컨트롤러가 항상 타겟을 보고 있어서 서클링 느낌이 난다)
+		DoMove(MovementVector.X, MovementVector.Y);
+	}
+	else
+	{
+		DoMove(MovementVector.X, MovementVector.Y);
+	}
 }
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
@@ -719,4 +733,14 @@ void AKHU_GEBCharacter::PlayHitReaction()
 	}
 
 	// 공격 중단(ResetComboHard) 호출 안 함 -> 공격 모션 유지하면서 움찔거림
+}
+
+void AKHU_GEBCharacter::HandleLockOnToggle()
+{
+	if (LockOnComp) { LockOnComp->ToggleLockOn(); }
+}
+
+AActor* AKHU_GEBCharacter::GetLockOnTarget() const
+{
+	return (LockOnComp ? LockOnComp->GetCurrentTarget() : nullptr);
 }

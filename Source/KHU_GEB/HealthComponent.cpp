@@ -146,3 +146,5 @@ float UHealthComponent::ApplyDamageSpec(const FDamageSpec& Spec)
 
     return FinalDamage;
 }
+
+bool UHealthComponent::IsDead() const { return Health <= 0.f; }

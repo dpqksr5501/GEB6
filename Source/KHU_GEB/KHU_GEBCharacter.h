@@ -22,6 +22,7 @@ class UManaComponent;
 class UFormManagerComponent;
 class UFormDefinition;
 class UJumpComponent;
+class ULockOnComponent;
 class UAttackComponent;
 class USkillManagerComponent;
 class UStatManagerComponent;
@@ -67,6 +68,10 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
+
+	/** LockOn Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* LockOnAction;
 
 	/** Attack Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
@@ -138,6 +143,9 @@ public:
 	UJumpComponent* JumpManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<ULockOnComponent> LockOnComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAttackComponent> AttackManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -171,6 +179,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	/** Called for lock on input */
+	void HandleLockOnToggle();
 
 	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);
@@ -286,5 +297,7 @@ protected:
 public:
 	// 피격 처리 함수
 	void PlayHitReaction();
+
+	AActor* GetLockOnTarget() const;
 };
 
