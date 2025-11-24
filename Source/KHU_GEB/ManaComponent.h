@@ -32,6 +32,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Mana")
 	FOnManaChanged OnManaChanged;
 
+private:
+	/** 0보다 크면 자연 회복을 하지 않음 (참조 카운트 방식) */
+	int32 RegenBlockCount = 0;
+	bool IsRegenBlocked() const { return RegenBlockCount > 0; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,6 +45,10 @@ protected:
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	/** 마나 재생 차단 카운터 */
+	void AddRegenBlock();
+	void RemoveRegenBlock();
 
 	/** 최대 마나를 설정 (옵션으로 현재 마나도 같이 리셋) */
 	UFUNCTION(BlueprintCallable, Category = "Mana")
