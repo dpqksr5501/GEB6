@@ -624,6 +624,12 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 /** 스프린트 시작 (Shift 누름) */
 void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
 {
+	//락온 중이면 스프린트 불가
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		return;
+	}
+
 	bIsSprinting = true;
 	UpdateMovementSpeed();
 
@@ -660,10 +666,17 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 	bIsSprinting = false;
 	UpdateMovementSpeed();
 
-	// 1. 목표 카메라 값을 '기본값'으로 되돌립니다.
-	TargetCameraBoomLength = DefaultCameraBoomLength;
-	TargetFOV = DefaultFOV;
+	
+	bool bIsLockedOn = (LockOnComp && LockOnComp->IsLockedOn());
 
+	//카메라 값을 '기본값'으로 되돌립니다.
+	if (!bIsLockedOn)
+	{
+		TargetCameraBoomLength = DefaultCameraBoomLength;
+	}
+
+	//화면 효과(FOV, 블러, 비네트)'는 락온 여부와 상관없이 무조건 끕니다.
+	TargetFOV = DefaultFOV;
 	TargetFringeIntensity = 0.f;
 	TargetVignetteIntensity = 0.f;
 
@@ -767,7 +780,16 @@ void AKHU_GEBCharacter::PlayHitReaction()
 
 void AKHU_GEBCharacter::HandleLockOnToggle()
 {
-	if (LockOnComp) { LockOnComp->ToggleLockOn(); }
+	if (LockOnComp) { 
+		LockOnComp->ToggleLockOn();
+
+		//달리다가 락온 켜면, 즉시 걷기로 전환
+		if (LockOnComp->IsLockedOn() && bIsSprinting)
+		{
+			FInputActionValue DummyValue; // 빈 값 생성
+			StopSprinting(DummyValue);    // 스프린트 종료 함수 강제 호출
+		}
+	}
 }
 
 AActor* AKHU_GEBCharacter::GetLockOnTarget() const
