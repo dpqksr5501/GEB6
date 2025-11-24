@@ -122,3 +122,16 @@ void UStatManagerComponent::AddLevel(EFormType FormType, int32 Amount)
 		Stats->RecalculateDerivedStats();
 	}
 }
+
+
+////
+int32 UStatManagerComponent::GetLevelStat(EFormType FormType) const
+{
+	if (const FFormRuntimeStats* Stats = RuntimeStats.Find(FormType))
+	{
+		return Stats->Level;
+	}
+
+	// 못 찾으면 0 리턴 (원하면 1로 바꿔도 됨)
+	return 0;
+}

@@ -115,16 +115,53 @@ void USkill_Range::ActivateSkill()
 
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
-        // 초기 조준 위치: 앞쪽으로 Range의 절반 지점
         const float Radius = GetCurrentTargetRadius();
+        const float MaxDist = GetMaxAimDistance();
+        const FVector StartLoc = OwnerChar->GetActorLocation();
+
+        // --- 1) 기본 초기 위치 = 자기 앞쪽 Range의 절반 지점 ---
+        FVector InitialLoc;
+
         FVector Forward = OwnerChar->GetActorForwardVector();
         Forward.Z = 0.f;
-        if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
+        if (!Forward.Normalize())
+        {
+            Forward = FVector::ForwardVector;
+        }
+        InitialLoc = StartLoc + Forward * (Radius * 0.5f);
 
-        const FVector StartLoc = OwnerChar->GetActorLocation();
-        CurrentTargetLocation = StartLoc + Forward * (Radius * 0.5f);
-        
-        // 여기서 지면으로 스냅
+        // --- 2) 만약 플레이어이고, 락온 타겟이 있다면 → 락온 타겟 위치를 우선 사용 ---
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
+        {
+            if (AActor* LockOnTarget = PlayerChar->GetLockOnTarget())
+            {
+                InitialLoc = LockOnTarget->GetActorLocation();
+
+                // 너무 멀리 있으면 MaxAimDistance 안으로 클램프
+                if (MaxDist > 0.f)
+                {
+                    FVector FlatOwner(StartLoc.X, StartLoc.Y, 0.f);
+                    FVector FlatTarget(InitialLoc.X, InitialLoc.Y, 0.f);
+                    FVector FlatDir = FlatTarget - FlatOwner;
+                    const float Dist = FlatDir.Size();
+
+                    if (Dist > MaxDist && Dist > KINDA_SMALL_NUMBER)
+                    {
+                        FlatDir = FlatDir / Dist * MaxDist;
+                        FlatTarget = FlatOwner + FlatDir;
+                        InitialLoc.X = FlatTarget.X;
+                        InitialLoc.Y = FlatTarget.Y;
+                    }
+                }
+            }
+
+            // 캐릭터에게 "지금 Range 조준 중" 알리기 (기존 코드 유지)
+            PlayerChar->OnRangeAimingStarted(this);
+        }
+
+        CurrentTargetLocation = InitialLoc;
+
+        // --- 3) 여기서 지면으로 스냅 (기존 코드 재사용) ---
         const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
         const FVector TraceEnd = CurrentTargetLocation - FVector(0.f, 0.f, GroundTraceHalfHeight);
 
@@ -140,19 +177,12 @@ void USkill_Range::ActivateSkill()
         {
             CurrentTargetLocation = Hit.ImpactPoint + FVector(0.f, 0.f, GroundOffsetZ);
         }
-        // 실패하면 기존처럼 발 위치 높이 사용
         else { CurrentTargetLocation.Z = StartLoc.Z; }
 
-        // 캐릭터 이동 멈추기
+        // 캐릭터 이동 멈추기 (기존)
         if (UCharacterMovementComponent* MoveComp = OwnerChar->GetCharacterMovement())
         {
             MoveComp->StopMovementImmediately();
-        }
-
-        // 캐릭터에게 "지금 Range 조준 중" 알리기
-        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
-        {
-            PlayerChar->OnRangeAimingStarted(this);
         }
     }
     else { CurrentTargetLocation = Owner->GetActorLocation(); }
@@ -277,6 +307,33 @@ void USkill_Range::TickComponent(
         false
     );
 #endif
+
+    // --- 카메라/캐릭터가 조준 원 중심을 바라보도록 Yaw 회전 ---
+    if (Controller)
+    {
+        FVector ToTarget = CurrentTargetLocation - OwnerLoc;
+        ToTarget.Z = 0.f;
+
+        if (!ToTarget.IsNearlyZero())
+        {
+            const float InterpSpeed = 10.f; // 필요하면 UPROPERTY로 빼도 됨
+
+            const FRotator DesiredYawRot = ToTarget.Rotation(); // Yaw만 의미 있음
+            const FRotator CurrentRot = Controller->GetControlRotation();
+
+            FRotator TargetRot = CurrentRot;
+            TargetRot.Yaw = DesiredYawRot.Yaw;
+
+            const FRotator NewRot = FMath::RInterpTo(
+                CurrentRot,
+                TargetRot,
+                DeltaTime,
+                InterpSpeed
+            );
+
+            Controller->SetControlRotation(NewRot);
+        }
+    }
 }
 
 void USkill_Range::StopSkill()
@@ -728,7 +785,7 @@ void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
     Super::InitializeFromDefinition(Def);
 
     if (Params.ManaCost > 0.f) { ManaPerShield = Params.ManaCost; }
-    if (Params.Damage > 0.f) { DamagePerSheild = Params.Range; }
+    if (Params.Damage > 0.f) { DamagePerSheild = Params.Damage; }
     if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
 }
 
@@ -783,6 +840,8 @@ void USkill_Guard::ActivateSkill()
     RemainingShields = FMath::Max(MaxShields, 0);
     ConsumedShields = 0;
 
+    if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
+
     // 보호막 이펙트 켜기
     if (SkillNS && !SpawnedNS)
     {
@@ -811,11 +870,6 @@ bool USkill_Guard::HandleIncomingDamage(
         UE_LOG(LogTemp, Verbose,
             TEXT("[Skill_Guard] HandleIncomingDamage: no shield (Active=%d, Remaining=%d)"),
             bIsActive ? 1 : 0, RemainingShields);
-
-        bEndedByDepletion = true;
-        UE_LOG(LogTemp, Log,
-            TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
-
         return false;
     }
 
@@ -826,6 +880,13 @@ bool USkill_Guard::HandleIncomingDamage(
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
         RemainingShields, ConsumedShields);
+
+    if (RemainingShields <= 0)
+    {
+        bEndedByDepletion = true;
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
+    }
 
     if (UManaComponent* Mana = GetManaComponent())
     {
@@ -874,6 +935,8 @@ void USkill_Guard::StopSkill()
         }
         UE_LOG(LogTemp, Log,
             TEXT("[Skill_Guard] Mana set to 0 on skill end (was %.1f)"), Current);
+
+        Mana->RemoveRegenBlock();
     }
 
     // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
