@@ -92,7 +92,13 @@ void UStatManagerComponent::AddMinionKill(EFormType FormType)
 		if (bShouldLevelUp)
 		{
 			Stats->Level = FMath::Max(1, Stats->Level + 1);
+
 			Stats->RecalculateDerivedStats();
+
+
+			////
+			OnFormLevelUp.Broadcast(FormType, Stats->Level);
+			////
 		}
 	}
 }
@@ -120,6 +126,10 @@ void UStatManagerComponent::AddLevel(EFormType FormType, int32 Amount)
 	{
 		Stats->Level = FMath::Max(1, Stats->Level + Amount);
 		Stats->RecalculateDerivedStats();
+
+		////
+		OnFormLevelUp.Broadcast(FormType, Stats->Level);
+		////
 	}
 }
 

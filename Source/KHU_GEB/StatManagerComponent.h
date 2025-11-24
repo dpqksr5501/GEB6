@@ -11,6 +11,7 @@
 class UFormStatData;
 class UFormSet;
 
+
 USTRUCT(BlueprintType)
 struct FFormRuntimeStats
 {
@@ -64,6 +65,8 @@ struct FFormRuntimeStats
 	// 레벨이 바뀌었을 때 실제 공격/방어 다시 계산
 	void RecalculateDerivedStats();
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFormLevelUp, EFormType, FormType, int32, NewLevel);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API UStatManagerComponent : public UActorComponent
@@ -124,6 +127,11 @@ public:
 	// 5) 0~1 진행도 (UMG ProgressBar Percent에 바로 연결)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Exp")
 	float GetMinionKillProgress01(EFormType FormType) const;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stats|Level")
+	FOnFormLevelUp OnFormLevelUp;
+
+	////
 
 
 
