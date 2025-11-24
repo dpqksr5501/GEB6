@@ -672,6 +672,8 @@ void AKHU_GEBCharacter::OnRangeAimingStarted(USkill_Range* Skill)
 {
 	bIsRangeAiming = true;
 	ActiveRangeSkill = Skill;
+
+	RefreshRotationMode();
 }
 
 void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
@@ -680,6 +682,8 @@ void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
 	{
 		ActiveRangeSkill = nullptr;
 		bIsRangeAiming = false;
+
+		RefreshRotationMode();
 	}
 }
 
@@ -743,4 +747,26 @@ void AKHU_GEBCharacter::HandleLockOnToggle()
 AActor* AKHU_GEBCharacter::GetLockOnTarget() const
 {
 	return (LockOnComp ? LockOnComp->GetCurrentTarget() : nullptr);
+}
+
+void AKHU_GEBCharacter::RefreshRotationMode()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (!MoveComp) return;
+
+	// 락온이 켜져 있거나, Range 조준 중이면 컨트롤러 Yaw를 기준으로 회전
+	bool bShouldUseControllerYaw = false;
+
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		bShouldUseControllerYaw = true;
+	}
+
+	if (bIsRangeAiming)
+	{
+		bShouldUseControllerYaw = true;
+	}
+
+	MoveComp->bOrientRotationToMovement = !bShouldUseControllerYaw;
+	bUseControllerRotationYaw = bShouldUseControllerYaw;
 }

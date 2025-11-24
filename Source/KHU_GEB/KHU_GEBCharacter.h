@@ -299,5 +299,8 @@ public:
 	void PlayHitReaction();
 
 	AActor* GetLockOnTarget() const;
+
+	/** 락온/Range 조준 상태에 따라 회전 모드를 갱신한다. */
+	void RefreshRotationMode();
 };
 

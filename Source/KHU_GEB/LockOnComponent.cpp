@@ -13,13 +13,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "HealthComponent.h"
+#include "KHU_GEBCharacter.h"
 
 ULockOnComponent::ULockOnComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	LockOnRadius = 2000.f;
-	MaxLockOnDistance = 2500.f;
+	LockOnRadius = 1500.f;
+	MaxLockOnDistance = 2000.f;
 	VisibilityChannel = ECC_Visibility;
 	MaxScreenDistanceFromCenter = 600.f; // 화면 중앙에서 대략 이 정도까지만 허용
 	RotationInterpSpeed = 10.f;
@@ -39,16 +40,26 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!CurrentTarget.IsValid())
-	{
-		return;
-	}
+	if (!CurrentTarget.IsValid()) return;
 
 	AActor* Target = CurrentTarget.Get();
 	if (!IsTargetValid(Target))
 	{
 		ClearLockOn();
 		return;
+	}
+
+	// --- Range 조준 중이면 카메라 회전은 Range 스킬에 맡긴다 ---
+	if (AActor* Owner = GetOwner())
+	{
+		if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+		{
+			if (PlayerChar->IsRangeAiming())
+			{
+				// 락온 타겟은 유지하지만, 카메라 회전은 건드리지 않음
+				return;
+			}
+		}
 	}
 
 	UpdateControlRotation(DeltaTime);
@@ -182,10 +193,7 @@ bool ULockOnComponent::IsTargetValid(AActor* Target) const
 	}
 
 	const float DistSq = FVector::DistSquared(Target->GetActorLocation(), GetOwner()->GetActorLocation());
-	if (DistSq > MaxLockOnDistance * MaxLockOnDistance)
-	{
-		return false;
-	}
+	if (DistSq > MaxLockOnDistance * MaxLockOnDistance) return false;
 
 	// 카메라 기준 시야각/가림 체크
 	if (!CachedPC.IsValid()) return true; // 일단 컨트롤러 없으면 대충 통과
@@ -225,10 +233,7 @@ AActor* ULockOnComponent::FindBestTarget()
 	TArray<AActor*> Candidates;
 	CollectCandidates(Candidates);
 
-	if (!CachedPC.IsValid() || Candidates.Num() == 0)
-	{
-		return nullptr;
-	}
+	if (!CachedPC.IsValid() || Candidates.Num() == 0) return nullptr;
 
 	AActor* BestTarget = nullptr;
 	float BestScreenDist = FLT_MAX;
@@ -286,19 +291,26 @@ void ULockOnComponent::ApplyCharacterRotationMode(bool bEnableLockOn)
 	ACharacter* OwnerChar = Cast<ACharacter>(GetOwner());
 	if (!OwnerChar) return;
 
-	if (UCharacterMovementComponent* MoveComp = OwnerChar->GetCharacterMovement())
+	// 플레이어 캐릭터라면 회전 모드 갱신을 캐릭터에게 위임
+	if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
 	{
-		if (bEnableLockOn)
+		PlayerChar->RefreshRotationMode();
+	}
+	else
+	{
+		// (AI 몬스터 등) 플레이어가 아닌 경우엔 기존 방식 유지
+		if (UCharacterMovementComponent* MoveComp = OwnerChar->GetCharacterMovement())
 		{
-			// 이동 방향 대신 컨트롤러(Yaw) 기준으로 회전
-			MoveComp->bOrientRotationToMovement = false;
-			OwnerChar->bUseControllerRotationYaw = true;
-		}
-		else
-		{
-			// 원래 세팅으로 복귀 (프로젝트 기본값에 맞게 조정)
-			MoveComp->bOrientRotationToMovement = true;
-			OwnerChar->bUseControllerRotationYaw = false;
+			if (bEnableLockOn)
+			{
+				MoveComp->bOrientRotationToMovement = false;
+				OwnerChar->bUseControllerRotationYaw = true;
+			}
+			else
+			{
+				MoveComp->bOrientRotationToMovement = true;
+				OwnerChar->bUseControllerRotationYaw = false;
+			}
 		}
 	}
 }
