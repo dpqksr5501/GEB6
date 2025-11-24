@@ -96,5 +96,10 @@ public:
 	/** 화면 기준 좌/우 타겟 전환 (나중에 구현해도 됨) */
 	UFUNCTION(BlueprintCallable, Category = "LockOn")
 	void SwitchTarget(bool bRight);
+
+	/** 락온 시 카메라를 얼마나 옆/위로 옮길지 설정 (X, Y, Z) */
+	//옆/위로 움직이면 화면이 더 잘보이기에
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn|Camera")
+	FVector LockOnSocketOffset = FVector(0.f, 60.f, 20.f);
 		
 };

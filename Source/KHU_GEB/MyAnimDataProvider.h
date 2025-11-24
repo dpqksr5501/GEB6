@@ -44,4 +44,10 @@ public:
     //활강 상태 확인 함수
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
     bool GetAnimIsRangeGliding() const;
+
+
+    //현재 락온 상태인지(혹은 스트레이프 모드인지) 확인
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
+    bool GetAnimIsLockedOn() const;
+
 };

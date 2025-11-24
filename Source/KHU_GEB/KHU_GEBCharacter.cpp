@@ -56,6 +56,9 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
+	//적에게 가까울 시 카메라 충돌 해결
+	CameraBoom->ProbeChannel = ECC_Visibility;
+
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -363,8 +366,18 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 {
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+
+	//LockOn 상황일 때 마우스가 움질일 시 애니메이션이 깨지는 현상이 있음
+	//해결하기 위해 LockOn시 마우스를 움직여서 바라보는 동작 제한.
+	//그러나 위/아래로는 움직일 수 있게 해야함.
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		LookAxisVector.X = 0.0f; //좌/우 회전 차단
+	}
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
@@ -516,6 +529,19 @@ bool AKHU_GEBCharacter::GetAnimSpaceActionInput_Implementation(bool bConsumeInpu
 	return Result;
 }
 
+bool AKHU_GEBCharacter::GetAnimIsLockedOn_Implementation() const
+{
+	// 락온 컴포넌트가 유효하고, 락온 중이라면 true 반환
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		return true;
+	}
+
+	// (선택 사항) Range Aiming 중일 때도 스트레이프 모션(BS)을 쓰고 싶다면 아래 조건 추가
+	// if (IsRangeAiming()) return true;
+
+	return false;
+}
 
 
 /** 폼이 변경될 때 호출되는 핸들러 */

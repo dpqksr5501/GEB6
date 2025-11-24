@@ -14,6 +14,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "HealthComponent.h"
 #include "KHU_GEBCharacter.h"
+#include "GameFramework/SpringArmComponent.h"
 
 ULockOnComponent::ULockOnComponent()
 {
@@ -295,6 +296,27 @@ void ULockOnComponent::ApplyCharacterRotationMode(bool bEnableLockOn)
 	if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
 	{
 		PlayerChar->RefreshRotationMode();
+
+
+		//카메라 위/오른쪽으로 약간 올려서 시야 확보하는 코드-----------------------------------------
+		if (USpringArmComponent* Boom = PlayerChar->GetCameraBoom())
+		{
+			if (bEnableLockOn)
+			{
+				// 락온 켜짐: 설정해둔 오프셋(우측 상단) 적용
+				Boom->SocketOffset = LockOnSocketOffset;
+				//카메라 거리 늘어남
+				PlayerChar->SetTargetCameraBoomLength(500.0f);
+			}
+			else
+			{
+				// 락온 꺼짐: 오프셋을 (0,0,0)으로 초기화 -> 정중앙 복귀
+				Boom->SocketOffset = FVector::ZeroVector;
+				//카메라 거리 다시 초기화(원래값으로)
+				PlayerChar->SetTargetCameraBoomLength(PlayerChar->GetDefaultCameraBoomLength());
+			}
+		}
+		//-------------------------------------------
 	}
 	else
 	{
