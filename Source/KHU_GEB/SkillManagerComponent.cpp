@@ -4,35 +4,11 @@
 #include "SkillManagerComponent.h"
 #include "SkillBase.h"
 
-// Sets default values for this component's properties
-USkillManagerComponent::USkillManagerComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	// PrimaryComponentTick.bCanEverTick = true;
+USkillManagerComponent::USkillManagerComponent() {}
 
-	// ...
-}
-/*
-// Called when the game starts
-void USkillManagerComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-// Called every frame
-void USkillManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-*/
 void USkillManagerComponent::EquipFromSkillSet(USkillSet* Set)
 {
+
 	ClearAll();
 	if (!Set) { UE_LOG(LogTemp, Warning, TEXT("[SkillManager] Equip: Set is null")); return; }
 	for (auto& It : Set->Skills)
@@ -71,13 +47,22 @@ bool USkillManagerComponent::TryActivate(ESkillSlot Slot)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[SkillManager] TryActivate Slot=%d, Skill=%s"),
 			(int32)Slot, *GetNameSafe(S));
-		if (S->CanActivate()) { S->ActivateSkill(); return true; }
-		UE_LOG(LogTemp, Warning, TEXT("[SkillManager] CanActivate=false for %s"), *GetNameSafe(S));
+
+		// 1) 공통 체크 (쿨타임 + 마나)
+		if (!S->CanActivate())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[SkillManager] CanActivate = false for %s"),
+				*GetNameSafe(S));
+			return false;
+		}
+
+		// 2) 실제 발동 (여기서 Super::ActivateSkill 내부에서 비용 처리가 됨)
+		S->ActivateSkill();
+		return true;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[SkillManager] No skill equipped for Slot=%d"), (int32)Slot);
-	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[SkillManager] No skill equipped for Slot=%d"),
+		(int32)Slot);
 	return false;
 }
 

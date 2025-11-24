@@ -37,12 +37,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float Amount);
 
-
-
-
-
-	///////////
-
 	// 상태를 안전하게 가져갈 수 있는 public 함수
 	UFUNCTION(BlueprintPure, Category = "State")
 	ECharacterState GetCharacterState() const { return CharacterState; }
@@ -52,14 +46,20 @@ public:
 	void SetCharacterState(ECharacterState NewState);
 
 
-
-
-
 	//인터페이스(IMyAnimDataProvider)의 함수 4개를 구현하겠다고 선언합니다.
 	virtual float GetAnimSpeed_Implementation() const override;
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+	//스페이스바 인터페이스 함수 구현 선언
+	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
+
+	//스페이스바 특수 행동 신호 저장용 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bSpaceActionInput;
+
+	
+
 
 protected:
 	// 상태 변수는 외부에서 직접 건드리지 못하도록 protected로 보호합니다.

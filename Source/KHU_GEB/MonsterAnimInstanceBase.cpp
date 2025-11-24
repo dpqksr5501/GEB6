@@ -45,6 +45,10 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
         bIsFalling = IMyAnimDataProvider::Execute_GetAnimIsFalling(OwningDataProvider.GetObject());
         // 'true'를 전달하여 bJumpInput/bPlayerWantsToJump 값을 소모(리셋)시킵니다.
         bJumpInput_Anim = IMyAnimDataProvider::Execute_GetAnimJumpInput(OwningDataProvider.GetObject(), true);
+        //인터페이스를 통해 스페이스바 액션 신호를 가져옴
+        bSpaceAction_Anim = IMyAnimDataProvider::Execute_GetAnimSpaceActionInput(OwningDataProvider.GetObject(), false);
+        //인터페이스를 통해 활강 변수 가져오기
+        bIsRangeGliding_Anim = IMyAnimDataProvider::Execute_GetAnimIsRangeGliding(OwningDataProvider.GetObject());
     }
     else if (OwnerPawn) // OwnerPawn은 APawn* 타입입니다.
     {
@@ -92,6 +96,6 @@ void UMonsterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
         AimYaw = 0.f;
         AimPitch = 0.f;
     }
-
+    
 
 }

@@ -2,8 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-// ECharacterState 열거형을 사용하기 위해 MonsterAnimInstanceBase.h를 포함합니다.
-#include "MonsterAnimInstanceBase.h" 
+#include "MonsterAnimInstanceBase.h" // ECharacterState 열거형을 사용하기 위해 MonsterAnimInstanceBase.h를 포함합니다.
 #include "MyAnimDataProvider.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -32,10 +31,17 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
     bool GetAnimIsFalling() const;
 
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
+    bool GetAnimSpaceActionInput(bool bConsumeInput);
+
     /**
      * 방금 점프 입력이 있었는지 반환합니다.
      * @param bConsumeInput true일 경우, 신호를 읽은 후 리셋(소모)합니다.
      */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
     bool GetAnimJumpInput(bool bConsumeInput);
+
+    //활강 상태 확인 함수
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimDataProvider")
+    bool GetAnimIsRangeGliding() const;
 };

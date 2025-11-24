@@ -13,10 +13,8 @@ class USkillSet;
 class UFormStatData;
 class UWeaponData;
 
-
 UENUM(BlueprintType)
 enum class EFormType : uint8 { Base, Range, Swift, Guard, Special };
-
 
 USTRUCT(BlueprintType)
 struct FAttackStep
@@ -58,6 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> AnimClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Jump")
+	TArray<TObjectPtr<UAnimMontage>> JumpMontages;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Attack")
 	TArray<FAttackStep> AttackMontages;
 
@@ -72,6 +73,15 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
+
+	/** 최대 점프 가능 횟수 (기본 1, Swift는 2) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "JumpCount")
+	int32 MaxJumpCount = 1;
+
+	/**공격을 끊지 않고 재생할 애디티브 피격 몽타주 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Reaction")
+	TObjectPtr<UAnimMontage> HitReactMontage;
+
 };
 
 UCLASS(BlueprintType)

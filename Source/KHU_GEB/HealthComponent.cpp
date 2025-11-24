@@ -2,11 +2,14 @@
 #include "HealthComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "SkillBase.h" 
 
 UHealthComponent::UHealthComponent()
 {
     PrimaryComponentTick.bCanEverTick = false; // 틱 안 쓰면 false 권장
+
+    MaxHealth = 100.f; //테스트를 위해서 추가 11/24
+    Health = 100.f; //테스트를 위해서 추가 11/24
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -93,4 +96,53 @@ void UHealthComponent::HandleDeathIfNeeded()
         // 필요 시: 소유 액터 처리 (Destroy 등)
         // if (AActor* Owner = GetOwner()) { Owner->Destroy(); }
     }
+}
+
+float UHealthComponent::ApplyDamageSpec(const FDamageSpec& Spec)
+{
+    float FinalDamage = 0.f;
+
+    // 0) 고정 도트 피해 모드: RawDamage * HitCount를 그대로 HP에서 차감
+    if (Spec.bFixedDot)
+    {
+        const int32 Count = FMath::Max(Spec.HitCount, 1);
+        FinalDamage = Spec.RawDamage * Count;
+
+        if (FinalDamage <= 0.f)
+        {
+            return 0.f;
+        }
+
+        const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
+        const float Delta = NewHealth - Health; // 음수
+        ApplyHealth(NewHealth, Delta);          // 내부에서 OnHealthChanged, OnDeath 호출
+
+        return FinalDamage;
+    }
+
+    if (Spec.RawDamage <= 0.f || MaxHealth <= 0.f)
+    {
+        return 0.f;
+    }
+
+    const float Raw = Spec.RawDamage;
+    FinalDamage = Raw;
+
+    // TODO: 방어력/저항 등 계산은 나중에 여기서 처리
+    // if (!Spec.bIgnoreDefense) { FinalDamage = ApplyDefense(Raw); }
+
+    const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
+    const float Delta = NewHealth - Health;   // 데미지니까 음수일 것
+
+    // 체력/이벤트/죽음 처리 공통 로직
+    ApplyHealth(NewHealth, Delta);
+    HandleDeathIfNeeded();
+
+    // 델리게이트용 포인터 꺼내기
+    AActor* InstigatorActor = Spec.Instigator.Get();
+    USkillBase* SourceSkill = Spec.SourceSkill.Get();
+
+    OnDamageApplied.Broadcast(Health, FinalDamage, Raw, InstigatorActor, SourceSkill);
+
+    return FinalDamage;
 }

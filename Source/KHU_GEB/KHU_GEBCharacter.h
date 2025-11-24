@@ -14,11 +14,14 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class USceneComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UManaComponent;
 class UFormManagerComponent;
 class UFormDefinition;
+class UJumpComponent;
 class UAttackComponent;
 class USkillManagerComponent;
 class UStatManagerComponent;
@@ -45,6 +48,9 @@ class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UNiagaraComponent* SwiftSprintVFX;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* MeshRoot;
+
 protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -62,27 +68,31 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** Attack Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* SkillAction;
 
+	/** Transform Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormBase;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormRange;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSwift;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormGuard;
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormSpecial;
 
-
 	/** Sprint Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* SprintAction; // IA_Shift를 여기에 할당합니다.
+	UInputAction* SprintAction;
 
 private:
-	/** 현재 폼의 기본 이동 속도 (DA에서 읽어옴) */
+	/** 현재 폼의 기본 이동 속도 */
 	float CurrentFormWalkSpeed;
 	float CurrentFormSprintSpeed;
 
 	/** 현재 스프린트 중인지 여부 */
 	bool bIsSprinting;
+
+	/** 스킬로 인한 이동속도 배율 (1.0이 기본) */
+	float SkillSpeedMultiplier = 1.0f;
 
 	/** 카메라 효과를 부드럽게 보간(Interp)하는 속도입니다. */
 	UPROPERTY(EditAnywhere, Category = "Camera Effects")
@@ -119,7 +129,13 @@ public:
 	UHealthComponent* HealthComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UManaComponent* ManaComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFormManagerComponent* FormManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UJumpComponent* JumpManager;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAttackComponent> AttackManager;
@@ -168,11 +184,6 @@ protected:
 	void SwitchToSpecial(const FInputActionValue& Value);
 
 
-
-	//점프 입력을 받을 새 C++ 함수를 선언합니다 (BP의 DoJumpStart 대신).
-	void StartJump();
-
-
 	/** 스프린트 입력을 받았을 때 호출됩니다. (Started) */
 	void StartSprinting(const FInputActionValue& Value);
 
@@ -219,6 +230,31 @@ public:
 	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
 	virtual bool GetAnimIsFalling_Implementation() const override;
 	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
+
+	/** 스킬에 의해 적용되는 이동속도 배율을 설정합니다. (1.0 = 기본속도) */
+	void SetSkillSpeedMultiplier(float InMultiplier);
+	float GetSkillSpeedMultiplier() const { return SkillSpeedMultiplier; }
+
+	//스페이스바 특수 행동 신호 저장용 변수 (ABP 처리를 위해서)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bSpaceActionInput;
+
+	//스페이스바 입력 변수를 신호 끄기 위한 함수
+	void AutoResetSpaceAction();
+
+	//Guard Form일 때 몬스터 끌어당길 때 움직임 고정하는 변수
+	bool bIsMovementInputBlocked = false;
+	//Guard Form일 때 몬스터 끌어당기고 움직임 해제하는 함수 
+	void ReleaseMovementLock();
+
+
+	//Range 폼 활강 상태 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bIsRangeGliding = false;
+
+	//Range를 위한 인터페이스 함수 구현 선언
+	virtual bool GetAnimIsRangeGliding_Implementation() const override;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -226,5 +262,29 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
+
+private:
+	bool bIsRangeAiming = false;
+	TWeakObjectPtr<class USkill_Range> ActiveRangeSkill;
+
+public:
+	void OnRangeAimingStarted(USkill_Range* Skill);
+	void OnRangeAimingEnded(USkill_Range* Skill);
+	bool IsRangeAiming() const { return bIsRangeAiming; }
+
+
+///////////////피격 몽타주 재생 테스트 코드
+protected:
+	// [추가] 테스트용 'L' 키 입력 액션
+	UPROPERTY(EditAnywhere, Category = "Input|Test")
+	class UInputAction* TestHitAction;
+
+	void OnTestHitInput(const FInputActionValue& Value);
+
+public:
+	// 피격 처리 함수
+	void PlayHitReaction();
 };
 
