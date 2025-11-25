@@ -15,6 +15,7 @@ class UHealthComponent;
 class UWeaponComponent;
 class UWeaponData;
 class UFormDefinition;
+class UManaComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -64,6 +65,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	UWeaponComponent* WeaponComp;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Mana")
+	UManaComponent* ManaComp;
 
 	// Á×À½
 	UFUNCTION()

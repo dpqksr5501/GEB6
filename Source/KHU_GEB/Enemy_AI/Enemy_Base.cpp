@@ -6,6 +6,7 @@
 #include "WeaponComponent.h"
 #include "FormDefinition.h"
 #include "SkillBase.h"
+#include "ManaComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -25,6 +26,11 @@ AEnemy_Base::AEnemy_Base()
 	if (!WeaponComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp creation failed"));
+	}
+	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
+	if (!ManaComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - ManaComp creation failed"));
 	}
 }
 
@@ -49,6 +55,9 @@ void AEnemy_Base::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp or DefaultWeaponData is null. WeaponComp: %s, DefaultWeaponData: %s"),
 			WeaponComp ? *WeaponComp->GetName() : TEXT("null"),
 			DefaultWeaponData ? *DefaultWeaponData->GetName() : TEXT("null"));
+	}
+	if (ManaComp) {
+		// ManaComp는 초기화 함수가 없는거 같은데?
 	}
 	// SkillClasses가 설정되어 있으면 자동으로 초기화
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)

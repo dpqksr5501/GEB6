@@ -822,7 +822,7 @@ bool USkill_Guard::CanActivate() const
 }
 
 void USkill_Guard::ActivateSkill()
-{
+{   
     // 이미 켜져 있으면 다시 초기화하지 않고 무시
     if (bIsActive)
     {
@@ -840,12 +840,13 @@ void USkill_Guard::ActivateSkill()
 
     RemainingShields = FMath::Max(MaxShields, 0);
     ConsumedShields = 0;
-
+    
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
-
+    
     // 보호막 이펙트 켜기
     if (SkillNS && !SpawnedNS)
     {
+		UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Spawning shield effect."));
         SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
             SkillNS,
             Owner->GetRootComponent(),
