@@ -622,6 +622,7 @@ void USkill_Swift::ActivateSkill()
     if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
 
     const FVector EndLocation = StartLocation + Forward * DashDistance;
+    // 여기서 DashDistance가 0이네?
 
     // ----- 큰 직육면체(Oriented Box) 안의 적에게 데미지 -----
    // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
@@ -630,6 +631,7 @@ void USkill_Swift::ActivateSkill()
 
     SwiftTargets.Reset();
     CurrentHitIndex = 0;
+    // 여기서 Distance가 0이라.. 이유가 뭘까?
 
     if (Distance > KINDA_SMALL_NUMBER)
     {
@@ -656,7 +658,6 @@ void USkill_Swift::ActivateSkill()
             ObjParams,
             FCollisionShape::MakeBox(HalfExtent),
             QueryParams);
-
         if (bAnyHit)
         {
             for (const FOverlapResult& O : Overlaps)
@@ -821,7 +822,7 @@ bool USkill_Guard::CanActivate() const
 }
 
 void USkill_Guard::ActivateSkill()
-{
+{   
     // 이미 켜져 있으면 다시 초기화하지 않고 무시
     if (bIsActive)
     {
@@ -839,12 +840,13 @@ void USkill_Guard::ActivateSkill()
 
     RemainingShields = FMath::Max(MaxShields, 0);
     ConsumedShields = 0;
-
+    
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
-
+    
     // 보호막 이펙트 켜기
     if (SkillNS && !SpawnedNS)
     {
+		UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Spawning shield effect."));
         SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
             SkillNS,
             Owner->GetRootComponent(),

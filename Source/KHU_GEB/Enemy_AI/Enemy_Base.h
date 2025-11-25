@@ -12,6 +12,10 @@
 
 class UBlackboardComponent;
 class UHealthComponent;
+class UWeaponComponent;
+class UWeaponData;
+class UFormDefinition;
+class UManaComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -34,6 +38,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeSkills();
 
+	// 각 적 타입이 자신의 스킬을 발동하도록 오버라이드
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	virtual void ActivateSkill();
+
+	// 무기 데이터
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TObjectPtr<UWeaponData> DefaultWeaponData;
+
+	// 폼 데이터
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TObjectPtr<UFormDefinition> DefaultFormDef;
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
@@ -46,6 +62,12 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Health")
 	UHealthComponent* HealthComp;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	UWeaponComponent* WeaponComp;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Mana")
+	UManaComponent* ManaComp;
 
 	// 죽음
 	UFUNCTION()

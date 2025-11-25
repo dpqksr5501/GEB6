@@ -91,12 +91,6 @@ void UTMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 	FVector CurrentLocation = ControlledPawn->GetActorLocation();
 	CurrentDistance = FVector::Dist(CurrentLocation, TargetLocation);
 
-	// CurrentDistance를 뷰포트에 출력. 키는 3
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(3, DeltaSeconds + 0.1f, FColor::Green, FString::Printf(TEXT("UTMoveTo: CurrentDistance = %.2f"), CurrentDistance));
-	}
-
 	if (CurrentDistance <= StopDistance)
 	{
 		// 목표 범위 도달. 이동 입력 중지

@@ -15,6 +15,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "FormManagerComponent.h"
 #include "GameFramework/Character.h"
+#include "Enemy_Base.h"
 
 UAttackComponent::UAttackComponent() {}
 
@@ -36,7 +37,10 @@ USkeletalMeshComponent* UAttackComponent::GetMesh() const
     {
         return OwnerCharacter->GetMesh();
     }
-
+	// Enemy 전용 캐스팅 추가
+    if (AEnemy_Base* OwnerCharacter = Cast<AEnemy_Base>(Owner)) {
+		return OwnerCharacter->GetMesh();
+    }
     //혹시 몬스터(AMonsterBase)에도 이 컴포넌트가 붙을 경우를 대비
     //if (amonsterbase* ownermonster = cast<amonsterbase>(owner))
     //{
@@ -415,4 +419,18 @@ void UAttackComponent::ResetComboHard()
     bIsChaining = false;
 
     if (UAnimInstance* Anim = GetAnim()) { if (LastAttackMontage) Anim->Montage_Stop(0.05f, LastAttackMontage); }
+}
+
+// Enemy 전용
+void UAttackComponent::EnemyAttackStarted()
+{
+    AttackStarted(FInputActionValue()); // 빈 값으로 기존 함수 호출
+}
+void UAttackComponent::EnemyAttackTriggered()
+{
+    AttackTriggered(FInputActionValue()); // 빈 값으로 기존 함수 호출
+}
+void UAttackComponent::EnemyAttackCompleted()
+{
+    AttackCompleted(FInputActionValue()); // 빈 값으로 기존 함수 호출
 }

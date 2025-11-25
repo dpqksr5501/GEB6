@@ -26,4 +26,13 @@ protected:
 
 	/** 조건 검사 실행 함수 */
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+
+	/** Observer 기능을 위한 함수들 */
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual void OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual EBlackboardNotificationResult OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID) override;
+
+	/** 에디터에서 노드 이름을 더 알기 쉽게 표시하기 위한 함수입니다. */
+	virtual FString GetStaticDescription() const override;
 };
