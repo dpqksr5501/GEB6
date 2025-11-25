@@ -11,6 +11,7 @@
 class UFormStatData;
 class UFormSet;
 
+
 USTRUCT(BlueprintType)
 struct FFormRuntimeStats
 {
@@ -65,6 +66,8 @@ struct FFormRuntimeStats
 	void RecalculateDerivedStats();
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFormLevelUp, EFormType, FormType, int32, NewLevel);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API UStatManagerComponent : public UActorComponent
 {
@@ -103,4 +106,34 @@ public:
 	// 강제로 레벨 조정하고 싶을 때 (예: 퀘스트 보상 등)
 	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
 	void AddLevel(EFormType FormType, int32 Amount = 1);
+
+
+	///////
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Level")
+	int32 GetLevelStat(EFormType FormType) const;
+
+	// 2) 지금까지 잡은 미니언 수
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Exp")
+	int32 GetMinionKills(EFormType FormType) const;
+
+	// 3) 이 레벨 구간에서 레벨업하기 위해 필요한 총 미니언 수
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Exp")
+	int32 GetRequiredMinionKillsForThisLevel(EFormType FormType) const;
+
+	// 4) 다음 레벨까지 필요한 남은 미니언 수
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Exp")
+	int32 GetRemainingMinionKillsToNextLevel(EFormType FormType) const;
+
+	// 5) 0~1 진행도 (UMG ProgressBar Percent에 바로 연결)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Exp")
+	float GetMinionKillProgress01(EFormType FormType) const;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stats|Level")
+	FOnFormLevelUp OnFormLevelUp;
+
+	////
+
+
+
+
 };

@@ -14,6 +14,7 @@
 #include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "JumpComponent.h"
+#include "LockOnComponent.h"
 #include "AttackComponent.h"
 #include "SkillManagerComponent.h"
 #include "StatManagerComponent.h"
@@ -55,6 +56,9 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
+	//적에게 가까울 시 카메라 충돌 해결
+	CameraBoom->ProbeChannel = ECC_Visibility;
+
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -69,11 +73,15 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
+	LockOnComp = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
 	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> LOCKON(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_LockOn.IA_LockOn'"));
+	if (LOCKON.Object) { LockOnAction = LOCKON.Object; }
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction> ATTACK(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Attack.IA_Attack'"));
 	if (ATTACK.Object) { AttackAction = ATTACK.Object; }
 
@@ -141,6 +149,12 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::Look);
 
+		// LockOn
+		if (LockOnAction && LockOnComp)
+		{
+			EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::HandleLockOnToggle);
+		}
+
 		// Attack
 		if (AttackManager)
 		{
@@ -160,11 +174,9 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FormGuard, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToGuard);
 		EnhancedInputComponent->BindAction(FormSpecial, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToSpecial);
 
-
 		// 달리기
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::StartSprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::StopSprinting);
-		
 
 		//피격 테스트
 		EnhancedInputComponent->BindAction(TestHitAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::OnTestHitInput);
@@ -322,12 +334,8 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, con
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
-
 	//Guard 끌어당기기 멈추기
-	if (bIsMovementInputBlocked)
-	{
-		return;
-	}
+	if (bIsMovementInputBlocked) return;
 
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -343,14 +351,33 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 		return;
 	}
 
-	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+	// 여기서부터는 일반 이동/락온 이동
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		// 1차 버전: 그냥 기존 DoMove 사용
+		// (컨트롤러가 항상 타겟을 보고 있어서 서클링 느낌이 난다)
+		DoMove(MovementVector.X, MovementVector.Y);
+	}
+	else
+	{
+		DoMove(MovementVector.X, MovementVector.Y);
+	}
 }
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 {
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+
+	//LockOn 상황일 때 마우스가 움질일 시 애니메이션이 깨지는 현상이 있음
+	//해결하기 위해 LockOn시 마우스를 움직여서 바라보는 동작 제한.
+	//그러나 위/아래로는 움직일 수 있게 해야함.
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		LookAxisVector.X = 0.0f; //좌/우 회전 차단
+	}
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
@@ -502,6 +529,19 @@ bool AKHU_GEBCharacter::GetAnimSpaceActionInput_Implementation(bool bConsumeInpu
 	return Result;
 }
 
+bool AKHU_GEBCharacter::GetAnimIsLockedOn_Implementation() const
+{
+	// 락온 컴포넌트가 유효하고, 락온 중이라면 true 반환
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		return true;
+	}
+
+	// (선택 사항) Range Aiming 중일 때도 스트레이프 모션(BS)을 쓰고 싶다면 아래 조건 추가
+	// if (IsRangeAiming()) return true;
+
+	return false;
+}
 
 
 /** 폼이 변경될 때 호출되는 핸들러 */
@@ -584,6 +624,12 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 /** 스프린트 시작 (Shift 누름) */
 void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
 {
+	//락온 중이면 스프린트 불가
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		return;
+	}
+
 	bIsSprinting = true;
 	UpdateMovementSpeed();
 
@@ -620,10 +666,17 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 	bIsSprinting = false;
 	UpdateMovementSpeed();
 
-	// 1. 목표 카메라 값을 '기본값'으로 되돌립니다.
-	TargetCameraBoomLength = DefaultCameraBoomLength;
-	TargetFOV = DefaultFOV;
+	
+	bool bIsLockedOn = (LockOnComp && LockOnComp->IsLockedOn());
 
+	//카메라 값을 '기본값'으로 되돌립니다.
+	if (!bIsLockedOn)
+	{
+		TargetCameraBoomLength = DefaultCameraBoomLength;
+	}
+
+	//화면 효과(FOV, 블러, 비네트)'는 락온 여부와 상관없이 무조건 끕니다.
+	TargetFOV = DefaultFOV;
 	TargetFringeIntensity = 0.f;
 	TargetVignetteIntensity = 0.f;
 
@@ -658,6 +711,8 @@ void AKHU_GEBCharacter::OnRangeAimingStarted(USkill_Range* Skill)
 {
 	bIsRangeAiming = true;
 	ActiveRangeSkill = Skill;
+
+	RefreshRotationMode();
 }
 
 void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
@@ -666,6 +721,8 @@ void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
 	{
 		ActiveRangeSkill = nullptr;
 		bIsRangeAiming = false;
+
+		RefreshRotationMode();
 	}
 }
 
@@ -719,4 +776,45 @@ void AKHU_GEBCharacter::PlayHitReaction()
 	}
 
 	// 공격 중단(ResetComboHard) 호출 안 함 -> 공격 모션 유지하면서 움찔거림
+}
+
+void AKHU_GEBCharacter::HandleLockOnToggle()
+{
+	if (LockOnComp) { 
+		LockOnComp->ToggleLockOn();
+
+		//달리다가 락온 켜면, 즉시 걷기로 전환
+		if (LockOnComp->IsLockedOn() && bIsSprinting)
+		{
+			FInputActionValue DummyValue; // 빈 값 생성
+			StopSprinting(DummyValue);    // 스프린트 종료 함수 강제 호출
+		}
+	}
+}
+
+AActor* AKHU_GEBCharacter::GetLockOnTarget() const
+{
+	return (LockOnComp ? LockOnComp->GetCurrentTarget() : nullptr);
+}
+
+void AKHU_GEBCharacter::RefreshRotationMode()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (!MoveComp) return;
+
+	// 락온이 켜져 있거나, Range 조준 중이면 컨트롤러 Yaw를 기준으로 회전
+	bool bShouldUseControllerYaw = false;
+
+	if (LockOnComp && LockOnComp->IsLockedOn())
+	{
+		bShouldUseControllerYaw = true;
+	}
+
+	if (bIsRangeAiming)
+	{
+		bShouldUseControllerYaw = true;
+	}
+
+	MoveComp->bOrientRotationToMovement = !bShouldUseControllerYaw;
+	bUseControllerRotationYaw = bShouldUseControllerYaw;
 }

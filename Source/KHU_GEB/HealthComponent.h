@@ -109,11 +109,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetHealthPercent() const { return MaxHealth > 0.f ? Health / MaxHealth : 0.f; }
 
+	UFUNCTION(BlueprintPure, Category = "Health")
+	bool IsDead() const;
 
 private:
 	void ApplyHealth(float NewHealth, float Delta);
 	void HandleDeathIfNeeded();
-
-
 
 };
