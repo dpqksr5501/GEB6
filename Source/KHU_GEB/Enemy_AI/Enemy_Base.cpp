@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Base.h"
-#include "Engine/Engine.h"
-#include "FormManagerComponent.h"
-#include "SkillManagerComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "HealthComponent.h"
 #include "WeaponComponent.h"
-#include "BehaviorTree/BlackboardComponent.h"
+#include "FormDefinition.h"
+#include "SkillBase.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -69,10 +68,22 @@ void AEnemy_Base::InitializeSkills()
 			USkillBase* NewSkill = NewObject<USkillBase>(this, Pair.Value);
 			if (NewSkill)
 			{
+				NewSkill->RegisterComponent();
 				Equipped.Add(Pair.Key, NewSkill);
+				
+				UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] Initialized skill: %s"), 
+					*NewSkill->GetClass()->GetName());
 			}
 		}
 	}
+}
+
+// 기본 구현 (하위 클래스가 오버라이드하지 않으면 이게 호출됨)
+void AEnemy_Base::ActivateSkill()
+{
+	UE_LOG(LogTemp, Warning, 
+		TEXT("[Enemy_Base] ActivateSkill called but not overridden! Class: %s"), 
+		*GetClass()->GetName());
 }
 
 float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

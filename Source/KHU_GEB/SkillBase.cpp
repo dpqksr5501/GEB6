@@ -108,6 +108,9 @@ float USkillBase::DealSkillDamage(
     bool bPeriodic,
     int32 HitCount)
 {
+    UE_LOG(LogTemp, Log,
+        TEXT("[SkillBase] DealSkillDamage: Target=%s, Amount=%.1f, IgnoreDefense=%d, Periodic=%d, HitCount=%d"),
+		*GetNameSafe(Target), Amount, bIgnoreDefense ? 1 : 0, bPeriodic ? 1 : 0, HitCount);
     if (!Target || Amount <= 0.f)
     {
         return 0.f;

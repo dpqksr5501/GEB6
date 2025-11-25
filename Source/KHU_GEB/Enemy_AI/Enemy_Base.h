@@ -37,6 +37,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeSkills();
 
+	// 각 적 타입이 자신의 스킬을 발동하도록 오버라이드
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	virtual void ActivateSkill();
+
 	// 무기 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TObjectPtr<UWeaponData> DefaultWeaponData;

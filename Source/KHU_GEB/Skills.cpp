@@ -622,6 +622,7 @@ void USkill_Swift::ActivateSkill()
     if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
 
     const FVector EndLocation = StartLocation + Forward * DashDistance;
+    // 여기서 DashDistance가 0이네?
 
     // ----- 큰 직육면체(Oriented Box) 안의 적에게 데미지 -----
    // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
@@ -630,6 +631,7 @@ void USkill_Swift::ActivateSkill()
 
     SwiftTargets.Reset();
     CurrentHitIndex = 0;
+    // 여기서 Distance가 0이라.. 이유가 뭘까?
 
     if (Distance > KINDA_SMALL_NUMBER)
     {
@@ -656,7 +658,6 @@ void USkill_Swift::ActivateSkill()
             ObjParams,
             FCollisionShape::MakeBox(HalfExtent),
             QueryParams);
-
         if (bAnyHit)
         {
             for (const FOverlapResult& O : Overlaps)

@@ -7,8 +7,6 @@
 #include "EnemyState.h"
 #include "TDamaged.generated.h"
 
-class UAnimMontage;
-
 /**
  * 
  */
@@ -26,7 +24,7 @@ protected:
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 
-	// BT 노드에서 몽타주를 선택할 수 있도록 UPROPERTY로 선언	
-	UPROPERTY(EditAnywhere, Category = "Animation")
-	UAnimMontage* DamagedMontage;
+	// 현재 재생 중인 몽타주를 추적
+	UPROPERTY(Transient)
+	class UAnimMontage* CurrentMontage;
 };

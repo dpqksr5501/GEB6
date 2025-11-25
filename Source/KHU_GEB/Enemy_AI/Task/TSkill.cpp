@@ -8,99 +8,107 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Engine/World.h"
 #include "Enemy_AI/Enemy_Base.h"
-#include "SkillManagerComponent.h"
+#include "FormDefinition.h"
+#include "SkillBase.h"
 
 UTSkill::UTSkill()
 {
-	// 노드 이름을 "Attack"으로 설정합니다.
 	NodeName = TEXT("Skill");
 
 	// TickTask 함수가 호출되도록 bNotifyTick을 true로 설정합니다.
 	bNotifyTick = true;
+
+	// 초기화
+	CurrentMontage = nullptr;
 }
 
 EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// 부모 클래스의 ExecuteTask를 먼저 호출합니다.
 	Super::ExecuteTask(OwnerComp, NodeMemory);
+	
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
-
 	if (!BlackboardComp)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: BlackboardComponent is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// AI 컨트롤러와 컨트롤러가 빙의 중인 캐릭터를 가져옵니다.
+	// AI 컨트롤러와 컨트롤러가 조종하는 캐릭터를 가져옵니다.
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (AIController == nullptr)
+	if (!AIController)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: AIController is missing"));
 		return EBTNodeResult::Failed;
 	}
 
 	ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
-	if (Character == nullptr)
+	if (!Character)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: Character is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// Enemy_Base로 캐스팅하여 스킬 시스템에 접근
+	// Enemy_Base로 캐스팅
 	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
-	if (EnemyBase == nullptr)
+	if (!EnemyBase)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: EnemyBase casting failed"));
 		return EBTNodeResult::Failed;
 	}
 
-	// Equipped 배열에서 사용 가능한 스킬 찾기
-	USkillBase* SkillToUse = nullptr;
-	for (const auto& EquippedItem : EnemyBase->Equipped)
+	// DefaultFormDef 확인
+	if (!EnemyBase->DefaultFormDef)
 	{
-		// 튜플의 두 번째 요소(스킬)를 가져오기
-		USkillBase* Skill = EquippedItem.Get<1>();
-		if (Skill != nullptr)
-		{
-			SkillToUse = Skill;
-			break;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: DefaultFormDef is missing"));
+		return EBTNodeResult::Failed;
 	}
 
-	// 스킬이 있으면 스킬 사용, 없으면 기존 몽타주 재생
-	if (SkillToUse)
+	// SkillMontage 가져오기
+	CurrentMontage = EnemyBase->DefaultFormDef->SkillMontage;
+
+	if (!CurrentMontage)
 	{
-		// 스킬 활성화
-		SkillToUse->ActivateSkill();
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: SkillMontage is missing in DefaultFormDef"));
+		return EBTNodeResult::Failed;
+	}
+
+	// 애님 인스턴스 가져오기
+	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
+	if (!AnimInstance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: AnimInstance is missing"));
+		return EBTNodeResult::Failed;
+	}
+
+	// 몽타주 재생
+	float MontageLength = AnimInstance->Montage_Play(CurrentMontage, 1.0f);
+	if (MontageLength <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: Failed to play SkillMontage"));
+		return EBTNodeResult::Failed;
+	}
+
+	// 스킬 활성화 (SkillSlotToActivate가 None이 아닌 경우)
+	if (SkillSlotToActivate != ESkillSlot::Active) // None 값이 없어서 Active가 아닌 경우로 체크
+	{
+		UE_LOG(LogTemp, Log, TEXT("TSkill: No skill slot specified, only playing montage"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: Skill이 설정되지 않았습니다."));
-	}
-	// 캐릭터의 애님 인스턴스를 가져옵니다.
-	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
-	if (AnimInstance == nullptr)
-	{
-		return EBTNodeResult::Failed;
+		AEnemy_Base* Caster = Cast<AEnemy_Base>(AIController->GetPawn());
+		if (!Caster) return EBTNodeResult::Failed;
+
+		UE_LOG(LogTemp, Log, TEXT("TSkill: Activating skill from Enemy_Base"));
+		Caster->ActivateSkill(); // Enemy 레벨의 스킬 실행
 	}
 
-	// UpperMontage 변수가 BT 에디터에서 설정되었는지 확인합니다.
-	if (UpperMontage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: UpperMontage가 설정되지 않았습니다."));
-		return EBTNodeResult::Failed;
-	}
-	if (FullMontage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: FullMontage가 설정되지 않았습니다."));
-		return EBTNodeResult::Failed;
-	}
-
-	// 몽타주를 재생합니다.
-	AnimInstance->Montage_Play(UpperMontage);
-	AnimInstance->Montage_Play(FullMontage);
-
-	// 상태 변환
+	// 상태 변경
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
 	BlackboardComp->SetValueAsFloat(LastActionTimeKey.SelectedKeyName, OwnerComp.GetWorld()->GetTimeSeconds());
 	BlackboardComp->SetValueAsFloat("LastActionTime", OwnerComp.GetWorld()->GetTimeSeconds());
-
+	
+	UE_LOG(LogTemp, Log, TEXT("TSkill: SkillMontage started"));
 	return EBTNodeResult::InProgress;
 }
 
@@ -109,42 +117,69 @@ void UTSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 	// 부모 클래스의 TickTask를 먼저 호출합니다.
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// AI 컨트롤러와 캐릭터, 애님 인스턴스를 다시 가져옵니다.
+	// 유효성 검사
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (AIController == nullptr)
+	if (!AIController)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: AIController is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: AIController is missing in TickTask"));
 		return;
 	}
 
 	ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
-	if (Character == nullptr)
+	if (!Character)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: Character is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: Character is missing in TickTask"));
 		return;
 	}
 
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
-	if (AnimInstance == nullptr)
+	if (!AnimInstance)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: AnimInstance is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: AnimInstance is missing in TickTask"));
 		return;
 	}
 
-	if (UpperMontage == nullptr || FullMontage == nullptr)
+	if (!CurrentMontage)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: Montage is missing"));
+		UE_LOG(LogTemp, Warning, TEXT("TSkill: CurrentMontage is missing in TickTask"));
 		return;
 	}
 
-	// 지정된 몽타주가 현재 재생 중인지 확인합니다.
-	if (!AnimInstance->Montage_IsPlaying(UpperMontage) && !AnimInstance->Montage_IsPlaying(FullMontage))
+	// 몽타주가 재생 중인지 확인
+	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
-		// 몽타주 재생이 끝났으므로, 태스크를 성공으로 완료시킵니다.
+		// 몽타주 재생이 끝나면 상태를 Idle로 변경하고 태스크 성공
+		BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		UE_LOG(LogTemp, Log, TEXT("TSkill: SkillMontage finished, returning to Idle"));
 	}
+}
+
+EBTNodeResult::Type UTSkill::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	// AI 컨트롤러와 캐릭터를 가져옵니다.
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (AIController)
+	{
+		ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
+		if (Character)
+		{
+			UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
+			if (AnimInstance && CurrentMontage)
+			{
+				// 몽타주 중단
+				AnimInstance->Montage_Stop(0.2f, CurrentMontage);
+				UE_LOG(LogTemp, Log, TEXT("TSkill: Skill aborted, stopping montage"));
+			}
+		}
+	}
+
+	// 상태 정리
+	CurrentMontage = nullptr;
+
+	return Super::AbortTask(OwnerComp, NodeMemory);
 }

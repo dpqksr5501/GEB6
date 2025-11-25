@@ -99,7 +99,9 @@ void UHealthComponent::HandleDeathIfNeeded()
 }
 
 float UHealthComponent::ApplyDamageSpec(const FDamageSpec& Spec)
-{
+{   
+    UE_LOG(LogTemp, Log, TEXT("[HealthComponent] ApplyDamageSpec: RawDamage=%.1f, bIgnoreDefense=%d, bPeriodic=%d, HitCount=%d"),
+		Spec.RawDamage, Spec.bIgnoreDefense ? 1 : 0, Spec.bPeriodic ? 1 : 0, Spec.HitCount);
     float FinalDamage = 0.f;
 
     // 0) 고정 도트 피해 모드: RawDamage * HitCount를 그대로 HP에서 차감
