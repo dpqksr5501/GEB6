@@ -953,6 +953,21 @@ void USkill_Guard::StopSkill()
             TEXT("[Skill_Guard] Stop: ConsumedShields=%d, TotalDamage=%.1f"),
             ConsumedShields, TotalDamage);
 
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+        // 폭발 범위 디버그 표시
+        DrawDebugSphere(
+            World,
+            Owner->GetActorLocation(), // 폭발 중심
+            ExplosionRadius,           // 반경
+            32,                        // 세그먼트 수
+            FColor::Yellow,            // 색
+            false,                     // 영구 여부 (false: Duration 동안만 보임)
+            1.5f,                      // Duration (초)
+            0,                         // Depth Priority
+            3.f                        // 선 두께
+        );
+#endif
+
         UGameplayStatics::ApplyRadialDamage(
             World,
             TotalDamage,
@@ -1116,6 +1131,21 @@ void USkill_Special::UpdateFogEffects()
     FVector Center;
     if (SpawnedNS) { Center = SpawnedNS->GetComponentLocation(); }
     else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    // 흑안개 범위 디버그 표시
+    DrawDebugSphere(
+        World,
+        Center,
+        FogRadius,
+        32,
+        FColor::Purple,
+        false,
+        SlowTickInterval, // 다음 틱 전에 사라지게 해서 계속 갱신되는 느낌
+        0,
+        2.f
+    );
+#endif
 
     // 현재 영역 안에 있는 적들
     TArray<FOverlapResult> Overlaps;
