@@ -35,8 +35,6 @@ void AEnemy_Special::ActivateSkill()
 		}
 	}
 
-	if (!SpecialSkill->CanActivate()) return;
-
 	// 여기서 호출되는 것은 USkill_Special::ActivateSkill()
 	SpecialSkill->ActivateSkill(); 
 	

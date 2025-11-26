@@ -227,7 +227,8 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 void UJumpComponent::HandleSpacePressed()
 {
 	if (!CachedCharacter) return;
-
+	// 여기에 CurrentForm 로그 출력. 정수 말고 이름으로 가능?
+	UE_LOG(LogTemp, Log, TEXT("Current Form: %d"), static_cast<int32>(CurrentForm));
 	switch (CurrentForm)
 	{
 	case EFormType::Base:    HandleBasePressed();    break;
@@ -335,7 +336,9 @@ void UJumpComponent::HandleSwiftPressed()
 
 	// 1. 땅 위: 첫 번째 점프
 	if (IsOnGround())
-	{
+	{	
+		// JumpMaxCount 출력
+		UE_LOG(LogTemp, Log, TEXT("JumpMaxCount: %d"), CachedCharacter->JumpMaxCount);
 		JumpCount = 1;
 		CachedCharacter->Jump();
 		bIsJumping = true;

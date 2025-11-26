@@ -6,7 +6,7 @@
 #include "WeaponComponent.h"
 #include "FormDefinition.h"
 #include "SkillBase.h"
-#include "ManaComponent.h"
+#include "JumpComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -27,10 +27,11 @@ AEnemy_Base::AEnemy_Base()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp creation failed"));
 	}
-	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
-	if (!ManaComp)
+	// JumpComponent 생성 및 초기화
+	JumpComp = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpComp"));
+	if (!JumpComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - ManaComp creation failed"));
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - JumpComp creation failed"));
 	}
 }
 
@@ -56,13 +57,31 @@ void AEnemy_Base::BeginPlay()
 			WeaponComp ? *WeaponComp->GetName() : TEXT("null"),
 			DefaultWeaponData ? *DefaultWeaponData->GetName() : TEXT("null"));
 	}
-	if (ManaComp) {
-		// ManaComp는 초기화 함수가 없는거 같은데?
-	}
+	
 	// SkillClasses가 설정되어 있으면 자동으로 초기화
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
 	{
 		InitializeSkills();
+	}
+	
+	// JumpComponent 폼 초기화
+	if (JumpComp && DefaultFormDef)
+	{
+		// DefaultFormDef의 FormType을 읽어서 JumpComponent에 설정
+		JumpComp->SetForm(DefaultFormDef->FormType, DefaultFormDef);
+	}
+	else
+	{
+		if (!JumpComp)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] JumpComp is null! Class: %s"), 
+				*GetClass()->GetName());
+		}
+		if (!DefaultFormDef)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] DefaultFormDef is null! Class: %s"), 
+				*GetClass()->GetName());
+		}
 	}
 }
 
