@@ -229,7 +229,7 @@ public:
 
     /** 플레이어 기준 상대 위치 (기본: 발 밑) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
-    FVector RelativeOffset = FVector(0.f, 0.f, -50.f);
+    FVector RelativeOffset = FVector(0.f, 0.f, -30.f);
 
     /** 스킬이 유지되는 시간(초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")

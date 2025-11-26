@@ -1067,6 +1067,17 @@ void USkill_Special::ActivateSkill()
             EAttachLocation::KeepRelativeOffset,
             true  // AutoDestroy: true → 소유자와 함께 정리
         );
+
+        if (SpawnedNS)
+        {
+            // Niagara 에서 "기본 반경 = 100" 으로 만들어놨다고 가정
+            const float RadiusScale = FogRadius / 100.f;
+
+            // XY로만 크게, Z는 아주 얇게
+            SpawnedNS->SetWorldScale3D(
+                FVector(RadiusScale, RadiusScale, 0.05f)
+            );
+        }
     }
 
     // 3) 지속시간 타이머 시작
