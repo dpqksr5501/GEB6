@@ -36,17 +36,29 @@ protected:
 
 	// === Range ===
 
-	/** Range 폼에서 상승 높이 배수 (기본 점프 대비) */
+/** Range 폼에서 상승 높이 배수 (기본 점프 대비) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Range")
-	float RangeHighJumpMultiplier = 0.8f;
+	float RangeHighJumpMultiplier = 0.2f;
 
 	/** Range 글라이드(서서히 하강) 중 중력 스케일 */
 	UPROPERTY(EditAnywhere, Category = "Jump|Range")
 	float RangeGlideGravityScale = 0.1f;
 
-	/** Range 급강하(착치) 중 중력 스케일 */
+	/** Range 급강하(착치) 중 중력 스케일 (지금은 안 써도 되지만 남겨둠) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Range")
 	float RangeFastFallGravityScale = 5.0f;
+
+	/** 락온 상태에서, 타겟과 떨어지고 싶은 거리(스킬 사정거리와 맞추기) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|LockOn")
+	float RangeSkillDistance = 1322.f;
+
+	/** 락온 상태, 공중에서 두 번째 스페이스 → 타겟 "앞"으로 붙을 때 거리 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|LockOn")
+	float RangeLockFrontDistance = 150.f;
+
+	/** 락온 아닐 때, 앞으로 점프/대시할 수평 속도 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range")
+	float RangeForwardJumpSpeed = 600.f;
 
 	// === Swift ===
 
