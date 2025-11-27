@@ -8,6 +8,7 @@
 
 class ACharacter;
 class UJumpComponent;
+class UEnemyAnimIntance;
 
 /**
  * Enemy AI가 JumpComponent를 통해 점프를 수행하는 BTTaskNode
@@ -33,6 +34,10 @@ protected:
 	/** 캐시된 JumpComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UJumpComponent> CachedJumpComp;
+
+	/** 캐시된 AnimInstance */
+	UPROPERTY(Transient)
+	TObjectPtr<UEnemyAnimIntance> CachedAnimInstance;
 
 	/** 점프 시작 시간 (타임아웃 체크용) */
 	float JumpStartTime;

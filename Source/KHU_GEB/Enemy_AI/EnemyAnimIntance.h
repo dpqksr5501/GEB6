@@ -18,6 +18,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void SetIsJumping(bool bNewIsJumping);
 
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void ResetSpaceActionInput();
+
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	class ACharacter* OwnerCharacter;
 
@@ -38,4 +41,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bWasInAir;
+
+	/** Guard ÆûÀÇ SpaceAction (µµ¹ß/²ø¾î´ç±è) ÀÔ·Â ÇÃ·¡±× */
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	bool bSpaceActionInput;
 };

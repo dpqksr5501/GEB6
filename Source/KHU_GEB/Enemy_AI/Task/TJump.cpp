@@ -7,6 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/World.h"
 #include "Enemy_AI/Enemy_Base.h"
+#include "Enemy_AI/EnemyAnimIntance.h"
 #include "JumpComponent.h"
 
 UTJump::UTJump()
@@ -18,6 +19,7 @@ UTJump::UTJump()
 	bSecondJumpExecuted = false;
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
+	CachedAnimInstance = nullptr;
 	JumpTimeout = 5.0f;
 	bEnableDoubleJump = false;
 }
@@ -68,14 +70,31 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		return EBTNodeResult::Failed;
 	}
 
-	// 5. 땅 위에서만 실행 가능
+	// 5. AnimInstance 획득
+	if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
+	{
+		CachedAnimInstance = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance());
+		if (!CachedAnimInstance)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TJump] EnemyAnimInstance casting failed"));
+		}
+	}
+
+	// 6. 땅 위에서만 실행 가능
 	if (!CachedJumpComp->IsOnGround())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TJump] Character is not on ground"));
 		return EBTNodeResult::Failed;
 	}
 
-	// 6. JumpComponent의 HandleSpacePressed 호출 (폼에 맞는 점프 실행)
+	// 7. AnimInstance 플래그 설정 (점프 시작)
+	if (CachedAnimInstance)
+	{
+		CachedAnimInstance->SetIsJumping(true);
+		UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(true)"));
+	}
+
+	// 8. JumpComponent의 HandleSpacePressed 호출 (폼에 맞는 점프 실행)
 	CachedJumpComp->HandleSpacePressed();
 	
 	JumpStartTime = OwnerComp.GetWorld()->GetTimeSeconds();
@@ -127,6 +146,14 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 	if (ElapsedTime >= JumpTimeout)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TJump] Jump timeout (%.2f seconds elapsed)"), ElapsedTime);
+		
+		// AnimInstance 플래그 리셋
+		if (CachedAnimInstance)
+		{
+			CachedAnimInstance->SetIsJumping(false);
+			UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(false) on timeout"));
+		}
+		
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -167,6 +194,26 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 			// HandleSpaceReleased 호출 (필요시)
 			CachedJumpComp->HandleSpaceReleased();
 			
+			// AnimInstance 플래그를 즉시 리셋하지 않고 딜레이 후 리셋
+			// (Landing 애니메이션이 재생될 시간을 주기 위해)
+			if (CachedAnimInstance)
+			{
+				FTimerHandle ResetTimerHandle;
+				World->GetTimerManager().SetTimer(
+					ResetTimerHandle,
+					[this]()
+					{
+						if (CachedAnimInstance)
+						{
+							CachedAnimInstance->SetIsJumping(false);
+							UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(false) after landing delay"));
+						}
+					},
+					0.1f, // 0.1초 딜레이
+					false
+				);
+			}
+			
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			return;
 		}
@@ -182,9 +229,17 @@ EBTNodeResult::Type UTJump::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* 
 		UE_LOG(LogTemp, Log, TEXT("[TJump] HandleSpaceReleased on abort"));
 	}
 
+	// AnimInstance 플래그 즉시 리셋
+	if (CachedAnimInstance)
+	{
+		CachedAnimInstance->SetIsJumping(false);
+		UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(false) on abort"));
+	}
+
 	// 캐시 정리
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
+	CachedAnimInstance = nullptr;
 	JumpStartTime = 0.f;
 	bSecondJumpExecuted = false;
 

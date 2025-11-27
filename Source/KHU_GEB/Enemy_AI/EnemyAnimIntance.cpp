@@ -21,6 +21,7 @@ void UEnemyAnimIntance::NativeInitializeAnimation()
 	bIsFalling = false;
 	bIsJumping = false;
 	bWasInAir = false;
+	bSpaceActionInput = false;
 }
 
 void UEnemyAnimIntance::NativeUpdateAnimation(float DeltaSeconds)
@@ -53,5 +54,10 @@ void UEnemyAnimIntance::NativeUpdateAnimation(float DeltaSeconds)
 void UEnemyAnimIntance::SetIsJumping(bool bNewIsJumping)
 {
 	bIsJumping = bNewIsJumping;
+}
+
+void UEnemyAnimIntance::ResetSpaceActionInput()
+{
+	bSpaceActionInput = false;
 }
 
