@@ -10,6 +10,7 @@
 #include "MonsterBase.h"
 #include "KHU_GEBCharacter.h"
 #include "Enemy_AI/EnemyAnimIntance.h"
+#include "Enemy_AI/Enemy_Dragon.h"
 
 UJumpComponent::UJumpComponent()
 {
@@ -207,10 +208,21 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 	bIsJumping = false;
 	JumpCount = 0;
 
-	//땅에 닿았으니 활강 모드 해제
+	// === 활강 모드 해제 (Player와 Enemy 모두 지원) ===
+	
+	// 1. Player인 경우
 	if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
 	{
 		MyChar->bIsRangeGliding = false;
+	}
+	// 2. Enemy인 경우
+	else if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
+	{
+		if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
+		{
+			EnemyAnim->bIsFalling = false;
+			EnemyAnim->bIsJumping = false;
+		}
 	}
 
 	// Range에서 조정했던 중력 값 원복
@@ -300,10 +312,28 @@ void UJumpComponent::HandleRangePressed()
 		bIsJumping = true;
 		JumpCount = 1;
 
-		//ABP에서 활강하는지 읽음
+		// === ABP 플래그 설정 (Player와 Enemy 모두 지원) ===
+		
+		UWorld* World = GetWorld();
+		
+		// Player인 경우
 		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
 		{
+			// Player는 즉시 글라이드 (기존 동작 유지)
 			MyChar->bIsRangeGliding = true;
+		}
+		// Enemy인 경우 
+		else if (AEnemy_Dragon* Enemy = Cast<AEnemy_Dragon>(CachedCharacter))
+		{
+			// Enemy로 부터 Enemy_AnimInstance 얻기
+			if (USkeletalMeshComponent* Mesh = Enemy->GetMesh())
+			{
+				if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
+				{
+					EnemyAnim->bIsJumping = true;
+					EnemyAnim->bIsFalling = true;
+				}
+			}
 		}
 	}
 	// 2) 공중: 급강하(착치)
@@ -509,6 +539,7 @@ void UJumpComponent::HandleGuardReleased()
 
 void UJumpComponent::HandleSpecialPressed()
 {
+	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleSpecialPressed: Attempting to perform Special Blink"));
 	UWorld* World = GetWorld();
 	if (!World) return;
 

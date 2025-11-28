@@ -22,6 +22,7 @@ void UEnemyAnimIntance::NativeInitializeAnimation()
 	bIsJumping = false;
 	bWasInAir = false;
 	bSpaceActionInput = false;
+	bIsRangeGliding = false;
 }
 
 void UEnemyAnimIntance::NativeUpdateAnimation(float DeltaSeconds)

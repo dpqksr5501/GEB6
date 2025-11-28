@@ -45,4 +45,8 @@ public:
 	/** Guard 폼의 SpaceAction (도발/끌어당김) 입력 플래그 */
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	bool bSpaceActionInput;
+
+	/** Range 폼의 글라이딩(활강) 상태 플래그 */
+	UPROPERTY(BlueprintReadWrite, Category = "Movement")
+	bool bIsRangeGliding;
 };
