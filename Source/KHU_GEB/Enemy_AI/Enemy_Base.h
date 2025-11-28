@@ -15,7 +15,7 @@ class UHealthComponent;
 class UWeaponComponent;
 class UWeaponData;
 class UFormDefinition;
-class UManaComponent;
+class UJumpComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -47,8 +47,12 @@ public:
 	TObjectPtr<UWeaponData> DefaultWeaponData;
 
 	// Æû µ¥ÀÌÅÍ
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Form")
 	TObjectPtr<UFormDefinition> DefaultFormDef;
+
+	// Á¡ÇÁ ÄÄÆ÷³ÍÆ®
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump")
+	UJumpComponent* JumpComp;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -65,9 +69,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	UWeaponComponent* WeaponComp;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Mana")
-	UManaComponent* ManaComp;
 
 	// Á×À½
 	UFUNCTION()

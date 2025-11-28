@@ -47,10 +47,9 @@ void AEnemy_Dragon::ActivateSkill()
 		return;
 	}
 
-	if (!RangeSkill->CanActivate()) return;
-
 	// 여기서 호출되는 것은 USkill_Range::ActivateSkill()
-	RangeSkill->ActivateSkill(); 
+	RangeSkill->ActivateSkill();
+	RangeSkill->StopSkill(); // 사거리 스킬은 즉시 정지
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Dragon] Range skill component activated!"));
 }

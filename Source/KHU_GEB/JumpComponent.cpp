@@ -9,6 +9,8 @@
 #include "Engine/OverlapResult.h"
 #include "MonsterBase.h"
 #include "KHU_GEBCharacter.h"
+#include "Enemy_AI/EnemyAnimIntance.h"
+#include "Enemy_AI/Enemy_Dragon.h"
 
 UJumpComponent::UJumpComponent()
 {
@@ -75,6 +77,7 @@ void UJumpComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	// Guard 지속형 끌어당김
 	if (bGuardPullActive)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Guard Pull Active Tick"));
 		UWorld* World = GetWorld();
 		if (!World)
 		{
@@ -205,10 +208,21 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 	bIsJumping = false;
 	JumpCount = 0;
 
-	//땅에 닿았으니 활강 모드 해제
+	// === 활강 모드 해제 (Player와 Enemy 모두 지원) ===
+	
+	// 1. Player인 경우
 	if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
 	{
 		MyChar->bIsRangeGliding = false;
+	}
+	// 2. Enemy인 경우
+	else if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
+	{
+		if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
+		{
+			EnemyAnim->bIsFalling = false;
+			EnemyAnim->bIsJumping = false;
+		}
 	}
 
 	// Range에서 조정했던 중력 값 원복
@@ -221,13 +235,14 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 	}
 
 	// Swift 회전 중이었다면 종료 + 각도 복원
-	if (bSwiftSpinning)	{ StopSwiftSpin(/*bResetRotation=*/true); }
+	if (bSwiftSpinning) { StopSwiftSpin(/*bResetRotation=*/true); }
 }
 
 void UJumpComponent::HandleSpacePressed()
 {
 	if (!CachedCharacter) return;
-
+	// 여기에 CurrentForm 로그 출력. 정수 말고 이름으로 가능?
+	UE_LOG(LogTemp, Log, TEXT("Current Form: %d"), static_cast<int32>(CurrentForm));
 	switch (CurrentForm)
 	{
 	case EFormType::Base:    HandleBasePressed();    break;
@@ -297,10 +312,28 @@ void UJumpComponent::HandleRangePressed()
 		bIsJumping = true;
 		JumpCount = 1;
 
-		//ABP에서 활강하는지 읽음
+		// === ABP 플래그 설정 (Player와 Enemy 모두 지원) ===
+		
+		UWorld* World = GetWorld();
+		
+		// Player인 경우
 		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
 		{
+			// Player는 즉시 글라이드 (기존 동작 유지)
 			MyChar->bIsRangeGliding = true;
+		}
+		// Enemy인 경우 
+		else if (AEnemy_Dragon* Enemy = Cast<AEnemy_Dragon>(CachedCharacter))
+		{
+			// Enemy로 부터 Enemy_AnimInstance 얻기
+			if (USkeletalMeshComponent* Mesh = Enemy->GetMesh())
+			{
+				if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
+				{
+					EnemyAnim->bIsJumping = true;
+					EnemyAnim->bIsFalling = true;
+				}
+			}
 		}
 	}
 	// 2) 공중: 급강하(착치)
@@ -324,7 +357,7 @@ void UJumpComponent::HandleRangePressed()
 
 void UJumpComponent::HandleRangeReleased()
 {
-	
+
 }
 
 /* =============== Swift: 더블 점프 =============== */
@@ -336,6 +369,8 @@ void UJumpComponent::HandleSwiftPressed()
 	// 1. 땅 위: 첫 번째 점프
 	if (IsOnGround())
 	{
+		// JumpMaxCount 출력
+		UE_LOG(LogTemp, Log, TEXT("JumpMaxCount: %d"), CachedCharacter->JumpMaxCount);
 		JumpCount = 1;
 		CachedCharacter->Jump();
 		bIsJumping = true;
@@ -377,10 +412,10 @@ void UJumpComponent::HandleSwiftReleased()
 /* =============== Guard: 앞으로 돌진 + 주변 몬스터 끌어당김 =============== */
 
 void UJumpComponent::HandleGuardPressed()
-{
+{	
 	// 쿨타임 중이거나 이미 끌어당기는 중이면 무시
 	if (!bCanGuardPull || bGuardPullActive) return;
-
+	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Attempting to start Guard Pull"));
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -427,7 +462,9 @@ void UJumpComponent::HandleGuardPressed()
 		return;
 	}
 
-	//ABP에서 실행하기 위한 캐스팅과 0.15초 딜레이 후 ABP변수 변경
+	// === ABP 플래그 설정 (Player와 Enemy 모두 지원) ===
+	
+	// 1. Player인 경우 (KHU_GEBCharacter) - 기존 로직 유지
 	if (AKHU_GEBCharacter* MyPlayer = Cast<AKHU_GEBCharacter>(CachedCharacter))
 	{
 		MyPlayer->bSpaceActionInput = true;
@@ -451,6 +488,26 @@ void UJumpComponent::HandleGuardPressed()
 			2.1f,
 			false
 		);
+		
+		UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Player ABP flags set"));
+	}
+	// 2. Enemy인 경우 (EnemyAnimInstance 사용)
+	else if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
+	{	
+		if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
+		{
+			EnemyAnim->bSpaceActionInput = true;
+
+			// 0.15초 후 리셋
+			FTimerHandle ResetTimerHandle;
+			World->GetTimerManager().SetTimer(
+				ResetTimerHandle,
+				EnemyAnim,
+				&UEnemyAnimIntance::ResetSpaceActionInput,
+				0.15f,
+				false
+			);
+		}
 	}
 
 	// 끌어당기기 시작
@@ -468,17 +525,21 @@ void UJumpComponent::HandleGuardPressed()
 		GuardCooldownTime,
 		false
 	);
+	
+	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Guard pull started with %d targets"), 
+		GuardPullTargets.Num());
 }
 
 void UJumpComponent::HandleGuardReleased()
 {
-	
+
 }
 
 /* =============== Special: 뒤로 블링크 =============== */
 
 void UJumpComponent::HandleSpecialPressed()
 {
+	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleSpecialPressed: Attempting to perform Special Blink"));
 	UWorld* World = GetWorld();
 	if (!World) return;
 

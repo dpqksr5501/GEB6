@@ -5,8 +5,12 @@
 #include "SkillBase.h"
 #include "FormDefinition.h"
 
+
 AEnemy_Tanker::AEnemy_Tanker()
 {
+	// Tick 활성화
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// 생성자에서 스킬 클래스 설정
 	SkillClasses.Add(ESkillSlot::Active, USkill_Guard::StaticClass());
 }
@@ -17,23 +21,84 @@ void AEnemy_Tanker::BeginPlay()
 	// 스킬 초기화는 부모에서 처리됨
 }
 
+void AEnemy_Tanker::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// Guard 스킬이 활성화되어 있고, 캐시된 참조가 유효한 경우에만 검사
+	if (bIsGuardSkillActive && CachedGuardSkill)
+	{
+		// ConsumedShields가 RemainingShields보다 커지면 스킬 중단
+		if (CachedGuardSkill->ConsumedShields > CachedGuardSkill->RemainingShields)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] ConsumedShields(%d) > RemainingShields(%d). Stopping Guard skill."),
+				CachedGuardSkill->ConsumedShields, CachedGuardSkill->RemainingShields);
+			
+			CachedGuardSkill->StopSkill();
+			bIsGuardSkillActive = false;
+			CachedGuardSkill = nullptr;
+		}
+	}
+}
+
+float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	// Guard 스킬의 HandleIncomingDamage를 올바르게 호출하여 true 면 함수 종료, false 면 Enemy_Base(부모)의 TakeDamage 호출
+	if (bIsGuardSkillActive && CachedGuardSkill)
+	{
+		bool bDamageHandled = CachedGuardSkill->HandleIncomingDamage(DamageAmount, nullptr, EventInstigator, DamageCauser);
+		if (bDamageHandled)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Damage of %f handled by Guard skill."), DamageAmount);
+			return 0.0f; // 피해가 스킬에 의해 처리되었음을 나타내기 위해 0 반환
+		}
+		else {
+			// 부모 (Enemy_Base)의 TakeDamage 호출
+			return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] TakeDamage called but Guard skill is not active or CachedGuardSkill is null."));
+		return 0.0f;
+	}
+}
+
 void AEnemy_Tanker::ActivateSkill()
 {
 	// 1. 스킬 컴포넌트 가져오기
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
-	if (!Skill) return;
+	if (!Skill) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Enemy_Tanker] No skill found in Active slot."));
+		return;
+	}
 
 	USkill_Guard* GuardSkill = Cast<USkill_Guard>(Skill);
-	if (!GuardSkill) return;
+	if (!GuardSkill) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Enemy_Tanker] Skill is not USkill_Guard."));
+		return;
+	}
 	
 	// InitializeFromDefinition 호출 >> 현재 스킬 기본 값을 세팅
-	GuardSkill->InitializeFromDefinition(DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active));
+	if (DefaultFormDef && DefaultFormDef->SkillSet)
+	{
+		const USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active);
+		if (SkillDef)
+		{
+			GuardSkill->InitializeFromDefinition(SkillDef);
+		}
+	}
 	
 	// 마나 검사를 해서 꺼놨음. 문제가 되면 키죠
 	//if (!GuardSkill->CanActivate()) return; 
 
 	// 여기서 호출되는 것은 USkill_Guard::ActivateSkill()
 	GuardSkill->ActivateSkill(); 
+	
+	// Guard 스킬 활성화 상태 추적
+	bIsGuardSkillActive = true;
+	CachedGuardSkill = GuardSkill;
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Guard skill component activated!"));
 }

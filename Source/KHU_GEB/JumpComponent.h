@@ -134,12 +134,13 @@ protected:
 public:
 	UJumpComponent();
 
+	// Enemy가 사용하기 위해 Public으로 노출
+	bool IsOnGround() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// 현재 땅 위인지 확인
-	bool IsOnGround() const;
 
 	// Swift 회전 종료 처리(필요시 각도 복원)
 	void StopSwiftSpin(bool bResetRotation);
