@@ -371,6 +371,8 @@ void USkill_Range::StopSkill()
     // "조준 원 중심"이 곧 최종 타겟
     FVector FinalTarget = CurrentTargetLocation;
 
+    //애니메이션 몽타주 재생
+    PlayFormSkillMontage();
     // === 여기서 실제 비용 처리 (쿨타임 + 마나) ===
     Super::ActivateSkill();
 
@@ -611,6 +613,8 @@ void USkill_Swift::ActivateSkill()
         return;
     }
 
+    //애니메이션 몽타주 재생
+    PlayFormSkillMontage();
     // 쿨타임 시작 + 마나 1회 소모.
     Super::ActivateSkill();
 
@@ -835,6 +839,9 @@ void USkill_Guard::ActivateSkill()
     AActor* Owner = GetOwner();
     if (!World || !Owner) return;
 
+    //애니메이션 몽타주 재생
+    PlayFormSkillMontage();
+
     bIsActive = true;
     bEndedByDepletion = false;
 
@@ -918,6 +925,18 @@ void USkill_Guard::StopSkill()
 
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
+    
+    //우클릭 떼면 몽타주 재생 해제
+    if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+    {
+        if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+        {
+            // 현재 재생 중인 몽타주가 있다면 0.2초 동안 보간 멈춤
+            Anim->Montage_Stop(0.2f, nullptr);
+        }
+    }
+
+
 
     // 이펙트 끄기
     if (SpawnedNS)
@@ -1017,6 +1036,8 @@ void USkill_Special::ActivateSkill()
         return;
     }
 
+    //애니메이션 몽타주 재생
+    PlayFormSkillMontage();
     // 공통 비용 처리 (쿨타임 시작 + 마나 소모)
     Super::ActivateSkill();
 
