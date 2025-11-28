@@ -7,6 +7,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
 #include "ManaComponent.h"
+#include "KHU_GEBCharacter.h"
+#include "FormManagerComponent.h"
+#include "FormDefinition.h"
+#include "Components/SkeletalMeshComponent.h"
 
 USkillBase::USkillBase() {}
 
@@ -143,4 +147,26 @@ float USkillBase::DealSkillDamage(
         nullptr);
 
     return Amount;
+}
+
+//스킬 사용 시 몽타주 재생 헬퍼 함수
+void USkillBase::PlayFormSkillMontage()
+{
+    // 1. 소유자 캐릭터 캐스팅
+    AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner());
+    if (!OwnerChar || !OwnerChar->FormManager) return;
+
+    // 2. 현재 폼 정의(FormDefinition) 가져오기
+    // FormManagerComponent의 FindDef 함수와 CurrentForm 변수 활용 [cite: 2708, 2710]
+    const UFormDefinition* Def = OwnerChar->FormManager->FindDef(OwnerChar->FormManager->CurrentForm);
+
+    // 3. 몽타주가 있다면 재생
+    if (Def && Def->SkillMontage) //  SkillMontage 접근
+    {
+        if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+        {
+            // 몽타주 재생 (PlayRate 1.0f)
+            Anim->Montage_Play(Def->SkillMontage);
+        }
+    }
 }

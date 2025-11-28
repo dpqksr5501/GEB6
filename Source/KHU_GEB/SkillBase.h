@@ -10,6 +10,7 @@
 class UManaComponent;
 class UHealthComponent;
 class AActor;
+class AKHU_GEBCharacter;
 
 UCLASS( Abstract, Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API USkillBase : public UActorComponent
@@ -42,6 +43,9 @@ protected:
         bool bIgnoreDefense,
         bool bPeriodic = false,
         int32 HitCount = 1);
+
+    //현재 폼의 스킬 몽타주를 재생하는 헬퍼 함수
+    void PlayFormSkillMontage();
 
 public:
     // SkillDefinition에서 주입
