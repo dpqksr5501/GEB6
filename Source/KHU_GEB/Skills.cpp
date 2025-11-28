@@ -1029,12 +1029,13 @@ void USkill_Special::ActivateSkill()
 
     // SkillManager에서 한 번 CanActivate를 호출하지만,
     // 혹시 모를 중복 호출 방지를 위해 한 번 더 체크
-    if (!CanActivate())
+    // 이것 때문에 Enemy가 마나 부족으로 스킬을 못써서 해제 했어요
+    /*if (!CanActivate())
     {
         UE_LOG(LogTemp, Warning,
             TEXT("[Skill_Special] ActivateSkill blocked (CanActivate=false)"));
         return;
-    }
+    }*/
 
     //애니메이션 몽타주 재생
     PlayFormSkillMontage();
