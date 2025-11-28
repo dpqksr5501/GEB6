@@ -7,12 +7,22 @@
 #include "FormDefinition.h"
 #include "SkillBase.h"
 #include "JumpComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// CharacterMovement 설정 추가
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (MoveComp)
+	{
+		MoveComp->JumpZVelocity = 600.f;  // 점프 속도 설정
+		MoveComp->AirControl = 0.5f;       // 공중 제어력
+		MoveComp->GravityScale = 1.0f;     // 중력 스케일
+	}
 
 	// HealthComponent 생성 및 초기화
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
@@ -69,6 +79,8 @@ void AEnemy_Base::BeginPlay()
 	{
 		// DefaultFormDef의 FormType을 읽어서 JumpComponent에 설정
 		JumpComp->SetForm(DefaultFormDef->FormType, DefaultFormDef);
+		UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] JumpComp initialized with FormType: %d"), 
+			static_cast<int32>(DefaultFormDef->FormType));
 	}
 	else
 	{

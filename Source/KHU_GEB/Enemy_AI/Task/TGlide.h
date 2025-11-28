@@ -4,23 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "TJump.generated.h"
+#include "TGlide.generated.h"
 
 class ACharacter;
 class UJumpComponent;
 class UEnemyAnimIntance;
 
 /**
- * Enemy AI가 JumpComponent를 통해 점프를 수행하는 BTTaskNode
- * JumpComponent의 HandleSpacePressed를 호출하여 폼에 맞는 점프를 실행
+ * Archer(Range 폼)가 글라이드(활강)를 수행하는 BTTaskNode
+ * JumpComponent의 HandleSpacePressed를 호출하여 높이 점프 후 천천히 하강
+ * 착지할 때까지 InProgress 상태 유지
  */
 UCLASS()
-class KHU_GEB_API UTJump : public UBTTaskNode
+class KHU_GEB_API UTGlide : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UTJump();
+	UTGlide();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
@@ -39,19 +40,16 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UEnemyAnimIntance> CachedAnimInstance;
 
-	/** 점프 시작 시간 (타임아웃 체크용) */
-	float JumpStartTime;
-
-	/** 2단 점프를 이미 실행했는지 여부 */
-	bool bSecondJumpExecuted;
+	/** 글라이드 시작 시간 (타임아웃 체크용) */
+	float GlideStartTime;
 
 	// === 에디터에서 설정 가능한 프로퍼티 ===
 
-	/** true면 최고점에서 2단 점프 자동 실행 (폼이 지원하는 경우) */
-	UPROPERTY(EditAnywhere, Category = "Jump", meta = (DisplayName = "Enable Double Jump"))
-	bool bEnableDoubleJump = false;
+	/** 글라이드 타임아웃 시간 (초) - 이 시간 동안 착지하지 못하면 실패 */
+	UPROPERTY(EditAnywhere, Category = "Glide", meta = (ClampMin = "1.0", ClampMax = "20.0"))
+	float GlideTimeout = 10.0f;
 
-	/** 점프 타임아웃 시간 (초) - 이 시간 동안 착지하지 못하면 실패 */
-	UPROPERTY(EditAnywhere, Category = "Jump", meta = (ClampMin = "0.5", ClampMax = "10.0"))
-	float JumpTimeout = 5.0f;
+	// 글라이드 노드에 선택 플래그를 만들어줘. 글라이드 하다가 화염구를 쏘게할 거야.
+	UPROPERTY(EditAnywhere, Category = "Fireball")
+	bool bCanFireballDuringGlide = false;
 };

@@ -70,9 +70,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	UWeaponComponent* WeaponComp;
 
-	/*UPROPERTY(BlueprintReadWrite, Category = "Mana")
-	UManaComponent* ManaComp;*/
-
 	// Á×À½
 	UFUNCTION()
 	void OnDeath();
