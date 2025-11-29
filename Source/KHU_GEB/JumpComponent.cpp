@@ -9,7 +9,6 @@
 #include "Engine/OverlapResult.h"
 #include "MonsterBase.h"
 #include "KHU_GEBCharacter.h"
-#include "LockOnComponent.h"
 
 UJumpComponent::UJumpComponent()
 {
@@ -273,152 +272,53 @@ void UJumpComponent::HandleBaseReleased()
 	bIsJumping = false;
 }
 
-/* =============== Range: 락온/비락온 점프 =============== */
+/* =============== Range: 높이 점프 후 글라이드(비행) =============== */
 
 void UJumpComponent::HandleRangePressed()
 {
-	if (!CachedCharacter) return;
-
 	UCharacterMovementComponent* MoveComp = CachedCharacter->GetCharacterMovement();
 	if (!MoveComp) return;
 
-	const bool bOnGround = IsOnGround();
-
-	// 락온 컴포넌트 / 타겟 찾기
-	ULockOnComponent* LockOnComp = CachedCharacter->FindComponentByClass<ULockOnComponent>();
-	AActor* TargetActor = nullptr;
-	bool bHasLockTarget = false;
-
-	if (LockOnComp && LockOnComp->IsLockedOn())
+	// 1) 땅 위: 높이 비행 + 글라이드
+	if (IsOnGround())
 	{
-		TargetActor = LockOnComp->GetCurrentTarget();
-		bHasLockTarget = (TargetActor != nullptr);
-	}
-
-	const FVector PlayerLoc = CachedCharacter->GetActorLocation();
-
-	// Range 활강 플래그 세팅용
-	auto SetGlideFlag = [this]()
-		{
-			if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
-			{
-				MyChar->bIsRangeGliding = true;
-			}
-		};
-
-	/* ---------- 1. 락온 상태인 경우 ---------- */
-	if (bHasLockTarget)
-	{
-		const FVector TargetLoc = TargetActor->GetActorLocation();
-
-		// 1-1. 지상에서 스페이스 → 타겟과 "RangeSkillDistance" 만큼 떨어지도록
-		//      타겟을 중심으로 한 원 위의 위치로 순간이동 + 위로 점프 + 글라이딩
-		if (bOnGround)
-		{
-			FVector ToTarget2D = TargetLoc - PlayerLoc;
-			ToTarget2D.Z = 0.f;
-			FVector DirToTarget = ToTarget2D.GetSafeNormal();
-
-			if (DirToTarget.IsNearlyZero())
-			{
-				DirToTarget = CachedCharacter->GetActorForwardVector();
-				DirToTarget.Z = 0.f;
-				DirToTarget.Normalize();
-			}
-
-			// 타겟 기준 앞/뒤 두 위치 중 "덜 움직이는 쪽" 선택
-			const FVector CandidateFront = TargetLoc + DirToTarget * RangeSkillDistance;
-			const FVector CandidateBack = TargetLoc - DirToTarget * RangeSkillDistance;
-
-			const float DistFrontSq = FVector::DistSquared2D(PlayerLoc, CandidateFront);
-			const float DistBackSq = FVector::DistSquared2D(PlayerLoc, CandidateBack);
-
-			FVector Chosen = (DistFrontSq < DistBackSq) ? CandidateFront : CandidateBack;
-			Chosen.Z = PlayerLoc.Z; // 지면 높이 유지
-
-			// 충돌 체크하면서 순간이동 시도
-			const FRotator CurrentRot = CachedCharacter->GetActorRotation();
-			CachedCharacter->TeleportTo(Chosen, CurrentRot, false, true);
-
-			// 위로 점프
-			const float JumpStrength = MoveComp->JumpZVelocity * RangeHighJumpMultiplier;
-			FVector LaunchVel = FVector::ZeroVector;
-			LaunchVel.Z = JumpStrength;
-
-			CachedCharacter->LaunchCharacter(LaunchVel, false, true);
-
-			// 공중에 머무는 느낌: 중력 줄이기
-			MoveComp->GravityScale = RangeGlideGravityScale;
-			bIsJumping = true;
-			JumpCount = 1;
-			SetGlideFlag();
-		}
-		// 1-2. 공중에서 스페이스 → 타겟 "앞"으로 이동
-		else
-		{
-			FVector TargetForward = FVector::ZeroVector;
-			if (ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
-			{
-				TargetForward = TargetChar->GetActorForwardVector();
-			}
-			if (TargetForward.IsNearlyZero())
-			{
-				// 타겟 forward를 못 얻으면, 플레이어→타겟 방향 반대로 사용
-				TargetForward = (PlayerLoc - TargetLoc);
-			}
-			TargetForward.Z = 0.f;
-			TargetForward = TargetForward.GetSafeNormal();
-
-			FVector FrontLoc = TargetLoc + TargetForward * RangeLockFrontDistance;
-			FrontLoc.Z = PlayerLoc.Z; // 현재 높이는 유지 (공중에서 앞으로 "이동"하는 느낌)
-
-			const FRotator CurrentRot = CachedCharacter->GetActorRotation();
-			CachedCharacter->TeleportTo(FrontLoc, CurrentRot, false, true);
-
-			// 타겟 앞에서 서서히 내려오도록 글라이드 중력 사용
-			MoveComp->GravityScale = RangeGlideGravityScale;
-			SetGlideFlag();
-		}
-
-		return;
-	}
-
-	/* ---------- 2. 락온이 아닌 경우 ---------- */
-
-	// 공통: 전방(수평) 방향
-	FVector Forward2D = CachedCharacter->GetActorForwardVector();
-	Forward2D.Z = 0.f;
-	Forward2D.Normalize();
-
-	// 2-1. 지상에서 스페이스 → 앞으로 점프 + 공중에서 천천히 내려오기
-	if (bOnGround)
-	{
+		// 기본 점프의 RangeHighJumpMultiplier 배 만큼 위로 발사
 		const float JumpStrength = MoveComp->JumpZVelocity * RangeHighJumpMultiplier;
 
-		FVector LaunchVel = Forward2D * RangeForwardJumpSpeed;
-		LaunchVel.Z = JumpStrength;
+		FVector LaunchVelocity = FVector::ZeroVector;
+		LaunchVelocity.Z = JumpStrength;
 
-		// 수평/수직 모두 덮어쓰기
-		CachedCharacter->LaunchCharacter(LaunchVel, true, true);
+		// 수평 속도는 유지, 수직 속도만 덮어씀
+		CachedCharacter->LaunchCharacter(LaunchVelocity, false, true);
 
+		// 글라이딩 느낌: 중력을 줄여서 천천히 떨어지게
 		MoveComp->GravityScale = RangeGlideGravityScale;
+
 		bIsJumping = true;
 		JumpCount = 1;
-		SetGlideFlag();
+
+		//ABP에서 활강하는지 읽음
+		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		{
+			MyChar->bIsRangeGliding = true;
+		}
 	}
-	// 2-2. 공중에서 스페이스 → 또 앞으로 이동 (더 멀리 전진)
+	// 2) 공중: 급강하(착치)
 	else
 	{
 		FVector Velocity = MoveComp->Velocity;
-		const FVector DesiredHorizontal = Forward2D * RangeForwardJumpSpeed;
 
-		Velocity.X = DesiredHorizontal.X;
-		Velocity.Y = DesiredHorizontal.Y;
-		// Z는 그대로 두고, 글라이드 중력으로 서서히 하강
+		// 아래 방향으로 강한 속도 부여 (기본 점프 높이 기준)
+		const float FallStrength = FMath::Max(
+			MoveComp->JumpZVelocity * RangeHighJumpMultiplier,
+			600.f // 최소값 보장용
+		);
+
+		Velocity.Z = -FMath::Abs(FallStrength);
 		MoveComp->Velocity = Velocity;
 
-		MoveComp->GravityScale = RangeGlideGravityScale;
-		SetGlideFlag();
+		// 빠르게 내려오도록 중력을 크게
+		MoveComp->GravityScale = RangeFastFallGravityScale;
 	}
 }
 
