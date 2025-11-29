@@ -93,6 +93,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "LockOn")
 	AActor* GetCurrentTarget() const { return CurrentTarget.Get(); }
 
+	UFUNCTION(BlueprintCallable, Category = "LockOn")
+	void LockOnToTarget(AActor* NewTarget);
+
 	/** 화면 기준 좌/우 타겟 전환 (나중에 구현해도 됨) */
 	UFUNCTION(BlueprintCallable, Category = "LockOn")
 	void SwitchTarget(bool bRight);

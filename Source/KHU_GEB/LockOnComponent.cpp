@@ -336,3 +336,23 @@ void ULockOnComponent::ApplyCharacterRotationMode(bool bEnableLockOn)
 		}
 	}
 }
+
+void ULockOnComponent::LockOnToTarget(AActor* NewTarget)
+{
+	if (!NewTarget)
+	{
+		ClearLockOn();
+		return;
+	}
+
+	// 기존 유효성 검사 재사용
+	if (!IsTargetValid(NewTarget))
+	{
+		ClearLockOn();
+		return;
+	}
+
+	CurrentTarget = NewTarget;
+	ApplyCharacterRotationMode(true);
+	OnLockOnTargetChanged.Broadcast(NewTarget);
+}

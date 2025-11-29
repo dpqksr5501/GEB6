@@ -314,5 +314,9 @@ public:
 
 	/** 락온/Range 조준 상태에 따라 회전 모드를 갱신한다. */
 	void RefreshRotationMode();
-};
 
+protected:
+	// Range 스킬을 쓰기 직전에 락온하고 있던 대상
+	TWeakObjectPtr<AActor> SavedRangeLockOnTarget;
+
+};

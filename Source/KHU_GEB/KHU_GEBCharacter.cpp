@@ -712,7 +712,15 @@ void AKHU_GEBCharacter::OnRangeAimingStarted(USkill_Range* Skill)
 	bIsRangeAiming = true;
 	ActiveRangeSkill = Skill;
 
-	RefreshRotationMode();
+	// 스킬 시작 시점에 현재 락온 타겟을 저장
+	if (LockOnComp)
+	{
+		SavedRangeLockOnTarget = LockOnComp->GetCurrentTarget();
+	}
+	else
+	{
+		SavedRangeLockOnTarget = nullptr;
+	}
 }
 
 void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
@@ -721,9 +729,19 @@ void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
 	{
 		ActiveRangeSkill = nullptr;
 		bIsRangeAiming = false;
-
-		RefreshRotationMode();
 	}
+
+	// 저장해 두었던 락온 타겟이 아직 유효하면 다시 락온
+	if (LockOnComp)
+	{
+		if (SavedRangeLockOnTarget.IsValid())
+		{
+			LockOnComp->LockOnToTarget(SavedRangeLockOnTarget.Get());
+		}
+	}
+
+	// 한 번 쓰고 나면 정리
+	SavedRangeLockOnTarget = nullptr;
 }
 
 /*Guard Form일 때 움직임 고정하는 함수*/

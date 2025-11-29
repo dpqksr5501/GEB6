@@ -62,7 +62,7 @@ protected:
 
 	/** 락온 상태에서 수평 이동에 사용할 속도 배수 */
 	UPROPERTY(EditAnywhere, Category = "Jump|Range")
-	float RangeLockOnHorizontalSpeedMultiplier = 0.25f;
+	float RangeLockOnSpeedMultiplier = 0.25f;
 
 	/** Range 락온 거리(1200)로 보정 중인지 여부 */
 	bool bRangeLockOnAdjusting = false;

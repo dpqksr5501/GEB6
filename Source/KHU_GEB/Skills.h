@@ -92,8 +92,7 @@ private:
     bool bHasValidTarget = false;
     FVector CurrentTargetLocation = FVector::ZeroVector;
 
-    UPROPERTY()
-    TObjectPtr<UNiagaraComponent> TargetAreaComp = nullptr;
+    UPROPERTY() TObjectPtr<UNiagaraComponent> TargetAreaComp = nullptr;
 
     FVector2D AimMoveInput = FVector2D::ZeroVector;
 
