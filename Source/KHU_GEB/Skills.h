@@ -62,7 +62,7 @@ public:
 
     /** 캐릭터를 중심으로 조준 원의 "중심"이 이동할 수 있는 최대 거리 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
-    float MaxAimDistance = 1228.f;
+    float MaxAimDistance = 1200.f;
 
     /** 조준 중 이동키로 원을 움직일 때 사용할 속도 (유닛/초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
