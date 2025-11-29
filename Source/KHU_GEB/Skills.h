@@ -205,9 +205,11 @@ public:
 
     bool IsActive() const { return bIsActive; }
 
-private:
+    // Enemy가 쓰기 위해 Public으로 옮겼습니다.
     int32 RemainingShields = 0;
     int32 ConsumedShields = 0;
+
+private:
     bool  bIsActive = false;
     bool  bEndedByDepletion = false;
 };

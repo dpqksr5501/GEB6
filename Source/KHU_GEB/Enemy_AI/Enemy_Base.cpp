@@ -6,13 +6,23 @@
 #include "WeaponComponent.h"
 #include "FormDefinition.h"
 #include "SkillBase.h"
-#include "ManaComponent.h"
+#include "JumpComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// CharacterMovement 설정 추가
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (MoveComp)
+	{
+		MoveComp->JumpZVelocity = 600.f;  // 점프 속도 설정
+		MoveComp->AirControl = 0.5f;       // 공중 제어력
+		MoveComp->GravityScale = 1.0f;     // 중력 스케일
+	}
 
 	// HealthComponent 생성 및 초기화
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
@@ -27,10 +37,11 @@ AEnemy_Base::AEnemy_Base()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp creation failed"));
 	}
-	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
-	if (!ManaComp)
+	// JumpComponent 생성 및 초기화
+	JumpComp = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpComp"));
+	if (!JumpComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - ManaComp creation failed"));
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - JumpComp creation failed"));
 	}
 }
 
@@ -56,13 +67,33 @@ void AEnemy_Base::BeginPlay()
 			WeaponComp ? *WeaponComp->GetName() : TEXT("null"),
 			DefaultWeaponData ? *DefaultWeaponData->GetName() : TEXT("null"));
 	}
-	if (ManaComp) {
-		// ManaComp는 초기화 함수가 없는거 같은데?
-	}
+	
 	// SkillClasses가 설정되어 있으면 자동으로 초기화
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
 	{
 		InitializeSkills();
+	}
+	
+	// JumpComponent 폼 초기화
+	if (JumpComp && DefaultFormDef)
+	{
+		// DefaultFormDef의 FormType을 읽어서 JumpComponent에 설정
+		JumpComp->SetForm(DefaultFormDef->FormType, DefaultFormDef);
+		UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] JumpComp initialized with FormType: %d"), 
+			static_cast<int32>(DefaultFormDef->FormType));
+	}
+	else
+	{
+		if (!JumpComp)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] JumpComp is null! Class: %s"), 
+				*GetClass()->GetName());
+		}
+		if (!DefaultFormDef)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] DefaultFormDef is null! Class: %s"), 
+				*GetClass()->GetName());
+		}
 	}
 }
 
@@ -110,7 +141,14 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
 			HealthComp->ReduceHealth(ActualDamage);
-			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
+			if (HealthComp->Health <= 0.f)
+			{
+				BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Dead);
+				UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Enemy health is zero or below, state set to Dead."));
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
+			}
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed."));

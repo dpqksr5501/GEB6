@@ -53,9 +53,6 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 	}
 	else
 	{
-		// 거짓일 경우 (범위 밖에 있으므로 이동 시작)
-		MovementComponent->MaxWalkSpeed = WalkSpeed;
-
 		// 타겟 액터 가져오기
 		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
 		if (!TargetActor)

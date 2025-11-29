@@ -22,7 +22,7 @@ public:
 
 	/** 블랙보드 키 - 마지막 액션 시간 */
 	UPROPERTY(EditAnywhere, Category = "Skill")
-	FBlackboardKeySelector LastActionTimeKey;
+	FBlackboardKeySelector CooldownKey;
 
 	/** 이 스킬 시 활성화할 스킬 슬롯 (None = 스킬 없음) */
 	UPROPERTY(EditAnywhere, Category = "Skill")
