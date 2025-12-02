@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Special.h"
-#include "Skills.h"
-#include "SkillBase.h"
+#include "Skills/Skills.h"
+#include "Skills/SkillBase.h"
 #include "FormDefinition.h"
 
 AEnemy_Special::AEnemy_Special()

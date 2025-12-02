@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "EnemyState.h"
-#include "SkillDefinition.h"
+#include "Skills/SkillDefinition.h"
 #include "TSkill.generated.h"
 
 /**

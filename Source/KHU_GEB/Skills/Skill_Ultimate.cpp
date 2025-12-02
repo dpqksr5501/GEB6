@@ -15,12 +15,7 @@
 #include "HealthComponent.h"
 #include "FormDefinition.h"
 
-// Skills.cpp 에서 사용하던 고정 DoT 데미지 헬퍼를 그대로 복사 (static 이라 TU마다 있어도 됨)
-static void ApplyFixedDotDamage(
-    USkillBase* SourceSkill,
-    ACharacter* Target,
-    float DamagePerTick,
-    int32 HitCount = 1)
+static void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1)
 {
     if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
 

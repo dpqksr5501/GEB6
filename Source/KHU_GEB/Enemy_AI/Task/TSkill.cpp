@@ -9,7 +9,7 @@
 #include "Engine/World.h"
 #include "Enemy_AI/Enemy_Base.h"
 #include "FormDefinition.h"
-#include "SkillBase.h"
+#include "Skills/SkillBase.h"
 
 UTSkill::UTSkill()
 {

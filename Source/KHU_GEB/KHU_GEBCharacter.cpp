@@ -16,7 +16,8 @@
 #include "JumpComponent.h"
 #include "LockOnComponent.h"
 #include "AttackComponent.h"
-#include "SkillManagerComponent.h"
+#include "Skills/SkillManagerComponent.h"
+#include "Skills/Skills.h"
 #include "StatManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
@@ -25,7 +26,6 @@
 #include "WeaponComponent.h"
 #include "WeaponData.h"
 #include "Components/SceneComponent.h"
-#include "Skills.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {

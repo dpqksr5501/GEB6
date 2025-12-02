@@ -2,7 +2,7 @@
 #include "HealthComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-#include "SkillBase.h" 
+#include "Skills/SkillBase.h" 
 #include "Skills/Skill_Ultimate.h" 
 
 UHealthComponent::UHealthComponent()

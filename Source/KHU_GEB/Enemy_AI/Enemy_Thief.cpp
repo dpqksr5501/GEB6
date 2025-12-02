@@ -1,6 +1,6 @@
 #include "Enemy_AI/Enemy_Thief.h"
-#include "Skills.h"
-#include "SkillBase.h"
+#include "Skills/Skills.h"
+#include "Skills/SkillBase.h"
 #include "FormDefinition.h"
 AEnemy_Thief::AEnemy_Thief()
 {

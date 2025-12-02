@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
-#include "SkillDefinition.h"
-#include "SkillBase.h"
+#include "Skills/SkillDefinition.h"
 #include "EnemyState.h"
 #include "Enemy_Base.generated.h"
 
@@ -16,6 +15,7 @@ class UWeaponComponent;
 class UWeaponData;
 class UFormDefinition;
 class UJumpComponent;
+class USkillBase;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter

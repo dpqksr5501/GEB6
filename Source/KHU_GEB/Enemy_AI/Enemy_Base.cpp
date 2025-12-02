@@ -5,7 +5,7 @@
 #include "HealthComponent.h"
 #include "WeaponComponent.h"
 #include "FormDefinition.h"
-#include "SkillBase.h"
+#include "Skills/SkillBase.h"
 #include "JumpComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/GameInstance.h"
