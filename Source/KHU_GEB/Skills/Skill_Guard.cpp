@@ -76,6 +76,11 @@ void USkill_Guard::ActivateSkill()
 
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
 
+    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        PlayerChar->OnGuardSkillStarted(this);
+    }
+
     // 보호막 이펙트 켜기
     if (SkillNS && !SpawnedNS)
     {
@@ -152,6 +157,11 @@ void USkill_Guard::StopSkill()
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
 
+    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        PlayerChar->OnGuardSkillEnded(this);
+    }
+
     //우클릭 떼면 몽타주 재생 해제
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
@@ -161,8 +171,6 @@ void USkill_Guard::StopSkill()
             Anim->Montage_Stop(0.2f, nullptr);
         }
     }
-
-
 
     // 이펙트 끄기
     if (SpawnedNS)

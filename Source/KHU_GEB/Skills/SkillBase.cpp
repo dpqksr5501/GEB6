@@ -212,3 +212,22 @@ EFormType USkillBase::GetCurrentFormType() const
     // Enemy 등 다른 타입에서 FormManager를 안 쓰는 경우를 대비한 기본값
     return EFormType::Base;
 }
+
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount)
+{
+    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
+
+    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
+    if (!Health) return;
+
+    FDamageSpec Spec;
+    Spec.RawDamage = DamagePerTick;
+    Spec.bIgnoreDefense = true;     // 방어력 무시
+    Spec.bPeriodic = true;     // 주기적(DoT) 플래그
+    Spec.bFixedDot = true;     // 고정 도트 모드 ON
+    Spec.HitCount = HitCount;
+    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
+    Spec.SourceSkill = SourceSkill;
+
+    Health->ApplyDamageSpec(Spec);
+}

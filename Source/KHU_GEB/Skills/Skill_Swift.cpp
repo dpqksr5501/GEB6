@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine/OverlapResult.h"
+#include "KHU_GEBCharacter.h"
 
 void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -38,6 +39,11 @@ void USkill_Swift::ActivateSkill()
     PlayFormSkillMontage();
     // 쿨타임 시작 + 마나 1회 소모.
     Super::ActivateSkill();
+
+    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        PlayerChar->OnSwiftStrikeStarted(this);
+    }
 
     // ----- 시작/끝 위치 계산 -----
     const FVector StartLocation = Owner->GetActorLocation();
@@ -139,11 +145,29 @@ void USkill_Swift::ActivateSkill()
     else
     {
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] No targets found for multi hit."));
+
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        {
+            PlayerChar->OnSwiftStrikeEnded(this);
+        }
     }
 }
 
 void USkill_Swift::StopSkill()
 {
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+
+    if (World)
+    {
+        World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+    }
+
+    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        PlayerChar->OnSwiftStrikeEnded(this);
+    }
+
     Super::StopSkill();
 }
 
@@ -154,6 +178,12 @@ void USkill_Swift::HandleSwiftDamageTick()
     if (!World || !Owner)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        {
+            PlayerChar->OnSwiftStrikeEnded(this);
+        }
+
         return;
     }
 
@@ -163,6 +193,12 @@ void USkill_Swift::HandleSwiftDamageTick()
     if (CurrentHitIndex > DamageSamples)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        {
+            PlayerChar->OnSwiftStrikeEnded(this);
+        }
+
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit finished."));
         return;
     }
@@ -200,6 +236,12 @@ void USkill_Swift::HandleSwiftDamageTick()
     if (SwiftTargets.Num() == 0)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
+
+        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        {
+            PlayerChar->OnSwiftStrikeEnded(this);
+        }
+
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit stopped (no more targets)."));
     }
 }

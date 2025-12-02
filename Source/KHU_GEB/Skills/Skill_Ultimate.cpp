@@ -15,24 +15,7 @@
 #include "HealthComponent.h"
 #include "FormDefinition.h"
 
-static void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1)
-{
-    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
-
-    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
-    if (!Health) return;
-
-    FDamageSpec Spec;
-    Spec.RawDamage = DamagePerTick;
-    Spec.bIgnoreDefense = true;   // 방어력 무시 (궁극기라 강하게)
-    Spec.bPeriodic = true;
-    Spec.bFixedDot = true;
-    Spec.HitCount = HitCount;
-    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
-    Spec.SourceSkill = SourceSkill;
-
-    Health->ApplyDamageSpec(Spec);
-}
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1);
 
 void USkill_Ultimate::BeginPlay()
 {

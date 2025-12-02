@@ -10,24 +10,7 @@
 #include "KHU_GEBCharacter.h"
 #include "HealthComponent.h"
 
-static void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1)
-{
-    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
-
-    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
-    if (!Health) return;
-
-    FDamageSpec Spec;
-    Spec.RawDamage = DamagePerTick;
-    Spec.bIgnoreDefense = true;     // 방어력 무시
-    Spec.bPeriodic = true;     // 주기적(DoT) 플래그
-    Spec.bFixedDot = true;     // 고정 도트 모드 ON
-    Spec.HitCount = HitCount;
-    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
-    Spec.SourceSkill = SourceSkill;
-
-    Health->ApplyDamageSpec(Spec);
-}
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1);
 
 void USkill_Special::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -77,6 +60,7 @@ void USkill_Special::ActivateSkill()
     if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
     {
         CachedOwnerChar = OwnerChar;
+        OwnerChar->OnSpecialSkillStarted(this);
         OwnerChar->SetSkillSpeedMultiplier(SelfMoveSpeedMultiplier);
     }
 
@@ -260,6 +244,11 @@ void USkill_Special::EndSpecial()
     if (!bIsActive) return;
 
     bIsActive = false;
+
+    if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner()))
+    {
+        OwnerChar->OnSpecialSkillEnded(this);
+    }
 
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();

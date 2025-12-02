@@ -18,7 +18,9 @@
 #include "AttackComponent.h"
 #include "Skills/SkillManagerComponent.h"
 #include "Skills/Skill_Range.h"
+#include "Skills/Skill_Swift.h"
 #include "Skills/Skill_Guard.h"
+#include "Skills/Skill_Special.h"
 #include "StatManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
@@ -71,10 +73,10 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	ManaComp = CreateDefaultSubobject<UManaComponent>(TEXT("ManaComp"));
+	LockOnComp = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 
 	FormManager = CreateDefaultSubobject<UFormManagerComponent>(TEXT("FormManager"));
 	JumpManager = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpManager"));
-	LockOnComp = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	AttackManager = CreateDefaultSubobject<UAttackComponent>(TEXT("AttackManager"));
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
@@ -407,35 +409,35 @@ void AKHU_GEBCharacter::UltimateEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
-	if (IsRangeAiming()) return;
+	if (IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Base);
 }
 
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
-	if (IsRangeAiming()) return;
+	if (IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Range);
 }
 
 void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 {
-	if (IsRangeAiming()) return;
+	if (IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Swift);
 }
 
 void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 {
-	if (IsRangeAiming()) return;
+	if (IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Guard);
 }
 
 void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 {
-	if (IsRangeAiming()) return;
+	if (IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Special);
 }
@@ -752,6 +754,68 @@ void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
 
 	// 한 번 쓰고 나면 정리
 	SavedRangeLockOnTarget = nullptr;
+}
+
+void AKHU_GEBCharacter::OnSwiftStrikeStarted(USkill_Swift* Skill)
+{
+	ActiveSwiftSkill = Skill;
+	bIsSwiftStriking = true;
+}
+
+void AKHU_GEBCharacter::OnSwiftStrikeEnded(USkill_Swift* Skill)
+{
+	if (ActiveSwiftSkill.Get() == Skill)
+	{
+		ActiveSwiftSkill = nullptr;
+		bIsSwiftStriking = false;
+	}
+}
+
+void AKHU_GEBCharacter::OnGuardSkillStarted(USkill_Guard* Skill)
+{
+	ActiveGuardSkill = Skill;
+	bIsGuardSkillActiveForForm = true;
+}
+
+void AKHU_GEBCharacter::OnGuardSkillEnded(USkill_Guard* Skill)
+{
+	if (ActiveGuardSkill.Get() == Skill)
+	{
+		ActiveGuardSkill = nullptr;
+		bIsGuardSkillActiveForForm = false;
+	}
+}
+
+void AKHU_GEBCharacter::OnSpecialSkillStarted(USkill_Special* Skill)
+{
+	ActiveSpecialSkill = Skill;
+	bIsSpecialSkillActiveForForm = true;
+}
+
+void AKHU_GEBCharacter::OnSpecialSkillEnded(USkill_Special* Skill)
+{
+	if (ActiveSpecialSkill.Get() == Skill)
+	{
+		ActiveSpecialSkill = nullptr;
+		bIsSpecialSkillActiveForForm = false;
+	}
+}
+
+bool AKHU_GEBCharacter::IsFormChangeLocked() const
+{
+	// Range 조준 중
+	if (IsRangeAiming()) return true;
+
+	// Swift 다단히트 중
+	if (bIsSwiftStriking && ActiveSwiftSkill.IsValid()) return true;
+
+	// Guard 보호막 유지 중
+	if (bIsGuardSkillActiveForForm && ActiveGuardSkill.IsValid()) return true;
+
+	// Special 흑안개 유지 중
+	if (bIsSpecialSkillActiveForForm && ActiveSpecialSkill.IsValid()) return true;
+
+	return false;
 }
 
 /*Guard Form일 때 움직임 고정하는 함수*/

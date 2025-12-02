@@ -28,6 +28,10 @@ AEnemy_Base::AEnemy_Base()
 		MoveComp->GravityScale = 1.0f;     // 중력 스케일
 	}
 
+	MeshRoot = CreateDefaultSubobject<USceneComponent>(TEXT("MeshRoot"));
+	MeshRoot->SetupAttachment(RootComponent);
+	GetMesh()->SetupAttachment(MeshRoot);
+
 	// HealthComponent 생성 및 초기화
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	if (!HealthComp)

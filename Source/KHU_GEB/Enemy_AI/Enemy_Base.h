@@ -22,6 +22,9 @@ class KHU_GEB_API AEnemy_Base : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* MeshRoot;
+
 public:
 	// Sets default values for this character's properties
 	AEnemy_Base();
