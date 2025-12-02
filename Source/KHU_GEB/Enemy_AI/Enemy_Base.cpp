@@ -8,6 +8,10 @@
 #include "SkillBase.h"
 #include "JumpComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/GameInstance.h"
+#include "Pooling/EnemyPoolSubsystem.h"
+#include "Pooling/EnemySpawnDirector.h"
+#include "Enemy_Minion.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -50,16 +54,9 @@ void AEnemy_Base::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// 죽음 델리게이트에 OnDeath 함수 바인딩
-	if (HealthComp)
-	{
-		HealthComp->OnDeath.AddDynamic(this, &AEnemy_Base::OnDeath);
-	}
 	if(WeaponComp && DefaultWeaponData)
 	{
 		WeaponComp->SetWeaponDefinition(DefaultWeaponData);
-		// UE_LOG로 SetWeaponDefinition 호출 여부 확인 및 DefaultWeaponData 정보 출력
-		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - SetWeaponDefinition called with DefaultWeaponData: %s"), *DefaultWeaponData->GetName());
 	}
 	else {
 		// WeaponComp가 없는지, DefaultWeaponData가 없는지 확인 및 로그 출력
@@ -126,6 +123,7 @@ void AEnemy_Base::ActivateSkill()
 		*GetClass()->GetName());
 }
 
+// 다른 Actor의 ApplyDamage에 의해 호출됨
 float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -164,4 +162,22 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 void AEnemy_Base::OnDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::OnDeath - Enemy has died!"));
+
+	// Director에게 사망 알림
+	UGameInstance* GI = GetGameInstance();
+	if (GI)
+	{
+		UEnemySpawnDirector* SpawnDirector = GI->GetSubsystem<UEnemySpawnDirector>();
+		if (SpawnDirector)
+		{
+			SpawnDirector->OnEnemyDied(GetClass());
+		}
+
+		// Pool에 반환
+		UEnemyPoolSubsystem* EnemyPool = GI->GetSubsystem<UEnemyPoolSubsystem>();
+		if (EnemyPool)
+		{
+			EnemyPool->ReturnEnemyToPool(this);
+		}
+	}
 }

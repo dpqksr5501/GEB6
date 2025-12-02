@@ -19,8 +19,15 @@ class KHU_GEB_API UEnemySpawnDirector : public UGameInstanceSubsystem
 
 public:
     /**
-     * 레벨의 최대 스폰 예산을 설정합니다. (예: 레벨 블루프린트의 BeginPlay에서 호출)
-     * @param NewMax 전체 최대 스폰 수 (모든 Enemy 타입 합계)
+     * 레벨의 최대 동시 스폰 수를 설정합니다. (예: 레벨 블루프린트의 BeginPlay에서 호출)
+     * @param NewMax 동시에 맵에 존재할 수 있는 최대 Enemy 수
+     */
+    UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
+    void SetMaxConcurrentSpawns(int32 NewMax);
+
+    /**
+     * 총 누적 소환 한도를 설정합니다.
+     * @param NewMax 게임 전체에서 소환할 수 있는 총 Enemy 수
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void SetMaxTotalSpawns(int32 NewMax);
@@ -41,8 +48,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     bool RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass);
 
+    /**
+     * Enemy가 사망했을 때 호출됩니다. 현재 살아있는 수를 감소시킵니다.
+     * @param EnemyClass 사망한 Enemy 클래스
+     */
+    UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
+    void OnEnemyDied(TSubclassOf<AEnemy_Base> EnemyClass);
 
-    /** 현재까지 스폰된 횟수를 반환합니다. */
+    /** 현재 살아있는 Enemy 수를 반환합니다. */
+    UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
+    int32 GetCurrentAliveCount() const { return CurrentAliveCount; }
+
+    /** 현재까지 누적 스폰된 횟수를 반환합니다. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetCurrentSpawnCount() const { return TotalSpawnedCount; }
 
@@ -53,6 +70,10 @@ public:
      */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetCurrentSpawnCountForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass) const;
+
+    /** 설정된 최대 동시 스폰 수를 반환합니다. */
+    UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
+    int32 GetMaxConcurrentSpawns() const { return MaxConcurrentSpawns; }
 
     /** 설정된 최대 스폰 예산을 반환합니다. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
@@ -66,9 +87,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetMaxSpawnsForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass) const;
 
-    /** 카운터를 0으로 리셋합니다. */
+    /** 모든 카운터를 0으로 리셋합니다. */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
-    void ResetCounter() { TotalSpawnedCount = 0; SpawnedCounts.Reset(); }
+    void ResetCounter() { TotalSpawnedCount = 0; CurrentAliveCount = 0; SpawnedCounts.Reset(); AliveCounts.Reset(); }
 
     /**
      * 특정 Enemy 타입의 카운터를 0으로 리셋합니다.
@@ -78,13 +99,23 @@ public:
     void ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass);
 
 private:
-    /** 현재까지 총 스폰된 횟수 (예산 소모량) */
+    /** 현재까지 총 누적 스폰된 횟수 (감소하지 않음) */
     int32 TotalSpawnedCount = 0;
 
-    /** 이 레벨의 총 스폰 한도 (예산) */
-    int32 MaxTotalSpawns = 30; // 기본값
+    /** 현재 살아있는 Enemy 수 (사망 시 감소) */
+    int32 CurrentAliveCount = 0;
 
-    /** Enemy 타입별 현재까지 스폰된 횟수 */
+    /** 동시에 맵에 존재할 수 있는 최대 Enemy 수 */
+    int32 MaxConcurrentSpawns = 30;
+
+    /** 총 누적 소환 한도 */
+    int32 MaxTotalSpawns = 100;
+
+    /** Enemy 타입별 현재 살아있는 수 */
+    UPROPERTY()
+    TMap<TSubclassOf<AEnemy_Base>, int32> AliveCounts;
+
+    /** Enemy 타입별 현재까지 스폰된 횟수 (예산 소모량) */
     UPROPERTY()
     TMap<TSubclassOf<AEnemy_Base>, int32> SpawnedCounts;
 

@@ -73,6 +73,7 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 		else
 		{
 			// 경로 탐색 실패 등
+			UE_LOG(LogTemp, Warning, TEXT("UTApproach::ExecuteTask - MoveToActor failed."));
 			return EBTNodeResult::Failed;
 		}
 	}

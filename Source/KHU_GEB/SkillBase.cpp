@@ -10,6 +10,7 @@
 #include "KHU_GEBCharacter.h"
 #include "FormManagerComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Enemy_Base.h"
 
 USkillBase::USkillBase() {}
 
@@ -151,23 +152,50 @@ float USkillBase::DealSkillDamage(
 //스킬 사용 시 몽타주 재생 헬퍼 함수
 void USkillBase::PlayFormSkillMontage()
 {
-    // 1. 소유자 캐릭터 캐스팅
-    AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner());
-    if (!OwnerChar || !OwnerChar->FormManager) return;
+    AActor* Owner = GetOwner();
+    if (!Owner) return;
 
-    // 2. 현재 폼 정의(FormDefinition) 가져오기
-    // FormManagerComponent의 FindDef 함수와 CurrentForm 변수 활용 [cite: 2708, 2710]
-    const UFormDefinition* Def = OwnerChar->FormManager->FindDef(OwnerChar->FormManager->CurrentForm);
-
-    // 3. 몽타주가 있다면 재생
-    if (Def && Def->SkillMontage) //  SkillMontage 접근
+    // 1. 먼저 플레이어 캐릭터로 시도
+    if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
     {
-        if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+        if (!OwnerChar->FormManager) return;
+
+        // 현재 폼 정의 가져오기
+        const UFormDefinition* Def = OwnerChar->FormManager->FindDef(OwnerChar->FormManager->CurrentForm);
+
+        // 몽타주 재생
+        if (Def && Def->SkillMontage)
         {
-            // 몽타주 재생 (PlayRate 1.0f)
-            Anim->Montage_Play(Def->SkillMontage);
+            if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+            {
+                Anim->Montage_Play(Def->SkillMontage);
+                UE_LOG(LogTemp, Log, TEXT("[SkillBase] Playing Player SkillMontage"));
+            }
         }
+        return;
     }
+
+    // 2. 플레이어가 아니면 Enemy로 시도
+    if (AEnemy_Base* EnemyChar = Cast<AEnemy_Base>(Owner))
+    {
+        // Enemy도 DefaultFormDef를 가지고 있음
+        if (!EnemyChar->DefaultFormDef) return;
+
+        const UFormDefinition* Def = EnemyChar->DefaultFormDef;
+
+        // 몽타주 재생
+        if (Def && Def->SkillMontage)
+        {
+            if (UAnimInstance* Anim = EnemyChar->GetMesh()->GetAnimInstance())
+            {
+                Anim->Montage_Play(Def->SkillMontage);
+                UE_LOG(LogTemp, Log, TEXT("[SkillBase] Playing Enemy SkillMontage"));
+            }
+        }
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[SkillBase] Owner is neither Player nor Enemy!"));
 }
 
 EFormType USkillBase::GetCurrentFormType() const
