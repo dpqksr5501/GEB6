@@ -71,6 +71,6 @@ protected:
 	UWeaponComponent* WeaponComp;
 
 	// Á×À½
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnDeath();
 };
