@@ -7,7 +7,7 @@
 #include "SkillDefinition.generated.h"
 
 UENUM(BlueprintType)
-enum class ESkillSlot : uint8 { Passive, Active };
+enum class ESkillSlot : uint8 { Active, Ultimate };
 
 USTRUCT(BlueprintType)
 struct FSkillParams

@@ -166,6 +166,8 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Skill
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::SkillStart);
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::SkillEnd);
+		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::UltimateStart);
+		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Completed, this, &AKHU_GEBCharacter::UltimateEnd);
 
 		// 변신
 		EnhancedInputComponent->BindAction(FormBase, ETriggerEvent::Triggered, this, &AKHU_GEBCharacter::SwitchToBase);
@@ -272,11 +274,6 @@ void AKHU_GEBCharacter::Tick(float DeltaTime)
 			CameraInterpSpeed
 		);
 	}
-
-	if (ManaComp && GEngine)
-		GEngine->AddOnScreenDebugMessage(777, 1.f, FColor::Cyan,
-			FString::Printf(TEXT("Mana: %f"), ManaComp->CurrentMana));
-
 }
 
 float AKHU_GEBCharacter::GetHealth() const
@@ -393,6 +390,18 @@ void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
 {
 	if (!SkillManager) return;
 	SkillManager->TryStop(ESkillSlot::Active);
+}
+
+void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
+{
+	if (!SkillManager) return;
+	SkillManager->TryActivate(ESkillSlot::Ultimate);
+}
+
+void AKHU_GEBCharacter::UltimateEnd(const FInputActionValue& Value)
+{
+	if (!SkillManager) return;
+	SkillManager->TryStop(ESkillSlot::Ultimate);
 }
 
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)

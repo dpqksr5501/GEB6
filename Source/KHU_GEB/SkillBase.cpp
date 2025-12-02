@@ -9,7 +9,6 @@
 #include "ManaComponent.h"
 #include "KHU_GEBCharacter.h"
 #include "FormManagerComponent.h"
-#include "FormDefinition.h"
 #include "Components/SkeletalMeshComponent.h"
 
 USkillBase::USkillBase() {}
@@ -169,4 +168,19 @@ void USkillBase::PlayFormSkillMontage()
             Anim->Montage_Play(Def->SkillMontage);
         }
     }
+}
+
+EFormType USkillBase::GetCurrentFormType() const
+{
+    // 소유자가 KHU_GEBCharacter 이고 FormManager가 있다면, 그 값을 그대로 사용
+    if (const AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner()))
+    {
+        if (OwnerChar->FormManager)
+        {
+            return OwnerChar->FormManager->CurrentForm;
+        }
+    }
+
+    // Enemy 등 다른 타입에서 FormManager를 안 쓰는 경우를 대비한 기본값
+    return EFormType::Base;
 }

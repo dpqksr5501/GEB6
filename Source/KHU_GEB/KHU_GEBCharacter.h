@@ -76,6 +76,7 @@ protected:
 	/** Attack Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* SkillAction;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* UltimateAction;
 
 	/** Transform Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormBase;
@@ -196,6 +197,8 @@ protected:
 	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);
 	void SkillEnd(const FInputActionValue& Value);
+	void UltimateStart(const FInputActionValue& Value);
+	void UltimateEnd(const FInputActionValue& Value);
 
 	/** Called for 변신 */
 	void SwitchToBase(const FInputActionValue& Value);
