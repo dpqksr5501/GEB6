@@ -1,12 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
-#include "SkillDefinition.h"
-#include "SkillBase.h"
+#include "Skills/SkillDefinition.h"
 #include "EnemyState.h"
 #include "Enemy_Base.generated.h"
 
@@ -16,41 +15,45 @@ class UWeaponComponent;
 class UWeaponData;
 class UFormDefinition;
 class UJumpComponent;
+class USkillBase;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* MeshRoot;
+
 public:
 	// Sets default values for this character's properties
 	AEnemy_Base();
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ Á÷Á¢ ½ºÅ³ ÀÎ½ºÅÏ½º¸¦ ÇÒ´ç (·±Å¸ÀÓ¿¡ ÀÌ¹Ì »ı¼ºµÈ ½ºÅ³ °´Ã¼)
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì§ì ‘ ìŠ¤í‚¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ í• ë‹¹ (ëŸ°íƒ€ì„ì— ì´ë¯¸ ìƒì„±ëœ ìŠ¤í‚¬ ê°ì²´)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TMap<ESkillSlot, TObjectPtr<USkillBase>> Equipped;
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ ½ºÅ³ Å¬·¡½º¸¦ ¼³Á¤ (»ı¼ºÇÒ ½ºÅ³ÀÇ Å¬·¡½º Å¸ÀÔ)
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ìŠ¤í‚¬ í´ë˜ìŠ¤ë¥¼ ì„¤ì • (ìƒì„±í•  ìŠ¤í‚¬ì˜ í´ë˜ìŠ¤ íƒ€ì…)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TMap<ESkillSlot, TSubclassOf<USkillBase>> SkillClasses;
 
-	// SkillClasses¸¦ ±â¹İÀ¸·Î Equipped ¸Ê ÃÊ±âÈ­
+	// SkillClassesë¥¼ ê¸°ë°˜ìœ¼ë¡œ Equipped ë§µ ì´ˆê¸°í™”
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeSkills();
 
-	// °¢ Àû Å¸ÀÔÀÌ ÀÚ½ÅÀÇ ½ºÅ³À» ¹ßµ¿ÇÏµµ·Ï ¿À¹ö¶óÀÌµå
+	// ê° ì  íƒ€ì…ì´ ìì‹ ì˜ ìŠ¤í‚¬ì„ ë°œë™í•˜ë„ë¡ ì˜¤ë²„ë¼ì´ë“œ
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	virtual void ActivateSkill();
 
-	// ¹«±â µ¥ÀÌÅÍ
+	// ë¬´ê¸° ë°ì´í„°
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TObjectPtr<UWeaponData> DefaultWeaponData;
 
-	// Æû µ¥ÀÌÅÍ
+	// í¼ ë°ì´í„°
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Form")
 	TObjectPtr<UFormDefinition> DefaultFormDef;
 
-	// Á¡ÇÁ ÄÄÆ÷³ÍÆ®
+	// ì í”„ ì»´í¬ë„ŒíŠ¸
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump")
 	UJumpComponent* JumpComp;
 
@@ -60,7 +63,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// BlackboardComp¸¦ AI ÄÁÆ®·Ñ·¯¿¡¼­ ÇÒ´çÇØ ÁÙ ¼ö ÀÖµµ·Ï UPROPERTY ¼³Á¤
+	// BlackboardCompë¥¼ AI ì»¨íŠ¸ë¡¤ëŸ¬ì—ì„œ í• ë‹¹í•´ ì¤„ ìˆ˜ ìˆë„ë¡ UPROPERTY ì„¤ì •
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BlackboardComp;
 
@@ -70,7 +73,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	UWeaponComponent* WeaponComp;
 
-	// Á×À½
+	// ì£½ìŒ
 	UFUNCTION(BlueprintCallable)
 	void OnDeath();
 };

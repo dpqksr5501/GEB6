@@ -27,8 +27,7 @@ class UAttackComponent;
 class USkillManagerComponent;
 class UStatManagerComponent;
 class UNiagaraComponent;
-class UWeaponComponent; //[추가] WeaponComponent 전방 선언
-
+class UWeaponComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -76,6 +75,7 @@ protected:
 	/** Attack Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* SkillAction;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* UltimateAction;
 
 	/** Transform Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input|Forms") UInputAction* FormBase;
@@ -196,6 +196,8 @@ protected:
 	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);
 	void SkillEnd(const FInputActionValue& Value);
+	void UltimateStart(const FInputActionValue& Value);
+	void UltimateEnd(const FInputActionValue& Value);
 
 	/** Called for 변신 */
 	void SwitchToBase(const FInputActionValue& Value);
@@ -291,10 +293,30 @@ private:
 	bool bIsRangeAiming = false;
 	TWeakObjectPtr<class USkill_Range> ActiveRangeSkill;
 
+	bool bIsSwiftStriking = false;
+	TWeakObjectPtr<class USkill_Swift> ActiveSwiftSkill;
+
+	bool bIsGuardSkillActiveForForm = false;
+	TWeakObjectPtr<class USkill_Guard> ActiveGuardSkill;
+
+	bool bIsSpecialSkillActiveForForm = false;
+	TWeakObjectPtr<class USkill_Special> ActiveSpecialSkill;
+
 public:
 	void OnRangeAimingStarted(USkill_Range* Skill);
 	void OnRangeAimingEnded(USkill_Range* Skill);
 	bool IsRangeAiming() const { return bIsRangeAiming; }
+
+	void OnSwiftStrikeStarted(class USkill_Swift* Skill);
+	void OnSwiftStrikeEnded(class USkill_Swift* Skill);
+
+	void OnGuardSkillStarted(class USkill_Guard* Skill);
+	void OnGuardSkillEnded(class USkill_Guard* Skill);
+
+	void OnSpecialSkillStarted(class USkill_Special* Skill);
+	void OnSpecialSkillEnded(class USkill_Special* Skill);
+
+	bool IsFormChangeLocked() const;
 
 
 ///////////////피격 몽타주 재생 테스트 코드 (피격 테스트 시작)
@@ -314,5 +336,9 @@ public:
 
 	/** 락온/Range 조준 상태에 따라 회전 모드를 갱신한다. */
 	void RefreshRotationMode();
-};
 
+protected:
+	// Range 스킬을 쓰기 직전에 락온하고 있던 대상
+	TWeakObjectPtr<AActor> SavedRangeLockOnTarget;
+
+};

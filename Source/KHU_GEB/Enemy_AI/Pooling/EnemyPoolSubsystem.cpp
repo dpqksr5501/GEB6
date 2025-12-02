@@ -1,16 +1,16 @@
-#include "EnemyPoolSubsystem.h"
+ï»¿#include "EnemyPoolSubsystem.h"
 #include "Enemy_AI/Enemy_Base.h"
 #include "Engine/World.h"
 
 void UEnemyPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    // ¼­ºê½Ã½ºÅÛ ÃÊ±âÈ­
+    // ì„œë¸Œì‹œìŠ¤í…œ ì´ˆê¸°í™”
 }
 
 void UEnemyPoolSubsystem::Deinitialize()
 {
-    // ¸ğµç Ç® Á¤¸® (ÇÊ¿ä½Ã)
+    // ëª¨ë“  í’€ ì •ë¦¬ (í•„ìš”ì‹œ)
     EnemyPools.Empty();
     Super::Deinitialize();
 }
@@ -23,36 +23,36 @@ void UEnemyPoolSubsystem::InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, in
         return;
     }
 
-	// EnemyPools¿¡ EnemyClass·Î »ı¼ºµÈ Ç®ÀÌ ¾øÀ¸¸é »õ·Î¿î Ç® »ı¼º
+	// EnemyPoolsì— EnemyClassë¡œ ìƒì„±ëœ í’€ì´ ì—†ìœ¼ë©´ ìƒˆë¡œìš´ í’€ ìƒì„±
     FEnemyPool& EnemyPoolStruct = EnemyPools.FindOrAdd(EnemyClass);
 
-    // Ç®¿ë ¾ÈÀüÇÑ À§Ä¡ (¸Ê ¹Û ¶Ç´Â ¼û°ÜÁø À§Ä¡)
+    // í’€ìš© ì•ˆì „í•œ ìœ„ì¹˜ (ë§µ ë°– ë˜ëŠ” ìˆ¨ê²¨ì§„ ìœ„ì¹˜)
     FVector PoolStorageLocation = FVector(0, 0, -10000.0f);
 
     for (int32 i = 0; i < PoolSize; ++i)
     {
-		// ¸ğµÎ °°Àº À§Ä¡¿¡ »ı¼ºÇÏ¹Ç·Î, Ãæµ¹ ¹®Á¦¸¦ ÇÇÇÏ±â À§ÇØ Ãæµ¹ Ã³¸® ¹æ½ÄÀ» AlwaysSpawnÀ¸·Î ¼³Á¤
+		// ëª¨ë‘ ê°™ì€ ìœ„ì¹˜ì— ìƒì„±í•˜ë¯€ë¡œ, ì¶©ëŒ ë¬¸ì œë¥¼ í”¼í•˜ê¸° ìœ„í•´ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ì„ AlwaysSpawnìœ¼ë¡œ ì„¤ì •
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         
-        // Pool À§Ä¡¿¡ ±âº» È¸Àü, Ãæµ¹ ¹«½Ã·Î Àû »ı¼º
+        // Pool ìœ„ì¹˜ì— ê¸°ë³¸ íšŒì „, ì¶©ëŒ ë¬´ì‹œë¡œ ì  ìƒì„±
         AEnemy_Base* NewEnemy = World->SpawnActor<AEnemy_Base>(
             EnemyClass,
-            PoolStorageLocation,  // Ç® ÀúÀå À§Ä¡
-            FRotator::ZeroRotator, // ±âº» È¸Àü
+            PoolStorageLocation,  // í’€ ì €ì¥ ìœ„ì¹˜
+            FRotator::ZeroRotator, // ê¸°ë³¸ íšŒì „
             SpawnParams
         );
-        // ¿©±â¿¡ ¼ÒÈ¯ÇÑ Actor¿¡ AIController°¡ ÇÒ´çµÇ¾îÀÖ´ÂÁö È®ÀÎÇÏ´Â ÄÚµå
+        // ì—¬ê¸°ì— ì†Œí™˜í•œ Actorì— AIControllerê°€ í• ë‹¹ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” ì½”ë“œ
 		if (NewEnemy && !NewEnemy->GetController())
         {
             UE_LOG(LogTemp, Warning, TEXT("EnemyPoolSubsystem: Newly spawned %s has no controller!"), 
                    *NewEnemy->GetName());
         }
 
-		// »ı¼ºµÈ ÀûÀ» Ç® »óÅÂ·Î ¼³Á¤ÇÏ°í Pool Struct¿¡ Ãß°¡
+		// ìƒì„±ëœ ì ì„ í’€ ìƒíƒœë¡œ ì„¤ì •í•˜ê³  Pool Structì— ì¶”ê°€
         if (NewEnemy)
         {
-            SetEnemyActive(NewEnemy, false); // ¿ÏÀü ºñÈ°¼ºÈ­°¡ ¾Æ´Ô. EnemyÀÇ ÃÊ±â ¼³Á¤À» À§ÇØ Ãæµ¹ µî ÇÊ¿äÇÑ °Í¸¸ ºñÈ°¼ºÈ­.
+            SetEnemyActive(NewEnemy, false); // ì™„ì „ ë¹„í™œì„±í™”ê°€ ì•„ë‹˜. Enemyì˜ ì´ˆê¸° ì„¤ì •ì„ ìœ„í•´ ì¶©ëŒ ë“± í•„ìš”í•œ ê²ƒë§Œ ë¹„í™œì„±í™”.
             EnemyPoolStruct.Pool.Add(NewEnemy);
 
             UE_LOG(LogTemp, Log, TEXT("EnemyPoolSubsystem: Created %s for pool at location %s"), 
@@ -62,7 +62,7 @@ void UEnemyPoolSubsystem::InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, in
 }
 
 AEnemy_Base* UEnemyPoolSubsystem::GetEnemyFromPool(TSubclassOf<AEnemy_Base> EnemyClass,
-    const FVector& SpawnLocation, const FRotator& SpawnRotation) // Çì´õÆÄÀÏ¿¡ ±âº»ÀÎÀÚ ÁöÁ¤µÇ¾î ÀÖÀ½
+    const FVector& SpawnLocation, const FRotator& SpawnRotation) // í—¤ë”íŒŒì¼ì— ê¸°ë³¸ì¸ì ì§€ì •ë˜ì–´ ìˆìŒ
 {
     if (!EnemyClass) {
         UE_LOG(LogTemp, Warning, TEXT("EnemyPoolSubsystem: Invalid EnemyClass in GetEnemyFromPool."));
@@ -70,12 +70,12 @@ AEnemy_Base* UEnemyPoolSubsystem::GetEnemyFromPool(TSubclassOf<AEnemy_Base> Enem
 
     FEnemyPool& EnemyPoolStruct = EnemyPools.FindOrAdd(EnemyClass);
 
-    // 1. Ç®¿¡¼­ ÀçÈ°¿ëÇÒ ÀûÀ» Ã£À½ (Ãæµ¹ÀÌ ºñÈ°¼ºÈ­µÈ Enemy¸¦ Ã£À½)
+    // 1. í’€ì—ì„œ ì¬í™œìš©í•  ì ì„ ì°¾ìŒ (ì¶©ëŒì´ ë¹„í™œì„±í™”ëœ Enemyë¥¼ ì°¾ìŒ)
     for (AEnemy_Base* Enemy : EnemyPoolStruct.Pool)
     {
-        if (Enemy && !Enemy->GetActorEnableCollision()) // Ãæµ¹ÀÌ ºñÈ°¼ºÈ­µÈ Enemy = Ç®¿¡¼­ ´ë±âÁß
+        if (Enemy && !Enemy->GetActorEnableCollision()) // ì¶©ëŒì´ ë¹„í™œì„±í™”ëœ Enemy = í’€ì—ì„œ ëŒ€ê¸°ì¤‘
         {
-            SetEnemyActive(Enemy, true); // °ÔÀÓ¿¡¼­ »ç¿ë °¡´ÉÇÑ »óÅÂ·Î È°¼ºÈ­
+            SetEnemyActive(Enemy, true); // ê²Œì„ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ìƒíƒœë¡œ í™œì„±í™”
             
             UE_LOG(LogTemp, Log, TEXT("EnemyPoolSubsystem: Reused %s from pool at location %s"), 
                    *Enemy->GetName(), *SpawnLocation.ToString());
@@ -83,7 +83,7 @@ AEnemy_Base* UEnemyPoolSubsystem::GetEnemyFromPool(TSubclassOf<AEnemy_Base> Enem
         }
     }
 
-    // 2. ÀçÈ°¿ëÇÒ ÀûÀÌ ¾øÀ½. »õ·Î »ı¼º
+    // 2. ì¬í™œìš©í•  ì ì´ ì—†ìŒ. ìƒˆë¡œ ìƒì„±
     UWorld* World = GetWorld();
     if (!World) return nullptr;
 
@@ -92,16 +92,16 @@ AEnemy_Base* UEnemyPoolSubsystem::GetEnemyFromPool(TSubclassOf<AEnemy_Base> Enem
 
     AEnemy_Base* NewEnemy = World->SpawnActor<AEnemy_Base>(
         EnemyClass,
-		SpawnLocation,    // Ç®ÀÇ À§Ä¡ (0, 0, -10000)
+		SpawnLocation,    // í’€ì˜ ìœ„ì¹˜ (0, 0, -10000)
         SpawnRotation,    // 0, 0, 0
         SpawnParams
     );
 
     if (NewEnemy)
     {
-        EnemyPoolStruct.Pool.Add(NewEnemy); // »õ·Î »ı¼ºÇÑ °æ¿ìµµ Ç®¿¡ Ãß°¡
+        EnemyPoolStruct.Pool.Add(NewEnemy); // ìƒˆë¡œ ìƒì„±í•œ ê²½ìš°ë„ í’€ì— ì¶”ê°€
 
-        SetEnemyActive(NewEnemy, true); // Ç® Àü¿ë »óÅÂ·Î È°¼ºÈ­
+        SetEnemyActive(NewEnemy, true); // í’€ ì „ìš© ìƒíƒœë¡œ í™œì„±í™”
         
         UE_LOG(LogTemp, Log, TEXT("EnemyPoolSubsystem: Created new %s at location %s"), 
                *NewEnemy->GetName(), *SpawnLocation.ToString());
@@ -116,7 +116,7 @@ void UEnemyPoolSubsystem::ReturnEnemyToPool(AEnemy_Base* Enemy)
     if (Enemy)
     {
         UE_LOG(LogTemp, Log, TEXT("EnemyPoolSubsystem: Returning %s to pool"), *Enemy->GetName());
-        SetEnemyActive(Enemy, false); // Ç® »óÅÂ·Î µÇµ¹¸®±â
+        SetEnemyActive(Enemy, false); // í’€ ìƒíƒœë¡œ ë˜ëŒë¦¬ê¸°
     }
 }
 
@@ -129,28 +129,28 @@ void UEnemyPoolSubsystem::SetEnemyActive(AEnemy_Base* Enemy, bool bIsActive)
 
     if (bIsActive)
     {
-        // [È°¼ºÈ­ - °ÔÀÓ¿¡¼­ »ç¿ë °¡´ÉÇÑ »óÅÂ]
-        Enemy->SetActorEnableCollision(true);   // Ãæµ¹ È°¼ºÈ­
-        Enemy->SetActorTickEnabled(true);       // Æ½ È°¼ºÈ­
-        Enemy->SetActorHiddenInGame(false);     // º¸ÀÌ°Ô ¼³Á¤
+        // [í™œì„±í™” - ê²Œì„ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ìƒíƒœ]
+        Enemy->SetActorEnableCollision(true);   // ì¶©ëŒ í™œì„±í™”
+        Enemy->SetActorTickEnabled(true);       // í‹± í™œì„±í™”
+        Enemy->SetActorHiddenInGame(false);     // ë³´ì´ê²Œ ì„¤ì •
         
-        // AIController°¡ Á¤»óÀûÀ¸·Î ÀÛµ¿ÇÏµµ·Ï º¸Àå
+        // AIControllerê°€ ì •ìƒì ìœ¼ë¡œ ì‘ë™í•˜ë„ë¡ ë³´ì¥
         if (!Enemy->GetController())
         {
             UE_LOG(LogTemp, Warning, TEXT("EnemyPoolSubsystem: %s has no controller after activation!"), 
                    *Enemy->GetName());
-            // ¿©±â¿¡ AIController »ı¼º ÄÚµå¸¦ Ãß°¡ÇØÁà
+            // ì—¬ê¸°ì— AIController ìƒì„± ì½”ë“œë¥¼ ì¶”ê°€í•´ì¤˜
 			Enemy->SpawnDefaultController();
         }
     }
     else
     {
-        // [ºñÈ°¼ºÈ­ - Ç®¿¡¼­ ´ë±â »óÅÂ]
-        Enemy->SetActorEnableCollision(false);  // Ãæµ¹¸¸ ºñÈ°¼ºÈ­ (°ãÃÄÁ®µµ ¹®Á¦¾øÀ½)
-        Enemy->SetActorTickEnabled(false);      // Æ½ ºñÈ°¼ºÈ­ (¼º´É Àı¾à)
-        Enemy->SetActorHiddenInGame(true);      // º¸ÀÌÁö ¾Ê°Ô ¼³Á¤
+        // [ë¹„í™œì„±í™” - í’€ì—ì„œ ëŒ€ê¸° ìƒíƒœ]
+        Enemy->SetActorEnableCollision(false);  // ì¶©ëŒë§Œ ë¹„í™œì„±í™” (ê²¹ì³ì ¸ë„ ë¬¸ì œì—†ìŒ)
+        Enemy->SetActorTickEnabled(false);      // í‹± ë¹„í™œì„±í™” (ì„±ëŠ¥ ì ˆì•½)
+        Enemy->SetActorHiddenInGame(true);      // ë³´ì´ì§€ ì•Šê²Œ ì„¤ì •
         
-        // Ç® ÀúÀå¼Ò·Î ÀÌµ¿ (¸Ê ¹Û ¾ÈÀüÇÑ À§Ä¡)
+        // í’€ ì €ì¥ì†Œë¡œ ì´ë™ (ë§µ ë°– ì•ˆì „í•œ ìœ„ì¹˜)
         FVector PoolStorageLocation = FVector(0, 0, -10000.0f);
         Enemy->SetActorLocation(PoolStorageLocation);
     }

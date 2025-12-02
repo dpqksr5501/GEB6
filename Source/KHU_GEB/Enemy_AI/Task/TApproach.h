@@ -1,20 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BehaviorTree/BlackboardComponent.h" // FBlackboardKeySelector »ç¿ëÀ» À§ÇØ ÇÊ¿ä
+#include "BehaviorTree/BlackboardComponent.h" // FBlackboardKeySelector ì‚¬ìš©ì„ ìœ„í•´ í•„ìš”
 #include "EnemyState.h"
 #include "TApproach.generated.h"
 
-// Àü¹æ ¼±¾ğ
+// ì „ë°© ì„ ì–¸
 class AAIController;
 class APawn;
 class UCharacterMovementComponent;
 
 /**
- * TargetDistance¸¦ È®ÀÎÇÏ¸ç Target¿¡°Ô Á¢±ÙÇÏ´Â ³ëµå
+ * TargetDistanceë¥¼ í™•ì¸í•˜ë©° Targetì—ê²Œ ì ‘ê·¼í•˜ëŠ” ë…¸ë“œ
  */
 UCLASS()
 class KHU_GEB_API UTApproach : public UBTTaskNode
@@ -24,26 +24,26 @@ class KHU_GEB_API UTApproach : public UBTTaskNode
 public:
 	UTApproach();
 
-	/** BP¿¡¼­ ¼³Á¤ÇÒ Á¤Áö °Å¸® */
+	/** BPì—ì„œ ì„¤ì •í•  ì •ì§€ ê±°ë¦¬ */
 	UPROPERTY(EditAnywhere, Category = "Task Properties")
 	float StopDistance = 100.0f;
 
-	/** Å¸°Ù ¾×ÅÍ¸¦ °¡Á®¿Ã ºí·¢º¸µå Å° */
+	/** íƒ€ê²Ÿ ì•¡í„°ë¥¼ ê°€ì ¸ì˜¬ ë¸”ë™ë³´ë“œ í‚¤ */
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetKey;
 
-	/** Å¸°Ù°úÀÇ °Å¸®¸¦ °¡Á®¿Ã ºí·¢º¸µå Å° */
+	/** íƒ€ê²Ÿê³¼ì˜ ê±°ë¦¬ë¥¼ ê°€ì ¸ì˜¬ ë¸”ë™ë³´ë“œ í‚¤ */
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetDistanceKey;
 
 protected:
-	/** ³ëµå ½ÇÇà ½ÃÀÛ */
+	/** ë…¸ë“œ ì‹¤í–‰ ì‹œì‘ */
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	/** ¸Å ÇÁ·¹ÀÓ Æ½ */
+	/** ë§¤ í”„ë ˆì„ í‹± */
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	/** ÅÂ½ºÅ©°¡ Áß´ÜµÉ ¶§ È£ÃâµÊ */
+	/** íƒœìŠ¤í¬ê°€ ì¤‘ë‹¨ë  ë•Œ í˜¸ì¶œë¨ */
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	UPROPERTY()

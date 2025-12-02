@@ -1,33 +1,32 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Dragon.h"
-#include "Skills.h"
-#include "SkillBase.h"
+#include "Skills/Skill_Range.h"
 #include "FormDefinition.h"
 #include "FireballProjectile.h"
 
 AEnemy_Dragon::AEnemy_Dragon()
 {
-	// »ı¼ºÀÚ¿¡¼­ ½ºÅ³ Å¬·¡½º ¼³Á¤
+	// ìƒì„±ìì—ì„œ ìŠ¤í‚¬ í´ë˜ìŠ¤ ì„¤ì •
 	SkillClasses.Add(ESkillSlot::Active, USkill_Range::StaticClass());
 }
 
 void AEnemy_Dragon::BeginPlay()
 {
 	Super::BeginPlay();
-	// ½ºÅ³ ÃÊ±âÈ­´Â ºÎ¸ğ¿¡¼­ Ã³¸®µÊ
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”ëŠ” ë¶€ëª¨ì—ì„œ ì²˜ë¦¬ë¨
 }
 
 void AEnemy_Dragon::ActivateSkill()
 {
-	// 1. ½ºÅ³ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+	// 1. ìŠ¤í‚¬ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) return;
 
 	USkill_Range* RangeSkill = Cast<USkill_Range>(Skill);
 	if (!RangeSkill) return;
 	
-	// InitializeFromDefinition È£Ãâ >> ÇöÀç ½ºÅ³ ±âº» °ªÀ» ¼¼ÆÃ
+	// InitializeFromDefinition í˜¸ì¶œ >> í˜„ì¬ ìŠ¤í‚¬ ê¸°ë³¸ ê°’ì„ ì„¸íŒ…
 	if (DefaultFormDef && DefaultFormDef->SkillSet)
 	{
 		if (USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active))
@@ -36,7 +35,7 @@ void AEnemy_Dragon::ActivateSkill()
 		}
 	}
 
-	// BP_Enemy_Dragon¿¡¼­ ¼³Á¤ÇÑ FireballClass Àü´Ş
+	// BP_Enemy_Dragonì—ì„œ ì„¤ì •í•œ FireballClass ì „ë‹¬
 	if (FireballClass)
 	{
 		RangeSkill->FireballClass = FireballClass;
@@ -47,9 +46,9 @@ void AEnemy_Dragon::ActivateSkill()
 		return;
 	}
 
-	// ¿©±â¼­ È£ÃâµÇ´Â °ÍÀº USkill_Range::ActivateSkill()
+	// ì—¬ê¸°ì„œ í˜¸ì¶œë˜ëŠ” ê²ƒì€ USkill_Range::ActivateSkill()
 	RangeSkill->ActivateSkill();
-	RangeSkill->StopSkill(); // »ç°Å¸® ½ºÅ³Àº Áï½Ã Á¤Áö
+	RangeSkill->StopSkill(); // ì‚¬ê±°ë¦¬ ìŠ¤í‚¬ì€ ì¦‰ì‹œ ì •ì§€
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Dragon] Range skill component activated!"));
 }

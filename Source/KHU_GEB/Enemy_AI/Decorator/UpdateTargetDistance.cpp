@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UpdateTargetDistance.h"
@@ -9,12 +9,12 @@
 
 UUpdateTargetDistance::UUpdateTargetDistance()
 {
-    // ¼­ºñ½ºÀÇ ÀÌ¸§ ¼³Á¤
+    // ì„œë¹„ìŠ¤ì˜ ì´ë¦„ ì„¤ì •
     NodeName = TEXT("Update Target Distance");
 
-    // ¼­ºñ½º°¡ ¾ó¸¶³ª ÀÚÁÖ ½ÇÇàµÉÁö (ÃÊ) ¼³Á¤ (0.5ÃÊ¸¶´Ù)
+    // ì„œë¹„ìŠ¤ê°€ ì–¼ë§ˆë‚˜ ìžì£¼ ì‹¤í–‰ë ì§€ (ì´ˆ) ì„¤ì • (0.5ì´ˆë§ˆë‹¤)
     Interval = 0.016f;
-    // ¸Å¹ø ¾à°£ÀÇ ½Ã°£Â÷¸¦ µÎ¾î ¿©·¯ AI°¡ µ¿½Ã¿¡ ½ÇÇàµÇ´Â °ÍÀ» ¹æÁö
+    // ë§¤ë²ˆ ì•½ê°„ì˜ ì‹œê°„ì°¨ë¥¼ ë‘ì–´ ì—¬ëŸ¬ AIê°€ ë™ì‹œì— ì‹¤í–‰ë˜ëŠ” ê²ƒì„ ë°©ì§€
     RandomDeviation = 0.1f;
 }
 
@@ -22,11 +22,11 @@ void UUpdateTargetDistance::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 {
     Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-    // ÇÊ¿äÇÑ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+    // í•„ìš”í•œ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
     AAIController* AIController = OwnerComp.GetAIOwner();
 
-    // À¯È¿¼º °Ë»ç (ÇÊ¼ö)
+    // ìœ íš¨ì„± ê²€ì‚¬ (í•„ìˆ˜)
     if (!BlackboardComp || !AIController)
     {
         return;
@@ -38,21 +38,21 @@ void UUpdateTargetDistance::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
         return;
     }
 
-    // 1. ÀÔ·Â Å° (Target) ¿¡¼­ Å¸°Ù ¾×ÅÍ ÀÐ¾î¿À±â
+    // 1. ìž…ë ¥ í‚¤ (Target) ì—ì„œ íƒ€ê²Ÿ ì•¡í„° ì½ì–´ì˜¤ê¸°
     UObject* TargetObject = BlackboardComp->GetValueAsObject(TargetActorKey.SelectedKeyName);
     AActor* TargetActor = Cast<AActor>(TargetObject);
 
     if (!TargetActor)
     {
-        // Å¸°ÙÀÌ ¾øÀ¸¸é (¿¹: ÇÃ·¹ÀÌ¾î¸¦ ³õÄ§), °Å¸®¸¦ À¯È¿ÇÏÁö ¾ÊÀº °ª(-1.0)À¸·Î ¼³Á¤
+        // íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ (ì˜ˆ: í”Œë ˆì´ì–´ë¥¼ ë†“ì¹¨), ê±°ë¦¬ë¥¼ ìœ íš¨í•˜ì§€ ì•Šì€ ê°’(-1.0)ìœ¼ë¡œ ì„¤ì •
         BlackboardComp->SetValueAsFloat(BlackboardKey.SelectedKeyName, -1.0f);
         return;
     }
 
-    // 2. ÀÚ½Å°ú Å¸°Ù »çÀÌÀÇ °Å¸® °è»ê
+    // 2. ìžì‹ ê³¼ íƒ€ê²Ÿ ì‚¬ì´ì˜ ê±°ë¦¬ ê³„ì‚°
     float Distance = FVector::Dist(ControllingPawn->GetActorLocation(), TargetActor->GetActorLocation());
 
-    // 3. Ãâ·Â Å° (TargetDistance) ¿¡ °è»êµÈ °Å¸® °ª ¾²±â
-    // BlackboardKey´Â UBTService_BlackboardBase ºÎ¸ð Å¬·¡½º¿¡ Á¤ÀÇµÇ¾î ÀÖ½À´Ï´Ù.
+    // 3. ì¶œë ¥ í‚¤ (TargetDistance) ì— ê³„ì‚°ëœ ê±°ë¦¬ ê°’ ì“°ê¸°
+    // BlackboardKeyëŠ” UBTService_BlackboardBase ë¶€ëª¨ í´ëž˜ìŠ¤ì— ì •ì˜ë˜ì–´ ìžˆìŠµë‹ˆë‹¤.
     BlackboardComp->SetValueAsFloat(BlackboardKey.SelectedKeyName, Distance);
 }

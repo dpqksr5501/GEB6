@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,8 +10,8 @@
 class UWeaponComponent;
 
 /**
- * AI°¡ WeaponComponent¸¦ »ç¿ëÇÏ¿© ´Ü¼øÇÑ °ø°İÀ» ¼öÇàÇÏ´Â ÅÂ½ºÅ©ÀÔ´Ï´Ù.
- * DefaultFormDefÀÇ Ã¹ ¹øÂ° °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÏ°í WeaponComponent·Î È÷Æ®¹Ú½º¸¦ °ü¸®ÇÕ´Ï´Ù.
+ * AIê°€ WeaponComponentë¥¼ ì‚¬ìš©í•˜ì—¬ ë‹¨ìˆœí•œ ê³µê²©ì„ ìˆ˜í–‰í•˜ëŠ” íƒœìŠ¤í¬ì…ë‹ˆë‹¤.
+ * DefaultFormDefì˜ ì²« ë²ˆì§¸ ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•˜ê³  WeaponComponentë¡œ íˆíŠ¸ë°•ìŠ¤ë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
  */
 UCLASS()
 class KHU_GEB_API UTAttack : public UBTTaskNode
@@ -21,21 +21,21 @@ class KHU_GEB_API UTAttack : public UBTTaskNode
 public:
 	UTAttack();
 
-	/** ºí·¢º¸µå Å° ¼³Á¤ */
+	/** ë¸”ë™ë³´ë“œ í‚¤ ì„¤ì • */
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	FBlackboardKeySelector LastActionTimeKey;
 
 protected:
-	/** ÅÂ½ºÅ©°¡ ½ÃÀÛµÉ ¶§ È£ÃâµË´Ï´Ù. °ø°İ ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÕ´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì‹œì‘ë  ë•Œ í˜¸ì¶œë©ë‹ˆë‹¤. ê³µê²© ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•©ë‹ˆë‹¤. */
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	/** ÅÂ½ºÅ©°¡ ½ÇÇà ÁßÀÎ µ¿¾È ¸Å Æ½ È£ÃâµË´Ï´Ù. ¸ùÅ¸ÁÖ Á¾·á¸¦ È®ÀÎÇÕ´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì‹¤í–‰ ì¤‘ì¸ ë™ì•ˆ ë§¤ í‹± í˜¸ì¶œë©ë‹ˆë‹¤. ëª½íƒ€ì£¼ ì¢…ë£Œë¥¼ í™•ì¸í•©ë‹ˆë‹¤. */
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	/** ÅÂ½ºÅ©°¡ Áß´ÜµÉ ¶§ È£ÃâµË´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì¤‘ë‹¨ë  ë•Œ í˜¸ì¶œë©ë‹ˆë‹¤. */
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	// Notify Ã³¸® ÇÔ¼öµé Ãß°¡
+	// Notify ì²˜ë¦¬ í•¨ìˆ˜ë“¤ ì¶”ê°€
 	UFUNCTION()
 	void OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
 
@@ -46,11 +46,11 @@ private:
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 
-	/** ÇöÀç Àç»ı ÁßÀÎ ¸ùÅ¸ÁÖ */
+	/** í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ëª½íƒ€ì£¼ */
 	UPROPERTY()
 	UAnimMontage* CurrentMontage;
 
-	/** WeaponComponent ÂüÁ¶ (Ä³½Ã¿ë) */
+	/** WeaponComponent ì°¸ì¡° (ìºì‹œìš©) */
 	UPROPERTY()
 	UWeaponComponent* CachedWeaponComp;
 };

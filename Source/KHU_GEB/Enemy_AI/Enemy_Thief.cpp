@@ -1,34 +1,34 @@
-#include "Enemy_AI/Enemy_Thief.h"
-#include "Skills.h"
-#include "SkillBase.h"
+ï»¿#include "Enemy_AI/Enemy_Thief.h"
+#include "Skills/Skill_Swift.h"
 #include "FormDefinition.h"
+
 AEnemy_Thief::AEnemy_Thief()
 {
-	// »ı¼ºÀÚ¿¡¼­ ½ºÅ³ Å¬·¡½º ¼³Á¤
+	// ìƒì„±ìì—ì„œ ìŠ¤í‚¬ í´ë˜ìŠ¤ ì„¤ì •
 	SkillClasses.Add(ESkillSlot::Active, USkill_Swift::StaticClass());
 }
 
 void AEnemy_Thief::BeginPlay()
 {
 	Super::BeginPlay();
-	// ½ºÅ³ ÃÊ±âÈ­´Â ºÎ¸ğ¿¡¼­ Ã³¸®µÊ
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”ëŠ” ë¶€ëª¨ì—ì„œ ì²˜ë¦¬ë¨
 }
 
 void AEnemy_Thief::ActivateSkill()
 	{
-	// 1. ½ºÅ³ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+	// 1. ìŠ¤í‚¬ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) return;
 
 	USkill_Swift* SwiftSkill = Cast<USkill_Swift>(Skill);
 	if (!SwiftSkill) return;
 	
-	// InitializeFromDefinition È£Ãâ >> °¢Á¾ ½ºÅ³ ±âº» °ªÀÌ ¼³Á¤µÊ
+	// InitializeFromDefinition í˜¸ì¶œ >> ê°ì¢… ìŠ¤í‚¬ ê¸°ë³¸ ê°’ì´ ì„¤ì •ë¨
 	SwiftSkill->InitializeFromDefinition(DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active));
 
 	if (!SwiftSkill->CanActivate()) return;
 
-	// ¿©±â¼­ È£ÃâµÇ´Â °ÍÀº USkill_Swift::ActivateSkill()
+	// ì—¬ê¸°ì„œ í˜¸ì¶œë˜ëŠ” ê²ƒì€ USkill_Swift::ActivateSkill()
 	SwiftSkill->ActivateSkill(); 
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Thief] Swift skill component activated!"));

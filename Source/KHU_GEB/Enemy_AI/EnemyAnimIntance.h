@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -42,11 +42,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bWasInAir;
 
-	/** Guard ÆûÀÇ SpaceAction (µµ¹ß/²ø¾î´ç±è) ÀÔ·Â ÇÃ·¡±× */
+	/** Guard í¼ì˜ SpaceAction (ë„ë°œ/ëŒì–´ë‹¹ê¹€) ì…ë ¥ í”Œë˜ê·¸ */
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	bool bSpaceActionInput;
 
-	/** Range ÆûÀÇ ±Û¶óÀÌµù(È°°­) »óÅÂ ÇÃ·¡±× */
+	/** Range í¼ì˜ ê¸€ë¼ì´ë”©(í™œê°•) ìƒíƒœ í”Œë˜ê·¸ */
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
 	bool bIsRangeGliding;
 };

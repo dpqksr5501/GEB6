@@ -1,30 +1,30 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TMoveTo.h"
 #include "AIController.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Navigation/PathFollowingComponent.h" // EPathFollowingRequestResult::Type ªÁøÎ
-#include "Engine.h" // GEngine (µπˆ±◊ ∏ﬁΩ√¡ˆ) ªÁøÎ¿ª ¿ß«ÿ « ø‰
+#include "Navigation/PathFollowingComponent.h" // EPathFollowingRequestResult::Type ÏÇ¨Ïö©
+#include "Engine.h" // GEngine (ÎîîÎ≤ÑÍ∑∏ Î©îÏãúÏßÄ) ÏÇ¨Ïö©ÏùÑ ÏúÑÌï¥ ÌïÑÏöî
 
 UTMoveTo::UTMoveTo()
 {
 	NodeName = "TMoveTo";
 
-	// TickTask∏¶ ∏≈ «¡∑π¿” »£√‚«œ±‚ ¿ß«ÿ π›µÂΩ√ true∑Œ º≥¡§
+	// TickTaskÎ•º Îß§ ÌîÑÎ†àÏûÑ Ìò∏Ï∂úÌïòÍ∏∞ ÏúÑÌï¥ Î∞òÎìúÏãú trueÎ°ú ÏÑ§Ï†ï
 	bNotifyTick = true;
 
-	// ∏‚πˆ ∫Øºˆ(AIController µÓ)∏¶ æ»¿¸«œ∞‘ ¿˙¿Â«œ±‚ ¿ß«ÿ true∑Œ º≥¡§
+	// Î©§Î≤Ñ Î≥ÄÏàò(AIController Îì±)Î•º ÏïàÏ†ÑÌïòÍ≤å Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌï¥ trueÎ°ú ÏÑ§Ï†ï
 	bCreateNodeInstance = true;
 
-	// Vector ≈∏¿‘¿« ≈∞∏∏ «„øÎ
+	// Vector ÌÉÄÏûÖÏùò ÌÇ§Îßå ÌóàÏö©
 	TargetLocationKey.AddVectorFilter(this, GET_MEMBER_NAME_CHECKED(UTMoveTo, TargetLocationKey));
 }
 
 EBTNodeResult::Type UTMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// AIController, Controlled Pawn, Character Movement Component ∞°¡ÆøÕ ∫Øºˆ∑Œ ¿˙¿Â
+	// AIController, Controlled Pawn, Character Movement Component Í∞ÄÏ†∏ÏôÄ Î≥ÄÏàòÎ°ú Ï†ÄÏû•
 	AIController = OwnerComp.GetAIOwner();
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
 
@@ -45,34 +45,34 @@ EBTNodeResult::Type UTMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// BlackBoardø°º≠ Vector ≈∏¿‘¿« ∏Ò«• ¿ßƒ° ∞°¡Æø¿±‚
+	// BlackBoardÏóêÏÑú Vector ÌÉÄÏûÖÏùò Î™©Ìëú ÏúÑÏπò Í∞ÄÏ†∏Ïò§Í∏∞
 	FVector TargetLocation = BlackboardComp->GetValueAsVector(TargetLocationKey.SelectedKeyName);
 	
-	// ∏Ò«• ¿ßƒ°∞° ¿Ø»ø«—¡ˆ »Æ¿Œ
+	// Î™©Ìëú ÏúÑÏπòÍ∞Ä Ïú†Ìö®ÌïúÏßÄ ÌôïÏù∏
 	if (TargetLocation == FVector::ZeroVector)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// «ˆ¿Á ∞≈∏Æ ∞ËªÍ
+	// ÌòÑÏû¨ Í±∞Î¶¨ Í≥ÑÏÇ∞
 	FVector CurrentLocation = ControlledPawn->GetActorLocation();
 	CurrentDistance = FVector::Dist(CurrentLocation, TargetLocation);
 
-	// If ∫–±‚∏¶ ≈Î«ÿ CurrentDistance <= StopDistance ∞ÀªÁ
+	// If Î∂ÑÍ∏∞Î•º ÌÜµÌï¥ CurrentDistance <= StopDistance Í≤ÄÏÇ¨
 	if (CurrentDistance <= StopDistance)
 	{
-		// ¿ÃπÃ π¸¿ß ≥ªø° ¿÷¿∏π«∑Œ ¡ÔΩ√ º∫∞¯
+		// Ïù¥ÎØ∏ Î≤îÏúÑ ÎÇ¥Ïóê ÏûàÏúºÎØÄÎ°ú Ï¶âÏãú ÏÑ±Í≥µ
 		return EBTNodeResult::Succeeded;
 	}
 	else
 	{
-		// ∞≈¡˛¿œ ∞ÊøÏ (π¸¿ß π€ø° ¿÷¿∏π«∑Œ ¿Ãµø Ω√¿€)
+		// Í±∞ÏßìÏùº Í≤ΩÏö∞ (Î≤îÏúÑ Î∞ñÏóê ÏûàÏúºÎØÄÎ°ú Ïù¥Îèô ÏãúÏûë)
 		MovementComponent->MaxWalkSpeed = WalkSpeed;
 
-		// ªÛ≈¬ ∫Ø»Ø
+		// ÏÉÅÌÉú Î≥ÄÌôò
 		BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Moving);
 		
-		// TickTaskø°º≠ ¡˜¡¢ ¿Ãµø √≥∏Æ∏¶ Ω√¿€
+		// TickTaskÏóêÏÑú ÏßÅÏ†ë Ïù¥Îèô Ï≤òÎ¶¨Î•º ÏãúÏûë
 		return EBTNodeResult::InProgress;
 	}
 }
@@ -86,32 +86,32 @@ void UTMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 		return;
 	}
 
-	// ∏Ò«• ¿ßƒ°øÕ «ˆ¿Á ∞≈∏Æ ∞ËªÍ
+	// Î™©Ìëú ÏúÑÏπòÏôÄ ÌòÑÏû¨ Í±∞Î¶¨ Í≥ÑÏÇ∞
 	FVector TargetLocation = BlackboardComp->GetValueAsVector(TargetLocationKey.SelectedKeyName);
 	FVector CurrentLocation = ControlledPawn->GetActorLocation();
 	CurrentDistance = FVector::Dist(CurrentLocation, TargetLocation);
 
 	if (CurrentDistance <= StopDistance)
 	{
-		// ∏Ò«• π¸¿ß µµ¥ﬁ. ¿Ãµø ¿‘∑¬ ¡ﬂ¡ˆ
+		// Î™©Ìëú Î≤îÏúÑ ÎèÑÎã¨. Ïù¥Îèô ÏûÖÎ†• Ï§ëÏßÄ
 		AIController->SetIgnoreMoveInput(false);
 		
-		// ≈¬Ω∫≈© º∫∞¯¿∏∑Œ ¡æ∑·
+		// ÌÉúÏä§ÌÅ¨ ÏÑ±Í≥µÏúºÎ°ú Ï¢ÖÎ£å
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	else
 	{
-		// ∏Ò«• πÊ«‚ ∞ËªÍ (¡§±‘»≠µ» ∫§≈Õ)
+		// Î™©Ìëú Î∞©Ìñ• Í≥ÑÏÇ∞ (Ï†ïÍ∑úÌôîÎêú Î≤°ÌÑ∞)
 		FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
 		
-		// Z√‡ º∫∫– ¡¶∞≈ (∆Ú∏È ¿Ãµø∏∏)
+		// ZÏ∂ï ÏÑ±Î∂Ñ Ï†úÍ±∞ (ÌèâÎ©¥ Ïù¥ÎèôÎßå)
 		Direction.Z = 0.0f;
 		Direction = Direction.GetSafeNormal();
 
-		// πÊ«‚ ∫§≈Õ∏¶ ¿ÃøÎ«ÿ ¿Ãµø ¿‘∑¬ ¿˚øÎ
+		// Î∞©Ìñ• Î≤°ÌÑ∞Î•º Ïù¥Ïö©Ìï¥ Ïù¥Îèô ÏûÖÎ†• Ï†ÅÏö©
 		if (!Direction.IsZero())
 		{
-			// Pawn¿« ¿Ãµø ¿‘∑¬ø° ¡˜¡¢ πÊ«‚ ∫§≈Õ ¿˚øÎ
+			// PawnÏùò Ïù¥Îèô ÏûÖÎ†•Ïóê ÏßÅÏ†ë Î∞©Ìñ• Î≤°ÌÑ∞ Ï†ÅÏö©
 			ControlledPawn->AddMovementInput(Direction, 1.0f);
 		}
 	}
@@ -119,8 +119,8 @@ void UTMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 
 EBTNodeResult::Type UTMoveTo::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// ¿Ã ≈¬Ω∫≈©∞° ¥Ÿ∏• ∫Í∑£ƒ°ø° ¿««ÿ ¡ﬂ¥‹(Abort)µ«æ˙¿ª ∂ß
-	// ¿Ãµø ¿‘∑¬ ¡ﬂ¡ˆ
+	// Ïù¥ ÌÉúÏä§ÌÅ¨Í∞Ä Îã§Î•∏ Î∏åÎûúÏπòÏóê ÏùòÌï¥ Ï§ëÎã®(Abort)ÎêòÏóàÏùÑ Îïå
+	// Ïù¥Îèô ÏûÖÎ†• Ï§ëÏßÄ
 	if (AIController)
 	{
 		AIController->SetIgnoreMoveInput(false);

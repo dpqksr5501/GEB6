@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -8,9 +8,9 @@
 class AEnemy_Base;
 
 /**
- * °ÔÀÓ ·¹º§ ÀüÃ¼ÀÇ Àû ½ºÆù ¼ö¸¦ °ü¸®ÇÏ´Â ¼­ºê½Ã½ºÅÛ
- * °³º° ½ºÆ÷³Ê°¡ ½ºÆùÀ» ¿äÃ»ÇÒ ½Ã ½ºÆù ¼ö¸¦ È®ÀÎ ÈÄ Çã°¡/°ÅºÎ
- * ¿©·¯ Enemy Å¸ÀÔº°·Î µ¶¸³ÀûÀÎ ½ºÆù °ü¸®
+ * ê²Œì„ ë ˆë²¨ ì „ì²´ì˜ ì  ìŠ¤í° ìˆ˜ë¥¼ ê´€ë¦¬í•˜ëŠ” ì„œë¸Œì‹œìŠ¤í…œ
+ * ê°œë³„ ìŠ¤í¬ë„ˆê°€ ìŠ¤í°ì„ ìš”ì²­í•  ì‹œ ìŠ¤í° ìˆ˜ë¥¼ í™•ì¸ í›„ í—ˆê°€/ê±°ë¶€
+ * ì—¬ëŸ¬ Enemy íƒ€ì…ë³„ë¡œ ë…ë¦½ì ì¸ ìŠ¤í° ê´€ë¦¬
  */
 UCLASS()
 class KHU_GEB_API UEnemySpawnDirector : public UGameInstanceSubsystem
@@ -19,107 +19,107 @@ class KHU_GEB_API UEnemySpawnDirector : public UGameInstanceSubsystem
 
 public:
     /**
-     * ·¹º§ÀÇ ÃÖ´ë µ¿½Ã ½ºÆù ¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù. (¿¹: ·¹º§ ºí·çÇÁ¸°Æ®ÀÇ BeginPlay¿¡¼­ È£Ãâ)
-     * @param NewMax µ¿½Ã¿¡ ¸Ê¿¡ Á¸ÀçÇÒ ¼ö ÀÖ´Â ÃÖ´ë Enemy ¼ö
+     * ë ˆë²¨ì˜ ìµœëŒ€ ë™ì‹œ ìŠ¤í° ìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. (ì˜ˆ: ë ˆë²¨ ë¸”ë£¨í”„ë¦°íŠ¸ì˜ BeginPlayì—ì„œ í˜¸ì¶œ)
+     * @param NewMax ë™ì‹œì— ë§µì— ì¡´ì¬í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Enemy ìˆ˜
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void SetMaxConcurrentSpawns(int32 NewMax);
 
     /**
-     * ÃÑ ´©Àû ¼ÒÈ¯ ÇÑµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-     * @param NewMax °ÔÀÓ ÀüÃ¼¿¡¼­ ¼ÒÈ¯ÇÒ ¼ö ÀÖ´Â ÃÑ Enemy ¼ö
+     * ì´ ëˆ„ì  ì†Œí™˜ í•œë„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+     * @param NewMax ê²Œì„ ì „ì²´ì—ì„œ ì†Œí™˜í•  ìˆ˜ ìˆëŠ” ì´ Enemy ìˆ˜
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void SetMaxTotalSpawns(int32 NewMax);
 
     /**
-     * Æ¯Á¤ Enemy Å¸ÀÔÀÇ ÃÖ´ë ½ºÆù ¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-     * @param EnemyClass ¼³Á¤ÇÒ Enemy Å¬·¡½º
-     * @param MaxCount ÇØ´ç Å¬·¡½ºÀÇ ÃÖ´ë ½ºÆù ¼ö
+     * íŠ¹ì • Enemy íƒ€ì…ì˜ ìµœëŒ€ ìŠ¤í° ìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+     * @param EnemyClass ì„¤ì •í•  Enemy í´ë˜ìŠ¤
+     * @param MaxCount í•´ë‹¹ í´ë˜ìŠ¤ì˜ ìµœëŒ€ ìŠ¤í° ìˆ˜
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void SetMaxSpawnsForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass, int32 MaxCount);
 
     /**
-     * ½ºÆùÀ» ¿äÃ»ÇÕ´Ï´Ù. ¿¹»êÀÌ ³²¾ÆÀÖÀ¸¸é 1 ¼Ò¸ğÇÏ°í true¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
-     * @param EnemyClass ½ºÆùÇÒ Enemy Å¬·¡½º
-     * @return ½ºÆùÀÌ Çã°¡µÇ¸é true, ¿¹»êÀÌ ¾øÀ¸¸é false
+     * ìŠ¤í°ì„ ìš”ì²­í•©ë‹ˆë‹¤. ì˜ˆì‚°ì´ ë‚¨ì•„ìˆìœ¼ë©´ 1 ì†Œëª¨í•˜ê³  trueë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+     * @param EnemyClass ìŠ¤í°í•  Enemy í´ë˜ìŠ¤
+     * @return ìŠ¤í°ì´ í—ˆê°€ë˜ë©´ true, ì˜ˆì‚°ì´ ì—†ìœ¼ë©´ false
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     bool RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass);
 
     /**
-     * Enemy°¡ »ç¸ÁÇßÀ» ¶§ È£ÃâµË´Ï´Ù. ÇöÀç »ì¾ÆÀÖ´Â ¼ö¸¦ °¨¼Ò½ÃÅµ´Ï´Ù.
-     * @param EnemyClass »ç¸ÁÇÑ Enemy Å¬·¡½º
+     * Enemyê°€ ì‚¬ë§í–ˆì„ ë•Œ í˜¸ì¶œë©ë‹ˆë‹¤. í˜„ì¬ ì‚´ì•„ìˆëŠ” ìˆ˜ë¥¼ ê°ì†Œì‹œí‚µë‹ˆë‹¤.
+     * @param EnemyClass ì‚¬ë§í•œ Enemy í´ë˜ìŠ¤
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void OnEnemyDied(TSubclassOf<AEnemy_Base> EnemyClass);
 
-    /** ÇöÀç »ì¾ÆÀÖ´Â Enemy ¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù. */
+    /** í˜„ì¬ ì‚´ì•„ìˆëŠ” Enemy ìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetCurrentAliveCount() const { return CurrentAliveCount; }
 
-    /** ÇöÀç±îÁö ´©Àû ½ºÆùµÈ È½¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù. */
+    /** í˜„ì¬ê¹Œì§€ ëˆ„ì  ìŠ¤í°ëœ íšŸìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetCurrentSpawnCount() const { return TotalSpawnedCount; }
 
     /**
-     * Æ¯Á¤ Enemy Å¸ÀÔÀÇ ÇöÀç ½ºÆù ¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
-     * @param EnemyClass Á¶È¸ÇÒ Enemy Å¬·¡½º
-     * @return ÇØ´ç Å¬·¡½ºÀÇ ÇöÀç ½ºÆù ¼ö
+     * íŠ¹ì • Enemy íƒ€ì…ì˜ í˜„ì¬ ìŠ¤í° ìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+     * @param EnemyClass ì¡°íšŒí•  Enemy í´ë˜ìŠ¤
+     * @return í•´ë‹¹ í´ë˜ìŠ¤ì˜ í˜„ì¬ ìŠ¤í° ìˆ˜
      */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetCurrentSpawnCountForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass) const;
 
-    /** ¼³Á¤µÈ ÃÖ´ë µ¿½Ã ½ºÆù ¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù. */
+    /** ì„¤ì •ëœ ìµœëŒ€ ë™ì‹œ ìŠ¤í° ìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetMaxConcurrentSpawns() const { return MaxConcurrentSpawns; }
 
-    /** ¼³Á¤µÈ ÃÖ´ë ½ºÆù ¿¹»êÀ» ¹İÈ¯ÇÕ´Ï´Ù. */
+    /** ì„¤ì •ëœ ìµœëŒ€ ìŠ¤í° ì˜ˆì‚°ì„ ë°˜í™˜í•©ë‹ˆë‹¤. */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetMaxTotalSpawns() const { return MaxTotalSpawns; }
 
     /**
-     * Æ¯Á¤ Enemy Å¸ÀÔÀÇ ÃÖ´ë ½ºÆù ¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
-     * @param EnemyClass Á¶È¸ÇÒ Enemy Å¬·¡½º
-     * @return ÇØ´ç Å¬·¡½ºÀÇ ÃÖ´ë ½ºÆù ¼ö
+     * íŠ¹ì • Enemy íƒ€ì…ì˜ ìµœëŒ€ ìŠ¤í° ìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+     * @param EnemyClass ì¡°íšŒí•  Enemy í´ë˜ìŠ¤
+     * @return í•´ë‹¹ í´ë˜ìŠ¤ì˜ ìµœëŒ€ ìŠ¤í° ìˆ˜
      */
     UFUNCTION(BlueprintPure, Category = "Enemy Spawn Director")
     int32 GetMaxSpawnsForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass) const;
 
-    /** ¸ğµç Ä«¿îÅÍ¸¦ 0À¸·Î ¸®¼ÂÇÕ´Ï´Ù. */
+    /** ëª¨ë“  ì¹´ìš´í„°ë¥¼ 0ìœ¼ë¡œ ë¦¬ì…‹í•©ë‹ˆë‹¤. */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void ResetCounter() { TotalSpawnedCount = 0; CurrentAliveCount = 0; SpawnedCounts.Reset(); AliveCounts.Reset(); }
 
     /**
-     * Æ¯Á¤ Enemy Å¸ÀÔÀÇ Ä«¿îÅÍ¸¦ 0À¸·Î ¸®¼ÂÇÕ´Ï´Ù.
-     * @param EnemyClass ¸®¼ÂÇÒ Enemy Å¬·¡½º
+     * íŠ¹ì • Enemy íƒ€ì…ì˜ ì¹´ìš´í„°ë¥¼ 0ìœ¼ë¡œ ë¦¬ì…‹í•©ë‹ˆë‹¤.
+     * @param EnemyClass ë¦¬ì…‹í•  Enemy í´ë˜ìŠ¤
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass);
 
 private:
-    /** ÇöÀç±îÁö ÃÑ ´©Àû ½ºÆùµÈ È½¼ö (°¨¼ÒÇÏÁö ¾ÊÀ½) */
+    /** í˜„ì¬ê¹Œì§€ ì´ ëˆ„ì  ìŠ¤í°ëœ íšŸìˆ˜ (ê°ì†Œí•˜ì§€ ì•ŠìŒ) */
     int32 TotalSpawnedCount = 0;
 
-    /** ÇöÀç »ì¾ÆÀÖ´Â Enemy ¼ö (»ç¸Á ½Ã °¨¼Ò) */
+    /** í˜„ì¬ ì‚´ì•„ìˆëŠ” Enemy ìˆ˜ (ì‚¬ë§ ì‹œ ê°ì†Œ) */
     int32 CurrentAliveCount = 0;
 
-    /** µ¿½Ã¿¡ ¸Ê¿¡ Á¸ÀçÇÒ ¼ö ÀÖ´Â ÃÖ´ë Enemy ¼ö */
+    /** ë™ì‹œì— ë§µì— ì¡´ì¬í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Enemy ìˆ˜ */
     int32 MaxConcurrentSpawns = 30;
 
-    /** ÃÑ ´©Àû ¼ÒÈ¯ ÇÑµµ */
+    /** ì´ ëˆ„ì  ì†Œí™˜ í•œë„ */
     int32 MaxTotalSpawns = 100;
 
-    /** Enemy Å¸ÀÔº° ÇöÀç »ì¾ÆÀÖ´Â ¼ö */
+    /** Enemy íƒ€ì…ë³„ í˜„ì¬ ì‚´ì•„ìˆëŠ” ìˆ˜ */
     UPROPERTY()
     TMap<TSubclassOf<AEnemy_Base>, int32> AliveCounts;
 
-    /** Enemy Å¸ÀÔº° ÇöÀç±îÁö ½ºÆùµÈ È½¼ö (¿¹»ê ¼Ò¸ğ·®) */
+    /** Enemy íƒ€ì…ë³„ í˜„ì¬ê¹Œì§€ ìŠ¤í°ëœ íšŸìˆ˜ (ì˜ˆì‚° ì†Œëª¨ëŸ‰) */
     UPROPERTY()
     TMap<TSubclassOf<AEnemy_Base>, int32> SpawnedCounts;
 
-    /** Enemy Å¸ÀÔº° ÃÖ´ë ½ºÆù ÇÑµµ */
+    /** Enemy íƒ€ì…ë³„ ìµœëŒ€ ìŠ¤í° í•œë„ */
     UPROPERTY()
     TMap<TSubclassOf<AEnemy_Base>, int32> MaxSpawnsPerType;
 };

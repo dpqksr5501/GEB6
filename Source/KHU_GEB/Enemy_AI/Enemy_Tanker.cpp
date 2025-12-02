@@ -1,25 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Tanker.h"
-#include "Skills.h"
-#include "SkillBase.h"
+#include "Skills/Skill_Guard.h"
 #include "FormDefinition.h"
-
 
 AEnemy_Tanker::AEnemy_Tanker()
 {
-	// Tick È°¼ºÈ­
+	// Tick í™œì„±í™”
 	PrimaryActorTick.bCanEverTick = true;
 	
-	// »ı¼ºÀÚ¿¡¼­ ½ºÅ³ Å¬·¡½º ¼³Á¤
+	// ìƒì„±ìì—ì„œ ìŠ¤í‚¬ í´ë˜ìŠ¤ ì„¤ì •
 	SkillClasses.Add(ESkillSlot::Active, USkill_Guard::StaticClass());
 }
 
 void AEnemy_Tanker::BeginPlay()
 {
 	Super::BeginPlay();
-	// ½ºÅ³ ÃÊ±âÈ­´Â ºÎ¸ğ¿¡¼­ Ã³¸®µÊ
-	// CachedGuardSkill¿¡ ÀÚ½ÅÀÇ ½ºÅ³À» CachedGuardSkill¿¡ ¸Â°Ô Ä³½ºÆÃÇÏ¿© ÇÒ´ç
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”ëŠ” ë¶€ëª¨ì—ì„œ ì²˜ë¦¬ë¨
+	// CachedGuardSkillì— ìì‹ ì˜ ìŠ¤í‚¬ì„ CachedGuardSkillì— ë§ê²Œ ìºìŠ¤íŒ…í•˜ì—¬ í• ë‹¹
 	CachedGuardSkill = Cast<USkill_Guard>(Equipped.FindRef(ESkillSlot::Active));
 
 }
@@ -27,10 +25,10 @@ void AEnemy_Tanker::BeginPlay()
 void AEnemy_Tanker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// Guard ½ºÅ³ÀÌ È°¼ºÈ­µÇ¾î ÀÖ°í, Ä³½ÃµÈ ÂüÁ¶°¡ À¯È¿ÇÑ °æ¿ì¿¡¸¸ °Ë»ç
+	// Guard ìŠ¤í‚¬ì´ í™œì„±í™”ë˜ì–´ ìˆê³ , ìºì‹œëœ ì°¸ì¡°ê°€ ìœ íš¨í•œ ê²½ìš°ì—ë§Œ ê²€ì‚¬
 	if (bIsGuardSkillActive && CachedGuardSkill)
 	{
-		// ConsumedShields°¡ RemainingShieldsº¸´Ù Ä¿Áö¸é ½ºÅ³ Áß´Ü
+		// ConsumedShieldsê°€ RemainingShieldsë³´ë‹¤ ì»¤ì§€ë©´ ìŠ¤í‚¬ ì¤‘ë‹¨
 		if (CachedGuardSkill->ConsumedShields > CachedGuardSkill->RemainingShields)
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] ConsumedShields(%d) > RemainingShields(%d). Stopping Guard skill."),
@@ -52,7 +50,7 @@ float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 			if (bDamageHandled)
 			{
 				UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Damage of %f handled by Guard skill."), DamageAmount);
-				return 0.0f; // ÇÇÇØ ¹«½Ã
+				return 0.0f; // í”¼í•´ ë¬´ì‹œ
 			}
 			else {
 				UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] bDamageHandled false. Damage 0"));
@@ -60,7 +58,7 @@ float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 			}
 		}
 		else {
-			// ºÎ¸ğ (Enemy_Base)ÀÇ TakeDamage È£Ãâ
+			// ë¶€ëª¨ (Enemy_Base)ì˜ TakeDamage í˜¸ì¶œ
 			return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		}
 	}
@@ -72,7 +70,7 @@ float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void AEnemy_Tanker::ActivateSkill()
 {
-	// 1. ½ºÅ³ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+	// 1. ìŠ¤í‚¬ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) 
 	{
@@ -87,7 +85,7 @@ void AEnemy_Tanker::ActivateSkill()
 		return;
 	}
 	
-	// InitializeFromDefinition È£Ãâ >> ÇöÀç ½ºÅ³ ±âº» °ªÀ» ¼¼ÆÃ
+	// InitializeFromDefinition í˜¸ì¶œ >> í˜„ì¬ ìŠ¤í‚¬ ê¸°ë³¸ ê°’ì„ ì„¸íŒ…
 	if (DefaultFormDef && DefaultFormDef->SkillSet)
 	{
 		const USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active);
@@ -97,13 +95,13 @@ void AEnemy_Tanker::ActivateSkill()
 		}
 	}
 	
-	// ¸¶³ª °Ë»ç¸¦ ÇØ¼­ ²¨³ùÀ½. ¹®Á¦°¡ µÇ¸é Å°ÁÒ
+	// ë§ˆë‚˜ ê²€ì‚¬ë¥¼ í•´ì„œ êº¼ë†¨ìŒ. ë¬¸ì œê°€ ë˜ë©´ í‚¤ì£ 
 	//if (!GuardSkill->CanActivate()) return; 
 
-	// ¿©±â¼­ È£ÃâµÇ´Â °ÍÀº USkill_Guard::ActivateSkill()
+	// ì—¬ê¸°ì„œ í˜¸ì¶œë˜ëŠ” ê²ƒì€ USkill_Guard::ActivateSkill()
 	GuardSkill->ActivateSkill(); 
 	
-	// Guard ½ºÅ³ È°¼ºÈ­ »óÅÂ ÃßÀû
+	// Guard ìŠ¤í‚¬ í™œì„±í™” ìƒíƒœ ì¶”ì 
 	bIsGuardSkillActive = true;
 	CachedGuardSkill = GuardSkill;
 	

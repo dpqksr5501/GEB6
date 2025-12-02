@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TAttack.h"
 #include "AIController.h"
@@ -14,20 +14,20 @@
 
 UTAttack::UTAttack()
 {
-	// ³ëµå ÀÌ¸§À» "Attack"À¸·Î ¼³Á¤ÇÕ´Ï´Ù.
+	// ë…¸ë“œ ì´ë¦„ì„ "Attack"ìœ¼ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
 	NodeName = TEXT("Attack");
 
-	// TickTask ÇÔ¼ö°¡ È£ÃâµÇµµ·Ï bNotifyTickÀ» true·Î ¼³Á¤ÇÕ´Ï´Ù.
+	// TickTask í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë„ë¡ bNotifyTickì„ trueë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
 	bNotifyTick = true;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	CurrentMontage = nullptr;
 	CachedWeaponComp = nullptr;
 }
 
 EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// ºÎ¸ğ Å¬·¡½ºÀÇ ExecuteTask¸¦ ¸ÕÀú È£ÃâÇÕ´Ï´Ù.
+	// ë¶€ëª¨ í´ë˜ìŠ¤ì˜ ExecuteTaskë¥¼ ë¨¼ì € í˜¸ì¶œí•©ë‹ˆë‹¤.
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
@@ -37,7 +37,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// AI ÄÁÆ®·Ñ·¯¿Í ÄÁÆ®·Ñ·¯°¡ ºùÀÇ ÁßÀÎ Ä³¸¯ÅÍ¸¦ °¡Á®¿É´Ï´Ù.
+	// AI ì»¨íŠ¸ë¡¤ëŸ¬ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë¹™ì˜ ì¤‘ì¸ ìºë¦­í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -52,7 +52,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// Enemy_Base·Î Ä³½ºÆÃ
+	// Enemy_Baseë¡œ ìºìŠ¤íŒ…
 	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
 	if (!EnemyBase)
 	{
@@ -60,7 +60,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// WeaponComponent¸¦ °¡Á®¿Í¼­ Ä³½Ã
+	// WeaponComponentë¥¼ ê°€ì ¸ì™€ì„œ ìºì‹œ
 	CachedWeaponComp = EnemyBase->FindComponentByClass<UWeaponComponent>();
 	if (!CachedWeaponComp)
 	{
@@ -68,14 +68,14 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// DefaultFormDef È®ÀÎ
+	// DefaultFormDef í™•ì¸
 	if (!EnemyBase->DefaultFormDef)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TAttack: DefaultFormDef is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// AttackMontages ¹è¿­ È®ÀÎ
+	// AttackMontages ë°°ì—´ í™•ì¸
 	const TArray<FAttackStep>& AttackMontages = EnemyBase->DefaultFormDef->AttackMontages;
 	if (AttackMontages.Num() == 0)
 	{
@@ -83,7 +83,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// Ã¹ ¹øÂ° °ø°İ ¸ùÅ¸ÁÖÀÇ FullBody ¹öÀü °¡Á®¿À±â
+	// ì²« ë²ˆì§¸ ê³µê²© ëª½íƒ€ì£¼ì˜ FullBody ë²„ì „ ê°€ì ¸ì˜¤ê¸°
 	const FAttackStep& FirstAttack = AttackMontages[0];
 	CurrentMontage = FirstAttack.Montage_FullBody;
 
@@ -93,7 +93,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// ¾Ö´Ô ÀÎ½ºÅÏ½º °¡Á®¿À±â
+	// ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ ê°€ì ¸ì˜¤ê¸°
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 	if (!AnimInstance)
 	{
@@ -101,15 +101,15 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// ±âÁ¸ ¹ÙÀÎµù Á¦°Å (Áßº¹ ¹æÁö)
+	// ê¸°ì¡´ ë°”ì¸ë”© ì œê±° (ì¤‘ë³µ ë°©ì§€)
 	AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
 	AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
 
-	// »õ·Î ¹ÙÀÎµù
+	// ìƒˆë¡œ ë°”ì¸ë”©
 	AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UTAttack::OnNotifyBeginReceived);
 	AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UTAttack::OnNotifyEndReceived);
 
-	// ¸ùÅ¸ÁÖ Àç»ı
+	// ëª½íƒ€ì£¼ ì¬ìƒ
 	float MontageLength = AnimInstance->Montage_Play(CurrentMontage, 1.0f);
 	if (MontageLength <= 0.0f)
 	{
@@ -117,7 +117,7 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 		return EBTNodeResult::Failed;
 	}
 
-	// »óÅÂ º¯È¯
+	// ìƒíƒœ ë³€í™˜
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
 	BlackboardComp->SetValueAsFloat(LastActionTimeKey.SelectedKeyName, OwnerComp.GetWorld()->GetTimeSeconds());
 	BlackboardComp->SetValueAsFloat("LastActionTime", OwnerComp.GetWorld()->GetTimeSeconds());
@@ -127,10 +127,10 @@ EBTNodeResult::Type UTAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uin
 
 void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// ºÎ¸ğ Å¬·¡½ºÀÇ TickTask¸¦ ¸ÕÀú È£ÃâÇÕ´Ï´Ù.
+	// ë¶€ëª¨ í´ë˜ìŠ¤ì˜ TickTaskë¥¼ ë¨¼ì € í˜¸ì¶œí•©ë‹ˆë‹¤.
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -162,21 +162,21 @@ void UTAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, fl
 		return;
 	}
 
-	// ¸ùÅ¸ÁÖ°¡ Àç»ı ÁßÀÎÁö È®ÀÎ
+	// ëª½íƒ€ì£¼ê°€ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸
 	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
-		// ¸ùÅ¸ÁÖ Á¾·á ½Ã µ¨¸®°ÔÀÌÆ® Á¤¸®
+		// ëª½íƒ€ì£¼ ì¢…ë£Œ ì‹œ ë¸ë¦¬ê²Œì´íŠ¸ ì •ë¦¬
 		AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
 		AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
 
-		// ¸ùÅ¸ÁÖ Àç»ıÀÌ ³¡³µÀ¸¹Ç·Î ÅÂ½ºÅ© ¿Ï·á
+		// ëª½íƒ€ì£¼ ì¬ìƒì´ ëë‚¬ìœ¼ë¯€ë¡œ íƒœìŠ¤í¬ ì™„ë£Œ
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }
 
 EBTNodeResult::Type UTAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// AI ÄÁÆ®·Ñ·¯¿Í Ä³¸¯ÅÍ¸¦ °¡Á®¿É´Ï´Ù.
+	// AI ì»¨íŠ¸ë¡¤ëŸ¬ì™€ ìºë¦­í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController)
 	{
@@ -186,16 +186,16 @@ EBTNodeResult::Type UTAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8
 			UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 			if (AnimInstance && CurrentMontage)
 			{
-				// µ¨¸®°ÔÀÌÆ® ÇØÁ¦ (AbortTask¿¡¼­µµ Á¤¸®)
+				// ë¸ë¦¬ê²Œì´íŠ¸ í•´ì œ (AbortTaskì—ì„œë„ ì •ë¦¬)
 				AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UTAttack::OnNotifyBeginReceived);
 				AnimInstance->OnPlayMontageNotifyEnd.RemoveDynamic(this, &UTAttack::OnNotifyEndReceived);
 
-				// ¸ùÅ¸ÁÖ Áß´Ü
+				// ëª½íƒ€ì£¼ ì¤‘ë‹¨
 				AnimInstance->Montage_Stop(0.2f, CurrentMontage);
 				UE_LOG(LogTemp, Log, TEXT("TAttack: Attack aborted, stopping montage"));
 			}
 
-			// WeaponComponentÀÇ Äİ¸®Àü °­Á¦ ºñÈ°¼ºÈ­ (¾ÈÀü ÀåÄ¡)
+			// WeaponComponentì˜ ì½œë¦¬ì „ ê°•ì œ ë¹„í™œì„±í™” (ì•ˆì „ ì¥ì¹˜)
 			if (CachedWeaponComp)
 			{
 				CachedWeaponComp->DisableCollision();
@@ -204,14 +204,14 @@ EBTNodeResult::Type UTAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8
 		}
 	}
 
-	// º¯¼ö Á¤¸®
+	// ë³€ìˆ˜ ì •ë¦¬
 	CurrentMontage = nullptr;
 	CachedWeaponComp = nullptr;
 
 	return Super::AbortTask(OwnerComp, NodeMemory);
 }
 
-// Notify Ã³¸® ÇÔ¼öµé
+// Notify ì²˜ë¦¬ í•¨ìˆ˜ë“¤
 UFUNCTION()
 void UTAttack::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
 {
@@ -232,5 +232,5 @@ void UTAttack::OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNoti
 UFUNCTION()
 void UTAttack::OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
 {
-    // ÇÊ¿ä½Ã ±¸Çö
+    // í•„ìš”ì‹œ êµ¬í˜„
 }

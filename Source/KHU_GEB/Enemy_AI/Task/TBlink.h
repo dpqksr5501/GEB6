@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,9 +10,9 @@ class ACharacter;
 class UJumpComponent;
 
 /**
- * Assassin(Special Æû)ÀÌ ºí¸µÅ©(¼ø°£ÀÌµ¿)¸¦ ¼öÇàÇÏ´Â BTTaskNode
- * JumpComponentÀÇ HandleSpacePressed¸¦ È£ÃâÇÏ¿© ¾ÕÀ¸·Î ¼ø°£ÀÌµ¿ ½ÇÇà
- * Áï½Ã ¿Ï·áµÇ´Â Å¸ÀÔ (InProgress ¾øÀÌ ¹Ù·Î Succeeded/Failed ¹İÈ¯)
+ * Assassin(Special í¼)ì´ ë¸”ë§í¬(ìˆœê°„ì´ë™)ë¥¼ ìˆ˜í–‰í•˜ëŠ” BTTaskNode
+ * JumpComponentì˜ HandleSpacePressedë¥¼ í˜¸ì¶œí•˜ì—¬ ì•ìœ¼ë¡œ ìˆœê°„ì´ë™ ì‹¤í–‰
+ * ì¦‰ì‹œ ì™„ë£Œë˜ëŠ” íƒ€ì… (InProgress ì—†ì´ ë°”ë¡œ Succeeded/Failed ë°˜í™˜)
  */
 UCLASS()
 class KHU_GEB_API UTBlink : public UBTTaskNode
@@ -25,11 +25,11 @@ public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 protected:
-	/** Ä³½ÃµÈ Character */
+	/** ìºì‹œëœ Character */
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacter> CachedCharacter;
 
-	/** Ä³½ÃµÈ JumpComponent */
+	/** ìºì‹œëœ JumpComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UJumpComponent> CachedJumpComp;
 };

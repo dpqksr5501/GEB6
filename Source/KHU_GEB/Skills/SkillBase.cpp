@@ -1,17 +1,16 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SkillBase.h"
+#include "Skills/SkillBase.h"
 #include "GameFramework/Actor.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "KHU_GEBCharacter.h"
+#include "Enemy_Base.h"
 #include "HealthComponent.h"
 #include "ManaComponent.h"
-#include "KHU_GEBCharacter.h"
 #include "FormManagerComponent.h"
-#include "FormDefinition.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Enemy_Base.h"
 
 USkillBase::USkillBase() {}
 
@@ -197,4 +196,38 @@ void USkillBase::PlayFormSkillMontage()
     }
 
     UE_LOG(LogTemp, Warning, TEXT("[SkillBase] Owner is neither Player nor Enemy!"));
+}
+
+EFormType USkillBase::GetCurrentFormType() const
+{
+    // 소유자가 KHU_GEBCharacter 이고 FormManager가 있다면, 그 값을 그대로 사용
+    if (const AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner()))
+    {
+        if (OwnerChar->FormManager)
+        {
+            return OwnerChar->FormManager->CurrentForm;
+        }
+    }
+
+    // Enemy 등 다른 타입에서 FormManager를 안 쓰는 경우를 대비한 기본값
+    return EFormType::Base;
+}
+
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount)
+{
+    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
+
+    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
+    if (!Health) return;
+
+    FDamageSpec Spec;
+    Spec.RawDamage = DamagePerTick;
+    Spec.bIgnoreDefense = true;     // 방어력 무시
+    Spec.bPeriodic = true;     // 주기적(DoT) 플래그
+    Spec.bFixedDot = true;     // 고정 도트 모드 ON
+    Spec.HitCount = HitCount;
+    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
+    Spec.SourceSkill = SourceSkill;
+
+    Health->ApplyDamageSpec(Spec);
 }

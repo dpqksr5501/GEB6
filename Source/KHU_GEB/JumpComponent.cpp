@@ -55,6 +55,100 @@ void UJumpComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	// === Range 락온 거리(1200) 보정 ===
+	if (CurrentForm == EFormType::Range && bRangeLockOnAdjusting)
+	{
+		AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter);
+		if (!Player)
+		{
+			bRangeLockOnAdjusting = false;
+		}
+		else if (AActor* Target = Player->GetLockOnTarget())
+		{
+			UCharacterMovementComponent* MoveComp = CachedCharacter->GetCharacterMovement();
+			if (!MoveComp)
+			{
+				bRangeLockOnAdjusting = false;
+			}
+			else
+			{
+				const FVector OwnerLoc = CachedCharacter->GetActorLocation();
+				const FVector TargetLoc = Target->GetActorLocation();
+
+				FVector FlatOwner(OwnerLoc.X, OwnerLoc.Y, 0.f);
+				const FVector FlatTarget(TargetLoc.X, TargetLoc.Y, 0.f);
+
+				FVector ToOwner = FlatOwner - FlatTarget; // Target → Owner
+				float CurrentDist = ToOwner.Size();
+
+				const float DesiredDist = RangeLockOnDistance;
+				const float Tolerance = 5.f; // 1200 ± 5 안이면 도착으로 간주
+
+				if (CurrentDist < KINDA_SMALL_NUMBER)
+				{
+					// 거의 같은 위치면 그냥 끝
+					bRangeLockOnAdjusting = false;
+				}
+				else
+				{
+					const float Diff = CurrentDist - DesiredDist;
+
+					// 이미 거의 1200이면 딱 맞춰놓고 XY 속도 정지
+					if (FMath::Abs(Diff) <= Tolerance)
+					{
+						FVector Dir = ToOwner / CurrentDist; // 바깥 방향
+						FVector NewFlatOwner = FlatTarget + Dir * DesiredDist;
+						FVector NewLoc(NewFlatOwner.X, NewFlatOwner.Y, OwnerLoc.Z);
+
+						CachedCharacter->SetActorLocation(NewLoc, true);
+
+						// XY 속도 정지 (Z는 그대로 유지)
+						FVector Vel = MoveComp->Velocity;
+						Vel.X = 0.f;
+						Vel.Y = 0.f;
+						MoveComp->Velocity = Vel;
+
+						bRangeLockOnAdjusting = false;
+					}
+					else
+					{
+						// 한 프레임에 이동할 거리 (넘치지 않게 클램프)
+						float Step = RangeLockOnHorizontalSpeed * RangeLockOnSpeedMultiplier * DeltaTime;
+						Step = FMath::Min(Step, FMath::Abs(Diff));
+
+						// 가까운 경우: 바깥으로 (Target → Owner)
+						// 먼   경우: 안으로  (Owner → Target)
+						FVector Dir;
+						if (Diff < 0.f) // 현재 < 원하는 거리 → 바깥으로 밀어냄
+						{
+							Dir = ToOwner / CurrentDist; // Target → Owner
+						}
+						else // 현재 > 원하는 거리 → 안으로 당김
+						{
+							Dir = (FlatTarget - FlatOwner).GetSafeNormal(); // Owner → Target
+						}
+
+						FVector NewFlatOwner = FlatOwner + Dir * Step;
+						FVector NewLoc(NewFlatOwner.X, NewFlatOwner.Y, OwnerLoc.Z);
+
+						CachedCharacter->SetActorLocation(NewLoc, true);
+					}
+				}
+			}
+		}
+		else
+		{
+			// 락온이 풀렸으면 보정도 중단
+			bRangeLockOnAdjusting = false;
+		}
+
+		// Range 보정이 끝났고, Swift/Guard도 안 돌면 Tick 끄기
+		if (!bRangeLockOnAdjusting && !bSwiftSpinning && !bGuardPullActive)
+		{
+			SetComponentTickEnabled(false);
+		}
+	}
+
 	// Swift 2단 점프 회전 처리 (Actor 중심 회전)
 	// Swift 2단 점프 회전 처리 (MeshRoot 회전)
 	if (bSwiftSpinning && SwiftSpinRoot)
@@ -150,6 +244,8 @@ void UJumpComponent::SetForm(EFormType Form, const UFormDefinition* Def)
 	bIsJumping = false;
 	JumpCount = 0;
 
+	// Range 거리 보정 중이었다면 취소
+	bRangeLockOnAdjusting = false;
 
 	//Guard 끌어당기기 쓰다가 다른 폼으로 변했을 시 취소하는 로직
 	if (bGuardPullActive)
@@ -234,8 +330,17 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 		}
 	}
 
+	// Range 락온 거리 조정 중이면 종료
+	bRangeLockOnAdjusting = false;
+
 	// Swift 회전 중이었다면 종료 + 각도 복원
 	if (bSwiftSpinning) { StopSwiftSpin(/*bResetRotation=*/true); }
+
+	// Guard / Swift / Range 아무 것도 안 돌고 있으면 Tick 끄기
+	if (!bSwiftSpinning && !bGuardPullActive && !bRangeLockOnAdjusting)
+	{
+		SetComponentTickEnabled(false);
+	}
 }
 
 void UJumpComponent::HandleSpacePressed()
@@ -297,13 +402,25 @@ void UJumpComponent::HandleRangePressed()
 	// 1) 땅 위: 높이 비행 + 글라이드
 	if (IsOnGround())
 	{
-		// 기본 점프의 RangeHighJumpMultiplier 배 만큼 위로 발사
-		const float JumpStrength = MoveComp->JumpZVelocity * RangeHighJumpMultiplier;
+		// --- Range 락온 거리 보정 플래그 초기화 ---
+		bRangeLockOnAdjusting = false;
 
+		// 락온 타겟이 있을 때만 거리 보정 시작
+		if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		{
+			if (Player->GetLockOnTarget())
+			{
+				bRangeLockOnAdjusting = true;
+				SetComponentTickEnabled(true);
+			}
+		}
+
+		// 기본 점프의 RangeHighJumpMultiplier 배 만큼 위로 발사 (XY는 0)
 		FVector LaunchVelocity = FVector::ZeroVector;
+		const float JumpStrength = MoveComp->JumpZVelocity * RangeHighJumpMultiplier;
 		LaunchVelocity.Z = JumpStrength;
 
-		// 수평 속도는 유지, 수직 속도만 덮어씀
+		// XY는 유지(=0에서 시작), Z만 덮어씀
 		CachedCharacter->LaunchCharacter(LaunchVelocity, false, true);
 
 		// 글라이딩 느낌: 중력을 줄여서 천천히 떨어지게
@@ -313,19 +430,12 @@ void UJumpComponent::HandleRangePressed()
 		JumpCount = 1;
 
 		// === ABP 플래그 설정 (Player와 Enemy 모두 지원) ===
-		
-		UWorld* World = GetWorld();
-		
-		// Player인 경우
 		if (AKHU_GEBCharacter* MyChar = Cast<AKHU_GEBCharacter>(CachedCharacter))
 		{
-			// Player는 즉시 글라이드 (기존 동작 유지)
 			MyChar->bIsRangeGliding = true;
 		}
-		// Enemy인 경우 
 		else if (AEnemy_Dragon* Enemy = Cast<AEnemy_Dragon>(CachedCharacter))
 		{
-			// Enemy로 부터 Enemy_AnimInstance 얻기
 			if (USkeletalMeshComponent* Mesh = Enemy->GetMesh())
 			{
 				if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance()))
@@ -336,21 +446,46 @@ void UJumpComponent::HandleRangePressed()
 			}
 		}
 	}
-	// 2) 공중: 급강하(착치)
+	// 2) 공중: 급강하(착치) – 기존 "타겟 근처까지" 로직 그대로 유지
 	else
 	{
 		FVector Velocity = MoveComp->Velocity;
-
-		// 아래 방향으로 강한 속도 부여 (기본 점프 높이 기준)
 		const float FallStrength = FMath::Max(
 			MoveComp->JumpZVelocity * RangeHighJumpMultiplier,
-			600.f // 최소값 보장용
+			600.f
 		);
 
 		Velocity.Z = -FMath::Abs(FallStrength);
-		MoveComp->Velocity = Velocity;
 
-		// 빠르게 내려오도록 중력을 크게
+		if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		{
+			if (AActor* Target = Player->GetLockOnTarget())
+			{
+				const FVector OwnerLoc = CachedCharacter->GetActorLocation();
+				const FVector TargetLoc = Target->GetActorLocation();
+
+				const FVector FlatOwner(OwnerLoc.X, OwnerLoc.Y, 0.f);
+				const FVector FlatTarget(TargetLoc.X, TargetLoc.Y, 0.f);
+
+				FVector ToTarget = FlatTarget - FlatOwner; // Player → Target
+				const float CurrentDist = ToTarget.Size();
+
+				if (CurrentDist > KINDA_SMALL_NUMBER)
+				{
+					ToTarget /= CurrentDist;
+
+					const float DesiredDist = RangeLockOnCloseDistance;
+
+					if (CurrentDist > DesiredDist + 10.f)
+					{
+						Velocity.X = ToTarget.X * RangeLockOnHorizontalSpeed;
+						Velocity.Y = ToTarget.Y * RangeLockOnHorizontalSpeed;
+					}
+				}
+			}
+		}
+
+		MoveComp->Velocity = Velocity;
 		MoveComp->GravityScale = RangeFastFallGravityScale;
 	}
 }
@@ -647,7 +782,11 @@ void UJumpComponent::StopSwiftSpin(bool bResetRotation)
 
 	bSwiftSpinning = false;
 	SwiftSpinElapsed = 0.f;
-	SetComponentTickEnabled(false);
+	
+	if (!bGuardPullActive && !bRangeLockOnAdjusting)
+	{
+		SetComponentTickEnabled(false);
+	}
 }
 
 void UJumpComponent::ResetGuardCooldown()

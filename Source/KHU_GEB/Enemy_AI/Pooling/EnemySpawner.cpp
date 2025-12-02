@@ -1,4 +1,4 @@
-#include "EnemySpawner.h"
+ï»¿#include "EnemySpawner.h"
 #include "EnemyPoolSubsystem.h"
 #include "EnemySpawnDirector.h"
 #include "Enemy_AI/Enemy_Base.h"
@@ -10,7 +10,7 @@
 AEnemySpawner::AEnemySpawner()
 {
     PrimaryActorTick.bCanEverTick = true;
-    // ½ºÆ÷³Ê ÀÚÃ¼´Â º¸ÀÏ ÇÊ¿ä°¡ ¾øÀ» ¼ö ÀÖ½À´Ï´Ù.
+    // ìŠ¤í¬ë„ˆ ìì²´ëŠ” ë³´ì¼ í•„ìš”ê°€ ì—†ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     // SetActorHiddenInGame(true); 
     // SetActorEnableCollision(false);
 }
@@ -19,7 +19,7 @@ void AEnemySpawner::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ¼­ºê½Ã½ºÅÛ Ä³½Ã
+    // ì„œë¸Œì‹œìŠ¤í…œ ìºì‹œ
     UGameInstance* GI = GetGameInstance();
     if (GI)
     {
@@ -27,7 +27,7 @@ void AEnemySpawner::BeginPlay()
         SpawnDirector = GI->GetSubsystem<UEnemySpawnDirector>();
     }
 
-    // Ã¹ ½ºÆù Å¸ÀÌ¸Ó ¼³Á¤. Ã¹ ½ºÆùÀº SpawnInterval ÈÄ¿¡ ½Ãµµ
+    // ì²« ìŠ¤í° íƒ€ì´ë¨¸ ì„¤ì •. ì²« ìŠ¤í°ì€ SpawnInterval í›„ì— ì‹œë„
     SpawnTimer = SpawnInterval;
 }
 
@@ -35,7 +35,7 @@ void AEnemySpawner::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // ¼­ºê½Ã½ºÅÛÀÌ ¾ø°Å³ª ½ºÆùÇÒ Å¬·¡½º°¡ ÁöÁ¤µÇÁö ¾ÊÀ¸¸é Æ½ ÁßÁö
+    // ì„œë¸Œì‹œìŠ¤í…œì´ ì—†ê±°ë‚˜ ìŠ¤í°í•  í´ë˜ìŠ¤ê°€ ì§€ì •ë˜ì§€ ì•Šìœ¼ë©´ í‹± ì¤‘ì§€
     if (!EnemyPool || !SpawnDirector || !EnemyClassToSpawn)
     {
         SetActorTickEnabled(false);
@@ -43,23 +43,23 @@ void AEnemySpawner::Tick(float DeltaTime)
         return;
     }
 
-    // ÃÖ´ë ½ºÆù »óÅÂÀÎÁö È®ÀÎ (ÀüÃ¼ ¿¹»ê°ú Å¸ÀÔº° ¿¹»ê ¸ğµÎ È®ÀÎ)
+    // ìµœëŒ€ ìŠ¤í° ìƒíƒœì¸ì§€ í™•ì¸ (ì „ì²´ ì˜ˆì‚°ê³¼ íƒ€ì…ë³„ ì˜ˆì‚° ëª¨ë‘ í™•ì¸)
     if (SpawnDirector->GetCurrentSpawnCount() >= SpawnDirector->GetMaxTotalSpawns())
     {
-        // ÀüÃ¼ ´©Àû ¿¹»êÀÌ ¸ğµÎ ¼ÒÁøµÇ¾ú´Ù¸é ÀÌ ½ºÆ÷³ÊÀÇ Æ½À» ¿µ±¸È÷ ²û
+        // ì „ì²´ ëˆ„ì  ì˜ˆì‚°ì´ ëª¨ë‘ ì†Œì§„ë˜ì—ˆë‹¤ë©´ ì´ ìŠ¤í¬ë„ˆì˜ í‹±ì„ ì˜êµ¬íˆ ë”
         SetActorTickEnabled(false);
         UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Total Spawn reached! Disabling tick."));
         return;
     }
 
-    // ÇØ´ç Å¸ÀÔÀÇ ÃÖ´ë ½ºÆù ¼ö È®ÀÎ (¼³Á¤µÈ °æ¿ì)
+    // í•´ë‹¹ íƒ€ì…ì˜ ìµœëŒ€ ìŠ¤í° ìˆ˜ í™•ì¸ (ì„¤ì •ëœ ê²½ìš°)
     int32 MaxForThisType = SpawnDirector->GetMaxSpawnsForEnemyType(EnemyClassToSpawn);
-    if (MaxForThisType >= 0) // -1ÀÌ ¾Æ´Ï¸é ¼³Á¤µÈ °Í
+    if (MaxForThisType >= 0) // -1ì´ ì•„ë‹ˆë©´ ì„¤ì •ëœ ê²ƒ
     {
         int32 CurrentForThisType = SpawnDirector->GetCurrentSpawnCountForEnemyType(EnemyClassToSpawn);
         if (CurrentForThisType >= MaxForThisType)
         {
-            // ÀÌ Å¸ÀÔÀÇ ¿¹»êÀÌ ¸ğµÎ ¼ÒÁøµÇ¾ú´Ù¸é ÀÌ ½ºÆ÷³ÊÀÇ Æ½À» ¿µ±¸È÷ ²û
+            // ì´ íƒ€ì…ì˜ ì˜ˆì‚°ì´ ëª¨ë‘ ì†Œì§„ë˜ì—ˆë‹¤ë©´ ì´ ìŠ¤í¬ë„ˆì˜ í‹±ì„ ì˜êµ¬íˆ ë”
             SetActorTickEnabled(false);
             UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Spawn for type %s reached! Disabling tick."), 
                    EnemyClassToSpawn ? *EnemyClassToSpawn->GetName() : TEXT("None"));
@@ -71,42 +71,42 @@ void AEnemySpawner::Tick(float DeltaTime)
     if (SpawnTimer <= 0.0f)
     {
         TrySpawnEnemy();
-        SpawnTimer = SpawnInterval; // Å¸ÀÌ¸Ó ¸®¼Â
+        SpawnTimer = SpawnInterval; // íƒ€ì´ë¨¸ ë¦¬ì…‹
     }
 }
 
 void AEnemySpawner::TrySpawnEnemy()
 {
-    //À§Ä¡ Á¡À¯ È®ÀÎ
+    //ìœ„ì¹˜ ì ìœ  í™•ì¸
     if (IsOccupied())
     {
-        // Á¡À¯µÊ, ´ÙÀ½ Æ½±îÁö ´ë±â
+        // ì ìœ ë¨, ë‹¤ìŒ í‹±ê¹Œì§€ ëŒ€ê¸°
 		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Spawn point occupied. Waiting."));
         return;
     }
 
-    //½ºÆù ¿äÃ» (Å¸ÀÔº° ¿¹»ê °ü¸® »ç¿ë)
+    //ìŠ¤í° ìš”ì²­ (íƒ€ì…ë³„ ì˜ˆì‚° ê´€ë¦¬ ì‚¬ìš©)
     if (SpawnDirector->RequestSpawn(EnemyClassToSpawn))
     {
-        // 3. ¿¹»ê Çã°¡µÊ. Ç®¿¡¼­ Àû °¡Á®¿À±â
+        // 3. ì˜ˆì‚° í—ˆê°€ë¨. í’€ì—ì„œ ì  ê°€ì ¸ì˜¤ê¸°
         AEnemy_Base* EnemyToSpawn = EnemyPool->GetEnemyFromPool(EnemyClassToSpawn);
 
         if (EnemyToSpawn)
         {
-            // SpawnrÀÇ À§Ä¡¿Í È¸ÀüÀ¸·Î ½ºÆù
-            // È°¼ºÈ­´Â Pool¿¡¼­ Ã³¸®µÊ
+            // Spawnrì˜ ìœ„ì¹˜ì™€ íšŒì „ìœ¼ë¡œ ìŠ¤í°
+            // í™œì„±í™”ëŠ” Poolì—ì„œ ì²˜ë¦¬ë¨
             FVector Location = GetActorLocation();
             FRotator Rotation = GetActorRotation();
             EnemyToSpawn->SetActorLocationAndRotation(Location, Rotation);
 
-            // ½ºÆùµÈ Enemy°¡ ÇÒ ÀÏÀÌ ÀÖ´Ù¸é ÀÌº¥Æ® È£ÃâÇÏ´Â °ÍÀ» ±ÇÀå
+            // ìŠ¤í°ëœ Enemyê°€ í•  ì¼ì´ ìˆë‹¤ë©´ ì´ë²¤íŠ¸ í˜¸ì¶œí•˜ëŠ” ê²ƒì„ ê¶Œì¥
             UE_LOG(LogTemp, Log, TEXT("EnemySpawner: Successfully spawned %s at location %s"), 
                    EnemyClassToSpawn ? *EnemyClassToSpawn->GetName() : TEXT("None"),
                    *Location.ToString());
         }
     }
-    // ½ºÆù·®ÀÌ ÃÖ´ëÄ¡¶ó¸é ´ÙÀ½ Æ½±îÁö ´ë±â
-    // ¾îÂ÷ÇÇ Tick¿¡¼­ ÃÖ´ëÄ¡ Ã¼Å©µÇ¸é Æ½ÀÌ ²¨Áö¹Ç·Î º°µµ Ã³¸® X
+    // ìŠ¤í°ëŸ‰ì´ ìµœëŒ€ì¹˜ë¼ë©´ ë‹¤ìŒ í‹±ê¹Œì§€ ëŒ€ê¸°
+    // ì–´ì°¨í”¼ Tickì—ì„œ ìµœëŒ€ì¹˜ ì²´í¬ë˜ë©´ í‹±ì´ êº¼ì§€ë¯€ë¡œ ë³„ë„ ì²˜ë¦¬ X
 }
 
 bool AEnemySpawner::IsOccupied() const
@@ -118,15 +118,15 @@ bool AEnemySpawner::IsOccupied() const
     FCollisionShape Shape = FCollisionShape::MakeSphere(SpawnPointCheckRadius);
 
     FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this); // ½ºÆ÷³Ê ÀÚ½ÅÀº ¹«½Ã
+    QueryParams.AddIgnoredActor(this); // ìŠ¤í¬ë„ˆ ìì‹ ì€ ë¬´ì‹œ
 
     bool bHit = World->OverlapMultiByObjectType(
-        Overlaps,        // 1. °á°ú¸¦ ÀúÀåÇÒ ¹è¿­
-        GetActorLocation(), // 2. °Ë»çÇÒ Áß½É À§Ä¡
-        FQuat::Identity,    // 3. È¸Àü°ª (Identity = È¸Àü¾øÀ½)
-        FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), // 4. °Ë»çÇÒ °´Ã¼ Å¸ÀÔ
-        Shape,              // 5. °Ë»çÇÒ ¸ğ¾ç (±¸Ã¼)
-        QueryParams         // 6. Ãß°¡ °Ë»ç ¿É¼Ç
+        Overlaps,        // 1. ê²°ê³¼ë¥¼ ì €ì¥í•  ë°°ì—´
+        GetActorLocation(), // 2. ê²€ì‚¬í•  ì¤‘ì‹¬ ìœ„ì¹˜
+        FQuat::Identity,    // 3. íšŒì „ê°’ (Identity = íšŒì „ì—†ìŒ)
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), // 4. ê²€ì‚¬í•  ê°ì²´ íƒ€ì…
+        Shape,              // 5. ê²€ì‚¬í•  ëª¨ì–‘ (êµ¬ì²´)
+        QueryParams         // 6. ì¶”ê°€ ê²€ì‚¬ ì˜µì…˜
     );
 
     if (bHit)
@@ -134,8 +134,8 @@ bool AEnemySpawner::IsOccupied() const
         for (const FOverlapResult& Result : Overlaps)
         {
             AEnemy_Base* HitPawn = Cast<AEnemy_Base>(Result.GetActor());
-            // ºÎµúÈù PawnÀÌ ÀÖ°í, ±× PawnÀÌ ºñÈ°¼º(Hidden) »óÅÂ°¡ ¾Æ´Ï¶ó¸é
-            // Á¡À¯µÈ °ÍÀ¸·Î ÆÇ´Ü
+            // ë¶€ë”ªíŒ Pawnì´ ìˆê³ , ê·¸ Pawnì´ ë¹„í™œì„±(Hidden) ìƒíƒœê°€ ì•„ë‹ˆë¼ë©´
+            // ì ìœ ëœ ê²ƒìœ¼ë¡œ íŒë‹¨
             if (HitPawn && !HitPawn->IsHidden())
             {
                 return true;
@@ -143,5 +143,5 @@ bool AEnemySpawner::IsOccupied() const
         }
     }
 
-    return false; // Á¡À¯µÇÁö ¾ÊÀ½
+    return false; // ì ìœ ë˜ì§€ ì•ŠìŒ
 }

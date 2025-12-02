@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "SkillDefinition.h"
+#include "FormDefinition.h"
+#include "Skills/SkillDefinition.h"
 #include "SkillBase.generated.h"
 
 class UManaComponent;
@@ -46,6 +47,8 @@ protected:
 
     //현재 폼의 스킬 몽타주를 재생하는 헬퍼 함수
     void PlayFormSkillMontage();
+
+    EFormType GetCurrentFormType() const;
 
 public:
     // SkillDefinition에서 주입

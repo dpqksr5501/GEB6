@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,9 +10,9 @@ class ACharacter;
 class UJumpComponent;
 
 /**
- * Tanker(Guard Æû)°¡ µµ¹ß(Taunt) Çàµ¿À» ¼öÇàÇÏ´Â BTTaskNode
- * JumpComponentÀÇ HandleGuardPressed¸¦ È£ÃâÇÏ¿© ÁÖº¯ ÀûµéÀ» ²ø¾î´ç±è
- * Guard ²ø¾î´ç±èÀÌ ¿Ï·áµÉ ¶§±îÁö ´ë±â
+ * Tanker(Guard í¼)ê°€ ë„ë°œ(Taunt) í–‰ë™ì„ ìˆ˜í–‰í•˜ëŠ” BTTaskNode
+ * JumpComponentì˜ HandleGuardPressedë¥¼ í˜¸ì¶œí•˜ì—¬ ì£¼ë³€ ì ë“¤ì„ ëŒì–´ë‹¹ê¹€
+ * Guard ëŒì–´ë‹¹ê¹€ì´ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
  */
 UCLASS()
 class KHU_GEB_API UTTaunt : public UBTTaskNode
@@ -27,20 +27,20 @@ public:
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 protected:
-	/** Ä³½ÃµÈ Character */
+	/** ìºì‹œëœ Character */
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacter> CachedCharacter;
 
-	/** Ä³½ÃµÈ JumpComponent */
+	/** ìºì‹œëœ JumpComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UJumpComponent> CachedJumpComp;
 
-	/** µµ¹ß ½ÃÀÛ ½Ã°£ (¿Ï·á Ã¼Å©¿ë) */
+	/** ë„ë°œ ì‹œì‘ ì‹œê°„ (ì™„ë£Œ ì²´í¬ìš©) */
 	float TauntStartTime;
 
-	// === ¿¡µğÅÍ¿¡¼­ ¼³Á¤ °¡´ÉÇÑ ÇÁ·ÎÆÛÆ¼ ===
+	// === ì—ë””í„°ì—ì„œ ì„¤ì • ê°€ëŠ¥í•œ í”„ë¡œí¼í‹° ===
 
-	/** µµ¹ß(²ø¾î´ç±è) Áö¼Ó ½Ã°£ (ÃÊ) - JumpComponentÀÇ GuardPullDuration°ú µ¿±âÈ­ ÇÊ¿ä */
+	/** ë„ë°œ(ëŒì–´ë‹¹ê¹€) ì§€ì† ì‹œê°„ (ì´ˆ) - JumpComponentì˜ GuardPullDurationê³¼ ë™ê¸°í™” í•„ìš” */
 	UPROPERTY(EditAnywhere, Category = "Taunt", meta = (ClampMin = "0.5", ClampMax = "5.0"))
-	float TauntDuration = 2.1f; // Guard ²ø¾î´ç±è ½Ã°£(2.0) + ¿©À¯(0.1)
+	float TauntDuration = 2.1f; // Guard ëŒì–´ë‹¹ê¹€ ì‹œê°„(2.0) + ì—¬ìœ (0.1)
 };

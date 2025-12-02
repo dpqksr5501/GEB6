@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,12 +17,12 @@ public:
     UUpdateTargetDistance();
 
 protected:
-    /** * Target(Player) ¾×ÅÍ¸¦ ÀĞ¾î¿Ã ºí·¢º¸µå Å°ÀÔ´Ï´Ù. (ÀÔ·Â)
-     * UBTService_BlackboardBase¿¡¼­ »ó¼Ó¹ŞÀº 'BlackboardKey'´Â TargetDistance (Ãâ·Â) ¿ëÀ¸·Î »ç¿ëÇÕ´Ï´Ù.
+    /** * Target(Player) ì•¡í„°ë¥¼ ì½ì–´ì˜¬ ë¸”ë™ë³´ë“œ í‚¤ì…ë‹ˆë‹¤. (ì…ë ¥)
+     * UBTService_BlackboardBaseì—ì„œ ìƒì†ë°›ì€ 'BlackboardKey'ëŠ” TargetDistance (ì¶œë ¥) ìš©ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
      */
     UPROPERTY(EditAnywhere, Category = "Blackboard")
     FBlackboardKeySelector TargetActorKey;
 
-    /** ÀÌ ¼­ºñ½º°¡ È£ÃâµÉ ¶§¸¶´Ù ½ÇÇàµÇ´Â ÇÔ¼öÀÔ´Ï´Ù. */
+    /** ì´ ì„œë¹„ìŠ¤ê°€ í˜¸ì¶œë  ë•Œë§ˆë‹¤ ì‹¤í–‰ë˜ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤. */
     virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };
