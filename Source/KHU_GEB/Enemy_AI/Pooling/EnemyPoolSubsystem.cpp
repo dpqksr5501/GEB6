@@ -153,7 +153,5 @@ void UEnemyPoolSubsystem::SetEnemyActive(AEnemy_Base* Enemy, bool bIsActive)
         // 풀 저장소로 이동 (맵 밖 안전한 위치)
         FVector PoolStorageLocation = FVector(0, 0, -10000.0f);
         Enemy->SetActorLocation(PoolStorageLocation);
-        
-        // 참고: AIController는 유지됨 - BeginPlay()가 이미 호출되었으므로 안전 시발 아님 다시 할당해줘야 함 왜지?
     }
 }

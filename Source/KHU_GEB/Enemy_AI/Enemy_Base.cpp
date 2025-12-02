@@ -11,6 +11,7 @@
 #include "Engine/GameInstance.h"
 #include "Pooling/EnemyPoolSubsystem.h"
 #include "Pooling/EnemySpawnDirector.h"
+#include "Enemy_Minion.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -141,8 +142,6 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 			if (HealthComp->Health <= 0.f)
 			{
 				BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Dead);
-				// Pool 시스템에 죽음 알림
-				OnDeath();
 				UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Enemy health is zero or below, state set to Dead."));
 			}
 			else {
