@@ -1,10 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Tanker.h"
-#include "Skills/Skills.h"
-#include "Skills/SkillBase.h"
+#include "Skills/Skill_Guard.h"
 #include "FormDefinition.h"
-
 
 AEnemy_Tanker::AEnemy_Tanker()
 {

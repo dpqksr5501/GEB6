@@ -3,14 +3,14 @@
 
 #include "Skills/SkillBase.h"
 #include "GameFramework/Actor.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "KHU_GEBCharacter.h"
+#include "Enemy_Base.h"
 #include "HealthComponent.h"
 #include "ManaComponent.h"
-#include "KHU_GEBCharacter.h"
 #include "FormManagerComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Enemy_Base.h"
 
 USkillBase::USkillBase() {}
 

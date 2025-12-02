@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "FormDefinition.h"
-#include "SkillDefinition.h"
+#include "Skills/SkillDefinition.h"
 #include "SkillBase.generated.h"
 
 class UManaComponent;

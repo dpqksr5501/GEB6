@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Dragon.h"
-#include "Skills/Skills.h"
-#include "Skills/SkillBase.h"
+#include "Skills/Skill_Range.h"
 #include "FormDefinition.h"
 #include "FireballProjectile.h"
 

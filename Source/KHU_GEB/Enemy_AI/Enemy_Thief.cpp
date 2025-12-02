@@ -1,7 +1,7 @@
 #include "Enemy_AI/Enemy_Thief.h"
-#include "Skills/Skills.h"
-#include "Skills/SkillBase.h"
+#include "Skills/Skill_Swift.h"
 #include "FormDefinition.h"
+
 AEnemy_Thief::AEnemy_Thief()
 {
 	// 생성자에서 스킬 클래스 설정
