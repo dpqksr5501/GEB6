@@ -141,7 +141,14 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
 			HealthComp->ReduceHealth(ActualDamage);
-			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
+			if (HealthComp->Health <= 0.f)
+			{
+				BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Dead);
+				UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Enemy health is zero or below, state set to Dead."));
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"), HealthComp->Health);
+			}
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed."));

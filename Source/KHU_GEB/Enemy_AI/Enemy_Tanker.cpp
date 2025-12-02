@@ -19,6 +19,9 @@ void AEnemy_Tanker::BeginPlay()
 {
 	Super::BeginPlay();
 	// 스킬 초기화는 부모에서 처리됨
+	// CachedGuardSkill에 자신의 스킬을 CachedGuardSkill에 맞게 캐스팅하여 할당
+	CachedGuardSkill = Cast<USkill_Guard>(Equipped.FindRef(ESkillSlot::Active));
+
 }
 
 void AEnemy_Tanker::Tick(float DeltaTime)
@@ -43,14 +46,18 @@ void AEnemy_Tanker::Tick(float DeltaTime)
 float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	AController* EventInstigator, AActor* DamageCauser)
 {
-	// Guard 스킬의 HandleIncomingDamage를 올바르게 호출하여 true 면 함수 종료, false 면 Enemy_Base(부모)의 TakeDamage 호출
-	if (bIsGuardSkillActive && CachedGuardSkill)
-	{
-		bool bDamageHandled = CachedGuardSkill->HandleIncomingDamage(DamageAmount, nullptr, EventInstigator, DamageCauser);
-		if (bDamageHandled)
-		{
-			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Damage of %f handled by Guard skill."), DamageAmount);
-			return 0.0f; // 피해가 스킬에 의해 처리되었음을 나타내기 위해 0 반환
+	if (CachedGuardSkill) {
+		if (bIsGuardSkillActive) {
+			bool bDamageHandled = CachedGuardSkill->HandleIncomingDamage(DamageAmount, nullptr, EventInstigator, DamageCauser);
+			if (bDamageHandled)
+			{
+				UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Damage of %f handled by Guard skill."), DamageAmount);
+				return 0.0f; // 피해 무시
+			}
+			else {
+				UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] bDamageHandled false. Damage 0"));
+				return 0;
+			}
 		}
 		else {
 			// 부모 (Enemy_Base)의 TakeDamage 호출
@@ -58,7 +65,7 @@ float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] TakeDamage called but Guard skill is not active or CachedGuardSkill is null."));
+		UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] CachedGuardSkill is null."));
 		return 0.0f;
 	}
 }

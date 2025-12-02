@@ -64,15 +64,6 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// SkillMontage 가져오기
-	CurrentMontage = EnemyBase->DefaultFormDef->SkillMontage;
-
-	if (!CurrentMontage)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: SkillMontage is missing in DefaultFormDef"));
-		return EBTNodeResult::Failed;
-	}
-
 	// 애님 인스턴스 가져오기
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 	if (!AnimInstance)
@@ -81,18 +72,10 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 몽타주 재생
-	float MontageLength = AnimInstance->Montage_Play(CurrentMontage, 1.0f);
-	if (MontageLength <= 0.0f)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: Failed to play SkillMontage"));
-		return EBTNodeResult::Failed;
-	}
-
 	// 스킬 활성화 (SkillSlotToActivate가 None이 아닌 경우)
 	if (SkillSlotToActivate != ESkillSlot::Active) // None 값이 없어서 Active가 아닌 경우로 체크
 	{
-		UE_LOG(LogTemp, Log, TEXT("TSkill: No skill slot specified, only playing montage"));
+		UE_LOG(LogTemp, Log, TEXT("TSkill: No skill slot specified"));
 	}
 	else
 	{
@@ -103,12 +86,16 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		Caster->ActivateSkill(); // Enemy 레벨의 스킬 실행
 	}
 
+	// 현재 시간 가져오기
+	float CurrentTime = OwnerComp.GetWorld()->GetTimeSeconds();
+
 	// 상태 변경
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
-	BlackboardComp->SetValueAsFloat(LastActionTimeKey.SelectedKeyName, OwnerComp.GetWorld()->GetTimeSeconds());
-	BlackboardComp->SetValueAsFloat("LastActionTime", OwnerComp.GetWorld()->GetTimeSeconds());
 	
-	UE_LOG(LogTemp, Log, TEXT("TSkill: SkillMontage started"));
+	// LastActionTime 설정
+	BlackboardComp->SetValueAsFloat("LastActionTime", CurrentTime);
+	BlackboardComp->SetValueAsFloat(CooldownKey.SelectedKeyName, CurrentTime);
+	
 	return EBTNodeResult::InProgress;
 }
 
@@ -142,18 +129,14 @@ void UTSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 		return;
 	}
 
-	if (!CurrentMontage)
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("TSkill: CurrentMontage is missing in TickTask"));
-		return;
-	}
-
 	// 몽타주가 재생 중인지 확인
 	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
 		// 몽타주 재생이 끝나면 상태를 Idle로 변경하고 태스크 성공
-		BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
+		if (BlackboardComp)
+		{
+			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
+		}
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		UE_LOG(LogTemp, Log, TEXT("TSkill: SkillMontage finished, returning to Idle"));
 	}
@@ -169,10 +152,13 @@ EBTNodeResult::Type UTSkill::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8*
 		if (Character)
 		{
 			UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
-			if (AnimInstance && CurrentMontage)
+			if (AnimInstance)
 			{
 				// 몽타주 중단
-				AnimInstance->Montage_Stop(0.2f, CurrentMontage);
+				CurrentMontage = AnimInstance->GetCurrentActiveMontage();
+				if (CurrentMontage) {
+					AnimInstance->Montage_Stop(0.2f, CurrentMontage);
+				}
 				UE_LOG(LogTemp, Log, TEXT("TSkill: Skill aborted, stopping montage"));
 			}
 		}

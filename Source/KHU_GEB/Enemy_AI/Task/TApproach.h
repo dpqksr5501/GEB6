@@ -28,10 +28,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Task Properties")
 	float StopDistance = 100.0f;
 
-	/** BP에서 설정할 걷기 속도 */
-	UPROPERTY(EditAnywhere, Category = "Task Properties")
-	float WalkSpeed = 300.0f;
-
 	/** 타겟 액터를 가져올 블랙보드 키 */
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetKey;
