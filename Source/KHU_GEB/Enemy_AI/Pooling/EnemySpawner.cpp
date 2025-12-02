@@ -46,9 +46,9 @@ void AEnemySpawner::Tick(float DeltaTime)
     // 최대 스폰 상태인지 확인 (전체 예산과 타입별 예산 모두 확인)
     if (SpawnDirector->GetCurrentSpawnCount() >= SpawnDirector->GetMaxTotalSpawns())
     {
-        // 전체 예산이 모두 소진되었다면 이 스포너의 틱을 영구히 끔
+        // 전체 누적 예산이 모두 소진되었다면 이 스포너의 틱을 영구히 끔
         SetActorTickEnabled(false);
-		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Total Spawn reached! Disabling tick."));
+        UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Total Spawn reached! Disabling tick."));
         return;
     }
 

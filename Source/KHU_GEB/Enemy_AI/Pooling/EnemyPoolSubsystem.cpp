@@ -42,6 +42,12 @@ void UEnemyPoolSubsystem::InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, in
             FRotator::ZeroRotator, // 기본 회전
             SpawnParams
         );
+        // 여기에 소환한 Actor에 AIController가 할당되어있는지 확인하는 코드
+		if (NewEnemy && !NewEnemy->GetController())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("EnemyPoolSubsystem: Newly spawned %s has no controller!"), 
+                   *NewEnemy->GetName());
+        }
 
 		// 생성된 적을 풀 상태로 설정하고 Pool Struct에 추가
         if (NewEnemy)
