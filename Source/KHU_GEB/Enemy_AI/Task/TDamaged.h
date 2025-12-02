@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -24,7 +24,7 @@ protected:
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 
-	// ÇöÀç Àç»ı ÁßÀÎ ¸ùÅ¸ÁÖ¸¦ ÃßÀû
+	// í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ëª½íƒ€ì£¼ë¥¼ ì¶”ì 
 	UPROPERTY(Transient)
 	class UAnimMontage* CurrentMontage;
 };

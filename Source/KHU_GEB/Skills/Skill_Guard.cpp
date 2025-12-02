@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Guard.h"
@@ -37,7 +37,7 @@ bool USkill_Guard::CanActivate() const
 
     const float Current = Mana->GetCurrentMana();
     const float Target = 100.f;
-    const float Tolerance = 0.1f; // float ¿ÀÂ÷ ¹æÁö¿ë
+    const float Tolerance = 0.1f; // float ì˜¤ì°¨ ë°©ì§€ìš©
 
     if (FMath::Abs(Current - Target) > Tolerance)
     {
@@ -47,13 +47,13 @@ bool USkill_Guard::CanActivate() const
         return false;
     }
 
-    // ÄğÅ¸ÀÓÀº Áö±İÀº »ç¿ëÇÏÁö ¾ÊÀ½ (ÇÊ¿äÇÏ¸é ¿©±â¼­ Now < NextAvailableTime Ã¼Å© Ãß°¡)
+    // ì¿¨íƒ€ì„ì€ ì§€ê¸ˆì€ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ (í•„ìš”í•˜ë©´ ì—¬ê¸°ì„œ Now < NextAvailableTime ì²´í¬ ì¶”ê°€)
     return true;
 }
 
 void USkill_Guard::ActivateSkill()
 {
-    // ÀÌ¹Ì ÄÑÁ® ÀÖÀ¸¸é ´Ù½Ã ÃÊ±âÈ­ÇÏÁö ¾Ê°í ¹«½Ã
+    // ì´ë¯¸ ì¼œì ¸ ìˆìœ¼ë©´ ë‹¤ì‹œ ì´ˆê¸°í™”í•˜ì§€ ì•Šê³  ë¬´ì‹œ
     if (bIsActive)
     {
         UE_LOG(LogTemp, Verbose,
@@ -65,7 +65,7 @@ void USkill_Guard::ActivateSkill()
     AActor* Owner = GetOwner();
     if (!World || !Owner) return;
 
-    //¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ Àç»ı
+    //ì• ë‹ˆë©”ì´ì…˜ ëª½íƒ€ì£¼ ì¬ìƒ
     PlayFormSkillMontage();
 
     bIsActive = true;
@@ -81,7 +81,7 @@ void USkill_Guard::ActivateSkill()
         PlayerChar->OnGuardSkillStarted(this);
     }
 
-    // º¸È£¸· ÀÌÆåÆ® ÄÑ±â
+    // ë³´í˜¸ë§‰ ì´í™íŠ¸ ì¼œê¸°
     if (SkillNS && !SpawnedNS)
     {
         UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Spawning shield effect."));
@@ -104,7 +104,7 @@ bool USkill_Guard::HandleIncomingDamage(
     AController* InstigatedBy,
     AActor* DamageCauser)
 {
-    // ½ºÅ³ÀÌ ²¨Á® ÀÖ°Å³ª, ³²Àº ¹è¸®¾î°¡ ¾øÀ¸¸é ±×³É ¸Â°Ô µĞ´Ù.
+    // ìŠ¤í‚¬ì´ êº¼ì ¸ ìˆê±°ë‚˜, ë‚¨ì€ ë°°ë¦¬ì–´ê°€ ì—†ìœ¼ë©´ ê·¸ëƒ¥ ë§ê²Œ ë‘”ë‹¤.
     if (!bIsActive || RemainingShields <= 0)
     {
         UE_LOG(LogTemp, Verbose,
@@ -113,7 +113,7 @@ bool USkill_Guard::HandleIncomingDamage(
         return false;
     }
 
-    // ¹è¸®¾î 1°³ ¼Ò¸ğ
+    // ë°°ë¦¬ì–´ 1ê°œ ì†Œëª¨
     RemainingShields = FMath::Max(RemainingShields - 1, 0);
     ConsumedShields++;
 
@@ -147,7 +147,7 @@ bool USkill_Guard::HandleIncomingDamage(
 
 void USkill_Guard::StopSkill()
 {
-    // ÀÌ¹Ì ²¨Á® ÀÖÀ¸¸é ¹«½Ã
+    // ì´ë¯¸ êº¼ì ¸ ìˆìœ¼ë©´ ë¬´ì‹œ
     if (!bIsActive)
     {
         Super::StopSkill();
@@ -162,30 +162,30 @@ void USkill_Guard::StopSkill()
         PlayerChar->OnGuardSkillEnded(this);
     }
 
-    //¿ìÅ¬¸¯ ¶¼¸é ¸ùÅ¸ÁÖ Àç»ı ÇØÁ¦
+    //ìš°í´ë¦­ ë–¼ë©´ ëª½íƒ€ì£¼ ì¬ìƒ í•´ì œ
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
         {
-            // ÇöÀç Àç»ı ÁßÀÎ ¸ùÅ¸ÁÖ°¡ ÀÖ´Ù¸é 0.2ÃÊ µ¿¾È º¸°£ ¸ØÃã
+            // í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ëª½íƒ€ì£¼ê°€ ìˆë‹¤ë©´ 0.2ì´ˆ ë™ì•ˆ ë³´ê°„ ë©ˆì¶¤
             Anim->Montage_Stop(0.2f, nullptr);
         }
     }
 
-    // ÀÌÆåÆ® ²ô±â
+    // ì´í™íŠ¸ ë„ê¸°
     if (SpawnedNS)
     {
         SpawnedNS->Deactivate();
         SpawnedNS = nullptr;
     }
 
-    // --- 3-1. ¸¶³ª¸¦ 0À¸·Î ¼³Á¤ ---
+    // --- 3-1. ë§ˆë‚˜ë¥¼ 0ìœ¼ë¡œ ì„¤ì • ---
     if (UManaComponent* Mana = GetManaComponent())
     {
         const float Current = Mana->GetCurrentMana();
         if (Current > 0.f)
         {
-            // ÇöÀç ¸¶³ª¸¸Å­ ÇÑ ¹ø¿¡ ¼Ò¸ğ ¡æ 0ÀÌ µÊ
+            // í˜„ì¬ ë§ˆë‚˜ë§Œí¼ í•œ ë²ˆì— ì†Œëª¨ â†’ 0ì´ ë¨
             Mana->ConsumeMana(Current);
         }
         UE_LOG(LogTemp, Log,
@@ -194,7 +194,7 @@ void USkill_Guard::StopSkill()
         Mana->RemoveRegenBlock();
     }
 
-    // --- 3-2. ¹è¸®¾î°¡ ¼Ò¸ğµÈ ¸¸Å­ ±¤¿ª ´ë¹ÌÁö ---
+    // --- 3-2. ë°°ë¦¬ì–´ê°€ ì†Œëª¨ëœ ë§Œí¼ ê´‘ì—­ ëŒ€ë¯¸ì§€ ---
     if (World && Owner && ConsumedShields > 0 && DamagePerSheild > 0.f && !bEndedByDepletion)
     {
         const float TotalDamage = DamagePerSheild * ConsumedShields;
@@ -207,17 +207,17 @@ void USkill_Guard::StopSkill()
             ConsumedShields, TotalDamage);
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-        // Æø¹ß ¹üÀ§ µğ¹ö±× Ç¥½Ã
+        // í­ë°œ ë²”ìœ„ ë””ë²„ê·¸ í‘œì‹œ
         DrawDebugSphere(
             World,
-            Owner->GetActorLocation(), // Æø¹ß Áß½É
-            ExplosionRadius,           // ¹İ°æ
-            32,                        // ¼¼±×¸ÕÆ® ¼ö
-            FColor::Yellow,            // »ö
-            false,                     // ¿µ±¸ ¿©ºÎ (false: Duration µ¿¾È¸¸ º¸ÀÓ)
-            1.5f,                      // Duration (ÃÊ)
+            Owner->GetActorLocation(), // í­ë°œ ì¤‘ì‹¬
+            ExplosionRadius,           // ë°˜ê²½
+            32,                        // ì„¸ê·¸ë¨¼íŠ¸ ìˆ˜
+            FColor::Yellow,            // ìƒ‰
+            false,                     // ì˜êµ¬ ì—¬ë¶€ (false: Duration ë™ì•ˆë§Œ ë³´ì„)
+            1.5f,                      // Duration (ì´ˆ)
             0,                         // Depth Priority
-            3.f                        // ¼± µÎ²²
+            3.f                        // ì„  ë‘ê»˜
         );
 #endif
 
@@ -238,7 +238,7 @@ void USkill_Guard::StopSkill()
             TEXT("[Skill_Guard] Stop: No shields consumed or no damage value. No explosion."));
     }
 
-    // »óÅÂ ¸®¼Â
+    // ìƒíƒœ ë¦¬ì…‹
     bIsActive = false;
     RemainingShields = 0;
     ConsumedShields = 0;

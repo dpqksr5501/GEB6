@@ -1,27 +1,27 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TApproach.h"
 #include "AIController.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Navigation/PathFollowingComponent.h" // EPathFollowingRequestResult::Type ªÁøÎ
-#include "Engine.h" // GEngine (µπˆ±◊ ∏ﬁΩ√¡ˆ) ªÁøÎ¿ª ¿ß«ÿ « ø‰
+#include "Navigation/PathFollowingComponent.h" // EPathFollowingRequestResult::Type ÏÇ¨Ïö©
+#include "Engine.h" // GEngine (ÎîîÎ≤ÑÍ∑∏ Î©îÏãúÏßÄ) ÏÇ¨Ïö©ÏùÑ ÏúÑÌï¥ ÌïÑÏöî
 
 UTApproach::UTApproach()
 {
 	NodeName = "TApproach";
 
-	// TickTask∏¶ ∏≈ «¡∑π¿” »£√‚«œ±‚ ¿ß«ÿ π›µÂΩ√ true∑Œ º≥¡§
+	// TickTaskÎ•º Îß§ ÌîÑÎ†àÏûÑ Ìò∏Ï∂úÌïòÍ∏∞ ÏúÑÌï¥ Î∞òÎìúÏãú trueÎ°ú ÏÑ§Ï†ï
 	bNotifyTick = true;
 
-	// ∏‚πˆ ∫Øºˆ(AIController µÓ)∏¶ æ»¿¸«œ∞‘ ¿˙¿Â«œ±‚ ¿ß«ÿ true∑Œ º≥¡§
+	// Î©§Î≤Ñ Î≥ÄÏàò(AIController Îì±)Î•º ÏïàÏ†ÑÌïòÍ≤å Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌï¥ trueÎ°ú ÏÑ§Ï†ï
 	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// AIController, Controlled Pawn, Character Movement Component ∞°¡ÆøÕ ∫Øºˆ∑Œ ¿˙¿Â
+	// AIController, Controlled Pawn, Character Movement Component Í∞ÄÏ†∏ÏôÄ Î≥ÄÏàòÎ°ú Ï†ÄÏû•
 	AIController = OwnerComp.GetAIOwner();
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
 
@@ -42,37 +42,37 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 		return EBTNodeResult::Failed;
 	}
 
-	// BlackBoardø°º≠ "TargetDistance" ∞™(float) ∞°¡ÆøÕ CurrentDistance ∫Øºˆ ∞ªΩ≈
+	// BlackBoardÏóêÏÑú "TargetDistance" Í∞í(float) Í∞ÄÏ†∏ÏôÄ CurrentDistance Î≥ÄÏàò Í∞±Ïã†
 	CurrentDistance = BlackboardComp->GetValueAsFloat(TargetDistanceKey.SelectedKeyName);
 
-	// If ∫–±‚∏¶ ≈Î«ÿ CurrentDistance <= Stopdistance ∞ÀªÁ
+	// If Î∂ÑÍ∏∞Î•º ÌÜµÌï¥ CurrentDistance <= Stopdistance Í≤ÄÏÇ¨
 	if (CurrentDistance <= StopDistance)
 	{
-		// ¿ÃπÃ π¸¿ß ≥ªø° ¿÷¿∏π«∑Œ ¡ÔΩ√ º∫∞¯
+		// Ïù¥ÎØ∏ Î≤îÏúÑ ÎÇ¥Ïóê ÏûàÏúºÎØÄÎ°ú Ï¶âÏãú ÏÑ±Í≥µ
 		return EBTNodeResult::Succeeded;
 	}
 	else
 	{
-		// ≈∏∞Ÿ æ◊≈Õ ∞°¡Æø¿±‚
+		// ÌÉÄÍ≤ü Ïï°ÌÑ∞ Í∞ÄÏ†∏Ïò§Í∏∞
 		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
 		if (!TargetActor)
 		{
 			return EBTNodeResult::Failed;
 		}
 
-		// MoveToActor∏¶ ø©±‚º≠ «— π¯∏∏ »£√‚
+		// MoveToActorÎ•º Ïó¨Í∏∞ÏÑú Ìïú Î≤àÎßå Ìò∏Ï∂ú
 		EPathFollowingRequestResult::Type MoveResult = AIController->MoveToActor(TargetActor, 1.0f);
 
 		if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
 		{
-			// ¿Ãµø ø‰√ª º∫∞¯. TickTaskø°º≠ ∞≈∏Æ ∞ÀªÁ Ω√¿€
-			// ªÛ≈¬ ∫Ø»Ø
+			// Ïù¥Îèô ÏöîÏ≤≠ ÏÑ±Í≥µ. TickTaskÏóêÏÑú Í±∞Î¶¨ Í≤ÄÏÇ¨ ÏãúÏûë
+			// ÏÉÅÌÉú Î≥ÄÌôò
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Moving);
 			return EBTNodeResult::InProgress;
 		}
 		else
 		{
-			// ∞Ê∑Œ ≈Ωªˆ Ω«∆– µÓ
+			// Í≤ΩÎ°ú ÌÉêÏÉâ Ïã§Ìå® Îì±
 			UE_LOG(LogTemp, Warning, TEXT("UTApproach::ExecuteTask - MoveToActor failed."));
 			return EBTNodeResult::Failed;
 		}
@@ -81,7 +81,7 @@ EBTNodeResult::Type UTApproach::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 
 void UTApproach::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// TickTask¥¬ ø¿¡˜ ∞≈∏Æ ∞ÀªÁ∏∏ ºˆ«‡
+	// TickTaskÎäî Ïò§ÏßÅ Í±∞Î¶¨ Í≤ÄÏÇ¨Îßå ÏàòÌñâ
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
 	if (!BlackboardComp)
 	{
@@ -91,22 +91,22 @@ void UTApproach::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	CurrentDistance = BlackboardComp->GetValueAsFloat(TargetDistanceKey.SelectedKeyName);
 	if (CurrentDistance <= StopDistance)
 	{
-		// ∏Ò«• π¸¿ß µµ¥ﬁ. ¿Ãµø ¡ﬂ¡ˆ (º±≈√¿˚¿Ã¡ˆ∏∏ æ»¿¸«‘)
+		// Î™©Ìëú Î≤îÏúÑ ÎèÑÎã¨. Ïù¥Îèô Ï§ëÏßÄ (ÏÑ†ÌÉùÏ†ÅÏù¥ÏßÄÎßå ÏïàÏ†ÑÌï®)
 		if (AIController)
 		{
 			AIController->StopMovement();
 		}
 
-		// ≈¬Ω∫≈© º∫∞¯¿∏∑Œ ¡æ∑·
+		// ÌÉúÏä§ÌÅ¨ ÏÑ±Í≥µÏúºÎ°ú Ï¢ÖÎ£å
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
-	// else: æ∆¡˜ π¸¿ß π€. ¥Ÿ¿Ω ∆Ω±Ó¡ˆ InProgress ªÛ≈¬ ¿Ø¡ˆ
+	// else: ÏïÑÏßÅ Î≤îÏúÑ Î∞ñ. Îã§Ïùå Ìã±ÍπåÏßÄ InProgress ÏÉÅÌÉú Ïú†ÏßÄ
 }
 
 EBTNodeResult::Type UTApproach::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// ¿Ã ≈¬Ω∫≈©∞° ¥Ÿ∏• ∫Í∑£ƒ°ø° ¿««ÿ ¡ﬂ¥‹(Abort)µ«æ˙¿ª ∂ß
-	// AI∞° ¡ÔΩ√ ∏ÿ√ﬂµµ∑œ ∫∏¿Â
+	// Ïù¥ ÌÉúÏä§ÌÅ¨Í∞Ä Îã§Î•∏ Î∏åÎûúÏπòÏóê ÏùòÌï¥ Ï§ëÎã®(Abort)ÎêòÏóàÏùÑ Îïå
+	// AIÍ∞Ä Ï¶âÏãú Î©àÏ∂îÎèÑÎ°ù Î≥¥Ïû•
 	if (AIController)
 	{
 		AIController->StopMovement();

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -9,9 +9,9 @@ class UEnemySpawnDirector;
 class AEnemy_Base;
 
 /**
- * ·¹º§¿¡ ¹èÄ¡µÇ¾î ½ÇÁ¦ Àû ½ºÆùÀ» ´ã´çÇÏ´Â ¾×ÅÍÀÔ´Ï´Ù.
- * ÁöÁ¤µÈ ½Ã°£ °£°İÀ¸·Î, À§Ä¡°¡ ºñ¾îÀÖ´ÂÁö È®ÀÎÇÑ µÚ,
- * Director¿¡°Ô ¿¹»êÀ» ¿äÃ»ÇÏ°í, Pool¿¡¼­ ÀûÀ» °¡Á®¿Í ¹èÄ¡ÇÕ´Ï´Ù.
+ * ë ˆë²¨ì— ë°°ì¹˜ë˜ì–´ ì‹¤ì œ ì  ìŠ¤í°ì„ ë‹´ë‹¹í•˜ëŠ” ì•¡í„°ì…ë‹ˆë‹¤.
+ * ì§€ì •ëœ ì‹œê°„ ê°„ê²©ìœ¼ë¡œ, ìœ„ì¹˜ê°€ ë¹„ì–´ìˆëŠ”ì§€ í™•ì¸í•œ ë’¤,
+ * Directorì—ê²Œ ì˜ˆì‚°ì„ ìš”ì²­í•˜ê³ , Poolì—ì„œ ì ì„ ê°€ì ¸ì™€ ë°°ì¹˜í•©ë‹ˆë‹¤.
  */
 UCLASS()
 class KHU_GEB_API AEnemySpawner : public AActor
@@ -25,29 +25,29 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    /** ÀÌ ½ºÆ÷³Ê°¡ ½ºÆùÇÒ Àû(Enemy) ºí·çÇÁ¸°Æ® Å¬·¡½º */
+    /** ì´ ìŠ¤í¬ë„ˆê°€ ìŠ¤í°í•  ì (Enemy) ë¸”ë£¨í”„ë¦°íŠ¸ í´ë˜ìŠ¤ */
     UPROPERTY(EditAnywhere, Category = "Enemy Spawner")
     TSubclassOf<AEnemy_Base> EnemyClassToSpawn;
 
-    /** °¢ ½ºÆù ½Ãµµ »çÀÌÀÇ ½Ã°£ °£°İ (ÃÊ) */
+    /** ê° ìŠ¤í° ì‹œë„ ì‚¬ì´ì˜ ì‹œê°„ ê°„ê²© (ì´ˆ) */
     UPROPERTY(EditAnywhere, Category = "Enemy Spawner")
     float SpawnInterval = 2.0f;
 
-    /** ½ºÆù Æ÷ÀÎÆ®°¡ ºñ¾îÀÖ´ÂÁö È®ÀÎÇÒ ¶§ »ç¿ëÇÒ ¹İ°æ */
+    /** ìŠ¤í° í¬ì¸íŠ¸ê°€ ë¹„ì–´ìˆëŠ”ì§€ í™•ì¸í•  ë•Œ ì‚¬ìš©í•  ë°˜ê²½ */
     UPROPERTY(EditAnywhere, Category = "Enemy Spawner")
     float SpawnPointCheckRadius = 100.0f;
 
 private:
-    /** ´ÙÀ½ ½ºÆù±îÁö ³²Àº ½Ã°£ */
+    /** ë‹¤ìŒ ìŠ¤í°ê¹Œì§€ ë‚¨ì€ ì‹œê°„ */
     float SpawnTimer = 0.0f;
 
-    /** ½ºÆùÀ» ½ÃµµÇÏ´Â ¸ŞÀÎ ·ÎÁ÷ */
+    /** ìŠ¤í°ì„ ì‹œë„í•˜ëŠ” ë©”ì¸ ë¡œì§ */
     void TrySpawnEnemy();
 
-    /** ½ºÆù Æ÷ÀÎÆ®°¡ ´Ù¸¥ Àû¿¡ ÀÇÇØ Á¡À¯µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù. */
+    /** ìŠ¤í° í¬ì¸íŠ¸ê°€ ë‹¤ë¥¸ ì ì— ì˜í•´ ì ìœ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     bool IsOccupied() const;
 
-    /** »ç¿ëÇÒ EnemyPool°ú Spawndirector */
+    /** ì‚¬ìš©í•  EnemyPoolê³¼ Spawndirector */
     UPROPERTY()
     TObjectPtr<UEnemyPoolSubsystem> EnemyPool;
 

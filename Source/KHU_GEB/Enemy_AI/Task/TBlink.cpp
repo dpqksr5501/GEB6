@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TBlink.h"
 #include "AIController.h"
@@ -10,7 +10,7 @@
 UTBlink::UTBlink()
 {
 	NodeName = TEXT("Blink");
-	bNotifyTick = false; // Blink´Â Áï½Ã ¿Ï·áµÇ¹Ç·Î Tick ºÒÇÊ¿ä
+	bNotifyTick = false; // BlinkëŠ” ì¦‰ì‹œ ì™„ë£Œë˜ë¯€ë¡œ Tick ë¶ˆí•„ìš”
 
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
@@ -20,7 +20,7 @@ EBTNodeResult::Type UTBlink::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	// 1. AI ÄÁÆ®·Ñ·¯ È¹µæ
+	// 1. AI ì»¨íŠ¸ë¡¤ëŸ¬ íšë“
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -28,7 +28,7 @@ EBTNodeResult::Type UTBlink::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 2. Ä³¸¯ÅÍ È¹µæ
+	// 2. ìºë¦­í„° íšë“
 	CachedCharacter = Cast<ACharacter>(AIController->GetPawn());
 	if (!CachedCharacter)
 	{
@@ -36,7 +36,7 @@ EBTNodeResult::Type UTBlink::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 3. Enemy_Base·Î Ä³½ºÆÃÇÏ¿© JumpComponent È¹µæ
+	// 3. Enemy_Baseë¡œ ìºìŠ¤íŒ…í•˜ì—¬ JumpComponent íšë“
 	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
 	{
 		CachedJumpComp = Enemy->JumpComp;
@@ -54,26 +54,26 @@ EBTNodeResult::Type UTBlink::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 4. ¶¥ À§¿¡¼­¸¸ ½ÇÇà °¡´É
+	// 4. ë•… ìœ„ì—ì„œë§Œ ì‹¤í–‰ ê°€ëŠ¥
 	if (!CachedJumpComp->IsOnGround())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TBlink] Character is not on ground"));
 		return EBTNodeResult::Failed;
 	}
 
-	// 5. JumpComponentÀÇ HandleSpacePressed È£Ãâ (Æû¿¡ ¸Â´Â ºí¸µÅ© ½ÇÇà)
-	// CurrentFormÀÌ SpecialÀÌ¹Ç·Î ³»ºÎÀûÀ¸·Î HandleSpecialPressed°¡ È£ÃâµÊ
-	// HandleSpecialPressed´Â:
-	// - ÄğÅ¸ÀÓ Ã¼Å© (bCanSpecialBlink)
-	// - ¾ÕÀ¸·Î BlinkDistance¸¸Å­ ÅÚ·¹Æ÷Æ®
-	// - ¼º°ø/½ÇÆĞ ¿©ºÎ´Â ³»ºÎ¿¡¼­ Ã³¸®
+	// 5. JumpComponentì˜ HandleSpacePressed í˜¸ì¶œ (í¼ì— ë§ëŠ” ë¸”ë§í¬ ì‹¤í–‰)
+	// CurrentFormì´ Specialì´ë¯€ë¡œ ë‚´ë¶€ì ìœ¼ë¡œ HandleSpecialPressedê°€ í˜¸ì¶œë¨
+	// HandleSpecialPressedëŠ”:
+	// - ì¿¨íƒ€ì„ ì²´í¬ (bCanSpecialBlink)
+	// - ì•ìœ¼ë¡œ BlinkDistanceë§Œí¼ í…”ë ˆí¬íŠ¸
+	// - ì„±ê³µ/ì‹¤íŒ¨ ì—¬ë¶€ëŠ” ë‚´ë¶€ì—ì„œ ì²˜ë¦¬
 	CachedJumpComp->HandleSpacePressed();
 	
 	UE_LOG(LogTemp, Log, TEXT("[TBlink] Blink executed via JumpComponent"));
 	
-	// Blink´Â Áï½Ã ¿Ï·á
-	// HandleSpecialPressed ³»ºÎ¿¡¼­ ÄğÅ¸ÀÓ Ã¼Å© ¹× ÅÚ·¹Æ÷Æ® ½ÇÇà
-	// ÄğÅ¸ÀÓ ÁßÀÌ°Å³ª ½ÇÆĞÇØµµ ÀÌ¹Ì Ã³¸®µÊ
+	// BlinkëŠ” ì¦‰ì‹œ ì™„ë£Œ
+	// HandleSpecialPressed ë‚´ë¶€ì—ì„œ ì¿¨íƒ€ì„ ì²´í¬ ë° í…”ë ˆí¬íŠ¸ ì‹¤í–‰
+	// ì¿¨íƒ€ì„ ì¤‘ì´ê±°ë‚˜ ì‹¤íŒ¨í•´ë„ ì´ë¯¸ ì²˜ë¦¬ë¨
 	return EBTNodeResult::Succeeded;
 }
 

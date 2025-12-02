@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,8 +9,8 @@
 #include "TSkill.generated.h"
 
 /**
- * AI°¡ ½ºÅ³ ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÏ°í ½ºÅ³À» È°¼ºÈ­ÇÏ´Â ÅÂ½ºÅ©ÀÔ´Ï´Ù.
- * TAttack°ú À¯»çÇÑ ±¸Á¶·Î, DefaultFormDef¿¡¼­ SkillMontage¸¦ °¡Á®¿Í Àç»ıÇÕ´Ï´Ù.
+ * AIê°€ ìŠ¤í‚¬ ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•˜ê³  ìŠ¤í‚¬ì„ í™œì„±í™”í•˜ëŠ” íƒœìŠ¤í¬ì…ë‹ˆë‹¤.
+ * TAttackê³¼ ìœ ì‚¬í•œ êµ¬ì¡°ë¡œ, DefaultFormDefì—ì„œ SkillMontageë¥¼ ê°€ì ¸ì™€ ì¬ìƒí•©ë‹ˆë‹¤.
  */
 UCLASS()
 class KHU_GEB_API UTSkill : public UBTTaskNode
@@ -20,28 +20,28 @@ class KHU_GEB_API UTSkill : public UBTTaskNode
 public:
 	UTSkill();
 
-	/** ºí·¢º¸µå Å° - ¸¶Áö¸· ¾×¼Ç ½Ã°£ */
+	/** ë¸”ë™ë³´ë“œ í‚¤ - ë§ˆì§€ë§‰ ì•¡ì…˜ ì‹œê°„ */
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	FBlackboardKeySelector CooldownKey;
 
-	/** ÀÌ ½ºÅ³ ½Ã È°¼ºÈ­ÇÒ ½ºÅ³ ½½·Ô (None = ½ºÅ³ ¾øÀ½) */
+	/** ì´ ìŠ¤í‚¬ ì‹œ í™œì„±í™”í•  ìŠ¤í‚¬ ìŠ¬ë¡¯ (None = ìŠ¤í‚¬ ì—†ìŒ) */
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	ESkillSlot SkillSlotToActivate = ESkillSlot::Active;
 
 protected:
-	/** ÅÂ½ºÅ©°¡ ½ÃÀÛµÉ ¶§ È£ÃâµË´Ï´Ù. ½ºÅ³ ¸ùÅ¸ÁÖ Àç»ıÀ» ½ÃÀÛÇÕ´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì‹œì‘ë  ë•Œ í˜¸ì¶œë©ë‹ˆë‹¤. ìŠ¤í‚¬ ëª½íƒ€ì£¼ ì¬ìƒì„ ì‹œì‘í•©ë‹ˆë‹¤. */
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	/** ÅÂ½ºÅ©°¡ ½ÇÇà ÁßÀÎ µ¿¾È ¸Å Æ½ È£ÃâµË´Ï´Ù. ¸ùÅ¸ÁÖ Á¾·á¸¦ °¨ÁöÇÕ´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì‹¤í–‰ ì¤‘ì¸ ë™ì•ˆ ë§¤ í‹± í˜¸ì¶œë©ë‹ˆë‹¤. ëª½íƒ€ì£¼ ì¢…ë£Œë¥¼ ê°ì§€í•©ë‹ˆë‹¤. */
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	/** ÅÂ½ºÅ©°¡ Áß´ÜµÉ ¶§ È£ÃâµË´Ï´Ù. */
+	/** íƒœìŠ¤í¬ê°€ ì¤‘ë‹¨ë  ë•Œ í˜¸ì¶œë©ë‹ˆë‹¤. */
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 
-	/** ÇöÀç Àç»ı ÁßÀÎ ½ºÅ³ ¸ùÅ¸ÁÖ */
+	/** í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ìŠ¤í‚¬ ëª½íƒ€ì£¼ */
 	UPROPERTY()
 	UAnimMontage* CurrentMontage;
 };

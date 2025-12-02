@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,8 +7,8 @@
 #include "IsGreaterThan.generated.h"
 
 /**
- * ºí·¢º¸µåÀÇ Float °ª (BlackboardKey)ÀÌ 'CompareValue'º¸´Ù Å©¸é true¸¦ ¹ÝÈ¯ÇÕ´Ï´Ù.
- * (Inverse Ã¼Å© ½Ã 'ÀÛ°Å³ª °°´Ù' (<=)·Î µ¿ÀÛÇÕ´Ï´Ù.)
+ * ë¸”ëž™ë³´ë“œì˜ Float ê°’ (BlackboardKey)ì´ 'CompareValue'ë³´ë‹¤ í¬ë©´ trueë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+ * (Inverse ì²´í¬ ì‹œ 'ìž‘ê±°ë‚˜ ê°™ë‹¤' (<=)ë¡œ ë™ìž‘í•©ë‹ˆë‹¤.)
  */
 UCLASS()
 class KHU_GEB_API UIsGreaterThan : public UBTDecorator_BlackboardBase
@@ -19,14 +19,14 @@ public:
 	UIsGreaterThan();
 
 protected:
-	/** ºñ±³ÇÒ ±âÁØÀÌ µÇ´Â °ª. */
+	/** ë¹„êµí•  ê¸°ì¤€ì´ ë˜ëŠ” ê°’. */
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	float CompareValue;
 
-	/** ½ÇÁ¦ Á¶°Ç °Ë»ç¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÔ´Ï´Ù. */
+	/** ì‹¤ì œ ì¡°ê±´ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ìž…ë‹ˆë‹¤. */
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 
-	/** ¿¡µðÅÍ¿¡¼­ ³ëµå ÀÌ¸§À» ´õ ¾Ë±â ½±°Ô Ç¥½ÃÇÏ±â À§ÇÑ ÇÔ¼öÀÔ´Ï´Ù. */
+	/** ì—ë””í„°ì—ì„œ ë…¸ë“œ ì´ë¦„ì„ ë” ì•Œê¸° ì‰½ê²Œ í‘œì‹œí•˜ê¸° ìœ„í•œ í•¨ìˆ˜ìž…ë‹ˆë‹¤. */
 	virtual FString GetStaticDescription() const override;
 
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,26 +15,26 @@ class KHU_GEB_API USkill_Swift : public USkillBase
     GENERATED_BODY()
 
 public:
-    /** ÇÑ ¹ø Á¡¸êÇÒ ¶§ ÀÌµ¿ÇÒ °Å¸® (SkillDefinitionÀÇ Range·Î µ¤¾î¾º¿öÁú ¼ö ÀÖÀ½) */
+    /** í•œ ë²ˆ ì ë©¸í•  ë•Œ ì´ë™í•  ê±°ë¦¬ (SkillDefinitionì˜ Rangeë¡œ ë®ì–´ì”Œì›Œì§ˆ ìˆ˜ ìˆìŒ) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float DashDistance = 0.f;
 
-    /** ½ÃÀÛ~³¡À» ÀÕ´Â Á÷À°¸éÃ¼ÀÇ ¡°°¡·Î(¿·)¡± ¹İÆø (YÃà) */
+    /** ì‹œì‘~ëì„ ì‡ëŠ” ì§ìœ¡ë©´ì²´ì˜ â€œê°€ë¡œ(ì˜†)â€ ë°˜í­ (Yì¶•) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float BoxHalfWidth = 150.f;
 
-    /** ½ÃÀÛ~³¡À» ÀÕ´Â Á÷À°¸éÃ¼ÀÇ ¡°¼¼·Î(À§)¡± ¹İ³ôÀÌ (ZÃà) */
+    /** ì‹œì‘~ëì„ ì‡ëŠ” ì§ìœ¡ë©´ì²´ì˜ â€œì„¸ë¡œ(ìœ„)â€ ë°˜ë†’ì´ (Zì¶•) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float BoxHalfHeight = 100.f;
 
-    /** ¹Ú½º µ¥¹ÌÁö¸¦ ¸î ¹ø »ùÇÃ¸µÇÒÁö (Å¬¼ö·Ï °°Àº Àû¿¡°Ô ¿©·¯ ¹ø µ¥¹ÌÁö) */
+    /** ë°•ìŠ¤ ë°ë¯¸ì§€ë¥¼ ëª‡ ë²ˆ ìƒ˜í”Œë§í• ì§€ (í´ìˆ˜ë¡ ê°™ì€ ì ì—ê²Œ ì—¬ëŸ¬ ë²ˆ ë°ë¯¸ì§€) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     int32 DamageSamples = 10;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float DamagePerSample = 0.f;
 
-    /** ¹üÀ§ ³»ÀÇ Àû À§Ä¡¿¡ »ı¼ºµÉ ³ªÀÌ¾Æ°¡¶ó (Å¸°İ ÀÌÆåÆ®) */
+    /** ë²”ìœ„ ë‚´ì˜ ì  ìœ„ì¹˜ì— ìƒì„±ë  ë‚˜ì´ì•„ê°€ë¼ (íƒ€ê²© ì´í™íŠ¸) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift|FX")
     TObjectPtr<UNiagaraSystem> HitNS;
 
@@ -44,21 +44,21 @@ public:
     virtual void StopSkill() override;
 
 private:
-    /** Swift¿¡ ¸ÂÀº Å¸°Ùµé (10Å¸ µ¿¾È °è¼Ó µÎµé±æ ´ë»ó) */
+    /** Swiftì— ë§ì€ íƒ€ê²Ÿë“¤ (10íƒ€ ë™ì•ˆ ê³„ì† ë‘ë“¤ê¸¸ ëŒ€ìƒ) */
     UPROPERTY()
     TArray<TWeakObjectPtr<ACharacter>> SwiftTargets;
 
-    /** ÇöÀç ¸î ¹øÂ° Å¸°İÀÎÁö (1 ~ DamageSamples) */
+    /** í˜„ì¬ ëª‡ ë²ˆì§¸ íƒ€ê²©ì¸ì§€ (1 ~ DamageSamples) */
     int32 CurrentHitIndex = 0;
 
-    /** Å¸°İ °£°İ(ÃÊ). 10Å¸¶ó¸é 0.08 ~ 0.1 Á¤µµ°¡ Ã¼°¨ ÁÁÀ½ */
+    /** íƒ€ê²© ê°„ê²©(ì´ˆ). 10íƒ€ë¼ë©´ 0.08 ~ 0.1 ì •ë„ê°€ ì²´ê° ì¢‹ìŒ */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift", meta = (AllowPrivateAccess = "true"))
     float HitInterval = 0.08f;
 
-    /** Å¸°İ¿ë Å¸ÀÌ¸Ó ÇÚµé */
+    /** íƒ€ê²©ìš© íƒ€ì´ë¨¸ í•¸ë“¤ */
     FTimerHandle SwiftDamageTimerHandle;
 
-    /** Å¸°İ ÇÑ ¹ø ¼öÇà (Å¸ÀÌ¸Ó Äİ¹é) */
+    /** íƒ€ê²© í•œ ë²ˆ ìˆ˜í–‰ (íƒ€ì´ë¨¸ ì½œë°±) */
     void HandleSwiftDamageTick();
 
 };

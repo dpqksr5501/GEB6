@@ -1,53 +1,53 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Enemy_AI/Decorator/CheckCooldown.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Engine/World.h" // GetTimeSeconds()¸¦ À§ÇØ ÇÊ¿äÇÕ´Ï´Ù.
+#include "Engine/World.h" // GetTimeSeconds()ë¥¼ ìœ„í•´ í•„ìš”í•©ë‹ˆë‹¤.
 
 UCheckCooldown::UCheckCooldown()
 {
-	// ³ëµå ÀÌ¸§ ¼³Á¤
+	// ë…¸ë“œ ì´ë¦„ ì„¤ì •
 	NodeName = TEXT("Check Cooldown");
 
-	// CompareValueÀÇ ±âº»°ªÀ» 5ÃÊ·Î ¼³Á¤
+	// CompareValueì˜ ê¸°ë³¸ê°’ì„ 5ì´ˆë¡œ ì„¤ì •
 	CompareValue = 5.0f;
 
-	// ÀÌ µ¥ÄÚ·¹ÀÌÅÍ´Â ºí·¢º¸µå '°ª'ÀÇ º¯°æÀ» °¨ÁöÇÏ´Â °ÍÀÌ ¾Æ´Ï¶ó
-	// ½ÇÇà Èå¸§ÀÌ µµ´ÞÇßÀ» ¶§ '½Ã°£'À» ±âÁØÀ¸·Î Ã¼Å©ÇÕ´Ï´Ù.
+	// ì´ ë°ì½”ë ˆì´í„°ëŠ” ë¸”ëž™ë³´ë“œ 'ê°’'ì˜ ë³€ê²½ì„ ê°ì§€í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼
+	// ì‹¤í–‰ íë¦„ì´ ë„ë‹¬í–ˆì„ ë•Œ 'ì‹œê°„'ì„ ê¸°ì¤€ìœ¼ë¡œ ì²´í¬í•©ë‹ˆë‹¤.
 	//bObserveBlackboardValue = false;
 }
 
 bool UCheckCooldown::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
-	// »óÀ§ Å¬·¡½ºÀÇ ÇÔ¼ö¸¦ ¸ÕÀú È£Ãâ (ÇÊ¼öÀûÀÎ ÃÊ±âÈ­°¡ ÀÖÀ» ¼ö ÀÖÀ½)
-	// UBTDecorator_BlackboardBase´Â CalculateRawConditionValue°¡ ¾Æ´Ñ
-	// PerformConditionCheck() µî¿¡¼­ Å° À¯È¿¼ºÀ» °Ë»çÇÏ¹Ç·Î Á÷Á¢ ·ÎÁ÷À» ±¸ÇöÇÕ´Ï´Ù.
+	// ìƒìœ„ í´ëž˜ìŠ¤ì˜ í•¨ìˆ˜ë¥¼ ë¨¼ì € í˜¸ì¶œ (í•„ìˆ˜ì ì¸ ì´ˆê¸°í™”ê°€ ìžˆì„ ìˆ˜ ìžˆìŒ)
+	// UBTDecorator_BlackboardBaseëŠ” CalculateRawConditionValueê°€ ì•„ë‹Œ
+	// PerformConditionCheck() ë“±ì—ì„œ í‚¤ ìœ íš¨ì„±ì„ ê²€ì‚¬í•˜ë¯€ë¡œ ì§ì ‘ ë¡œì§ì„ êµ¬í˜„í•©ë‹ˆë‹¤.
 
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	if (!BlackboardComp)
 	{
-		// ºí·¢º¸µå ÄÄÆ÷³ÍÆ®°¡ ¾øÀ¸¸é ½ÇÆÐ Ã³¸®
+		// ë¸”ëž™ë³´ë“œ ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìœ¼ë©´ ì‹¤íŒ¨ ì²˜ë¦¬
 		return false;
 	}
 
-	// ¿¡µðÅÍ¿¡¼­ ¼±ÅÃµÈ ºí·¢º¸µå Å°°¡ À¯È¿ÇÑÁö È®ÀÎ
+	// ì—ë””í„°ì—ì„œ ì„ íƒëœ ë¸”ëž™ë³´ë“œ í‚¤ê°€ ìœ íš¨í•œì§€ í™•ì¸
 	if (!GetSelectedBlackboardKey().IsValid())
 	{
-		// Å°°¡ ¼±ÅÃµÇÁö ¾Ê¾ÒÀ¸¸é ½ÇÆÐ Ã³¸®
+		// í‚¤ê°€ ì„ íƒë˜ì§€ ì•Šì•˜ìœ¼ë©´ ì‹¤íŒ¨ ì²˜ë¦¬
 		return false;
 	}
 
-	// ÇöÀç °ÔÀÓ ¿ùµåÀÇ ½Ã°£À» °¡Á®¿É´Ï´Ù.
+	// í˜„ìž¬ ê²Œìž„ ì›”ë“œì˜ ì‹œê°„ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	const float CurrentTime = OwnerComp.GetWorld()->GetTimeSeconds();
 
-	// ºí·¢º¸µå¿¡¼­ ¼±ÅÃµÈ Å°(¿¹: LastActionTime)ÀÇ °ªÀ» floatÀ¸·Î °¡Á®¿É´Ï´Ù.
+	// ë¸”ëž™ë³´ë“œì—ì„œ ì„ íƒëœ í‚¤(ì˜ˆ: LastActionTime)ì˜ ê°’ì„ floatìœ¼ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	const float LastTime = BlackboardComp->GetValueAsFloat(GetSelectedBlackboardKey());
 
-	// ÇöÀç ½Ã°£°ú ¸¶Áö¸· ½ÇÇà ½Ã°£ÀÇ Â÷ÀÌ(°æ°ú ½Ã°£)¸¦ °è»êÇÕ´Ï´Ù.
+	// í˜„ìž¬ ì‹œê°„ê³¼ ë§ˆì§€ë§‰ ì‹¤í–‰ ì‹œê°„ì˜ ì°¨ì´(ê²½ê³¼ ì‹œê°„)ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤.
 	const float ElapsedTime = CurrentTime - LastTime;
 
-	// °æ°ú ½Ã°£ÀÌ ¼³Á¤µÈ ÄðÅ¸ÀÓ(CompareValue)º¸´Ù Å©°Å³ª °°À¸¸é,
-	// ÄðÅ¸ÀÓÀÌ Áö³­ °Í(true)À¸·Î ÆÇ´ÜÇÏ¿© µ¥ÄÚ·¹ÀÌÅÍ¸¦ Åë°ú½ÃÅµ´Ï´Ù.
+	// ê²½ê³¼ ì‹œê°„ì´ ì„¤ì •ëœ ì¿¨íƒ€ìž„(CompareValue)ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ìœ¼ë©´,
+	// ì¿¨íƒ€ìž„ì´ ì§€ë‚œ ê²ƒ(true)ìœ¼ë¡œ íŒë‹¨í•˜ì—¬ ë°ì½”ë ˆì´í„°ë¥¼ í†µê³¼ì‹œí‚µë‹ˆë‹¤.
 	return ElapsedTime >= CompareValue;
 }

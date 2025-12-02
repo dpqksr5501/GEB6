@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TTaunt.h"
 #include "AIController.h"
@@ -23,7 +23,7 @@ EBTNodeResult::Type UTTaunt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	// 1. AI ÄÁÆ®·Ñ·¯ È¹µæ
+	// 1. AI ì»¨íŠ¸ë¡¤ëŸ¬ íšë“
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -31,7 +31,7 @@ EBTNodeResult::Type UTTaunt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 2. Ä³¸¯ÅÍ È¹µæ
+	// 2. ìºë¦­í„° íšë“
 	CachedCharacter = Cast<ACharacter>(AIController->GetPawn());
 	if (!CachedCharacter)
 	{
@@ -39,7 +39,7 @@ EBTNodeResult::Type UTTaunt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 3. Enemy_Base·Î Ä³½ºÆÃÇÏ¿© JumpComponent È¹µæ
+	// 3. Enemy_Baseë¡œ ìºìŠ¤íŒ…í•˜ì—¬ JumpComponent íšë“
 	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
 	{
 		CachedJumpComp = Enemy->JumpComp;
@@ -57,15 +57,15 @@ EBTNodeResult::Type UTTaunt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 4. ¶¥ À§¿¡¼­¸¸ ½ÇÇà °¡´É (Guard´Â Áö»ó ½ºÅ³)
+	// 4. ë•… ìœ„ì—ì„œë§Œ ì‹¤í–‰ ê°€ëŠ¥ (GuardëŠ” ì§€ìƒ ìŠ¤í‚¬)
 	if (!CachedJumpComp->IsOnGround())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TTaunt] Character is not on ground"));
 		return EBTNodeResult::Failed;
 	}
 
-	// 5. JumpComponentÀÇ HandleSpacePressed È£Ãâ (Æû¿¡ ¸Â´Â µµ¹ß ½ÇÇà)
-	// CurrentFormÀÌ GuardÀÌ¹Ç·Î ³»ºÎÀûÀ¸·Î HandleGuardPressed°¡ È£ÃâµÊ
+	// 5. JumpComponentì˜ HandleSpacePressed í˜¸ì¶œ (í¼ì— ë§ëŠ” ë„ë°œ ì‹¤í–‰)
+	// CurrentFormì´ Guardì´ë¯€ë¡œ ë‚´ë¶€ì ìœ¼ë¡œ HandleGuardPressedê°€ í˜¸ì¶œë¨
 	CachedJumpComp->HandleSpacePressed();
 	
 	TauntStartTime = OwnerComp.GetWorld()->GetTimeSeconds();
@@ -79,7 +79,7 @@ void UTTaunt::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	if (!CachedCharacter || !CachedJumpComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TTaunt] Cached references invalid in TickTask"));
@@ -94,35 +94,35 @@ void UTTaunt::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 		return;
 	}
 
-	// µµ¹ß(²ø¾î´ç±è) Áö¼Ó ½Ã°£ Ã¼Å©
+	// ë„ë°œ(ëŒì–´ë‹¹ê¹€) ì§€ì† ì‹œê°„ ì²´í¬
 	const float CurrentTime = World->GetTimeSeconds();
 	const float ElapsedTime = CurrentTime - TauntStartTime;
-	// TauntDuration¸¸Å­ ´ë±â ÈÄ ¿Ï·á
-	// JumpComponentÀÇ GuardPullDuration(2.0ÃÊ) + ¿©À¯½Ã°£(0.1ÃÊ)
+	// TauntDurationë§Œí¼ ëŒ€ê¸° í›„ ì™„ë£Œ
+	// JumpComponentì˜ GuardPullDuration(2.0ì´ˆ) + ì—¬ìœ ì‹œê°„(0.1ì´ˆ)
 	if (ElapsedTime >= TauntDuration)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[TTaunt] Taunt completed (%.2f seconds elapsed)"), ElapsedTime);
 		
-		// HandleSpaceReleased È£Ãâ (ÇÊ¿ä½Ã Á¤¸®)
+		// HandleSpaceReleased í˜¸ì¶œ (í•„ìš”ì‹œ ì •ë¦¬)
 		CachedJumpComp->HandleSpaceReleased();
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
 
-	// ¾ÆÁ÷ µµ¹ß ÁøÇà Áß - JumpComponentÀÇ Tick¿¡¼­ ²ø¾î´ç±è Ã³¸® Áß
-	// ¿©±â¼­´Â ´Ü¼øÈ÷ ½Ã°£¸¸ Ã¼Å©
+	// ì•„ì§ ë„ë°œ ì§„í–‰ ì¤‘ - JumpComponentì˜ Tickì—ì„œ ëŒì–´ë‹¹ê¹€ ì²˜ë¦¬ ì¤‘
+	// ì—¬ê¸°ì„œëŠ” ë‹¨ìˆœíˆ ì‹œê°„ë§Œ ì²´í¬
 }
 
 EBTNodeResult::Type UTTaunt::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// HandleSpaceReleased È£ÃâÇÏ¿© Á¤¸®
+	// HandleSpaceReleased í˜¸ì¶œí•˜ì—¬ ì •ë¦¬
 	if (CachedJumpComp)
 	{
 		CachedJumpComp->HandleSpaceReleased();
 		UE_LOG(LogTemp, Log, TEXT("[TTaunt] HandleSpaceReleased on abort"));
 	}
 
-	// Ä³½Ã Á¤¸®
+	// ìºì‹œ ì •ë¦¬
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
 	TauntStartTime = 0.f;

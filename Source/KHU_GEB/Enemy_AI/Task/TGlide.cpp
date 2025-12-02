@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TGlide.h"
 #include "AIController.h"
@@ -13,7 +13,7 @@
 UTGlide::UTGlide()
 {
 	NodeName = TEXT("Glide");
-	bNotifyTick = true; // ÂøÁö±îÁö ´ë±âÇÏ¹Ç·Î Tick ÇÊ¿ä
+	bNotifyTick = true; // ì°©ì§€ê¹Œì§€ ëŒ€ê¸°í•˜ë¯€ë¡œ Tick í•„ìš”
 
 	GlideStartTime = 0.f;
 	CachedCharacter = nullptr;
@@ -26,7 +26,7 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	// 1. AI ÄÁÆ®·Ñ·¯ È¹µæ
+	// 1. AI ì»¨íŠ¸ë¡¤ëŸ¬ íšë“
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -34,7 +34,7 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 2. Ä³¸¯ÅÍ È¹µæ
+	// 2. ìºë¦­í„° íšë“
 	CachedCharacter = Cast<ACharacter>(AIController->GetPawn());
 	if (!CachedCharacter)
 	{
@@ -42,7 +42,7 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 3. CharacterMovementComponent È®ÀÎ
+	// 3. CharacterMovementComponent í™•ì¸
 	UCharacterMovementComponent* MovementComp = CachedCharacter->GetCharacterMovement();
 	if (!MovementComp)
 	{
@@ -50,7 +50,7 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 4. Enemy_Base·Î Ä³½ºÆÃÇÏ¿© JumpComponent È¹µæ
+	// 4. Enemy_Baseë¡œ ìºìŠ¤íŒ…í•˜ì—¬ JumpComponent íšë“
 	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
 	{
 		CachedJumpComp = Enemy->JumpComp;
@@ -68,7 +68,7 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// 5. AnimInstance È¹µæ
+	// 5. AnimInstance íšë“
 	if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
 	{
 		CachedAnimInstance = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance());
@@ -78,25 +78,25 @@ EBTNodeResult::Type UTGlide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		}
 	}
 
-	// 6. ¶¥ À§¿¡¼­¸¸ ½ÇÇà °¡´É
+	// 6. ë•… ìœ„ì—ì„œë§Œ ì‹¤í–‰ ê°€ëŠ¥
 	if (!CachedJumpComp->IsOnGround())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TGlide] Character is not on ground"));
 		return EBTNodeResult::Failed;
 	}
 
-	// 7. AnimInstance ÇÃ·¡±× ¼³Á¤ (Á¡ÇÁ ½ÃÀÛ)
+	// 7. AnimInstance í”Œë˜ê·¸ ì„¤ì • (ì í”„ ì‹œì‘)
 	if (CachedAnimInstance)
 	{
 		CachedAnimInstance->SetIsJumping(true);
 		UE_LOG(LogTemp, Log, TEXT("[TGlide] SetIsJumping(true)"));
 	}
 
-	// 8. JumpComponentÀÇ HandleSpacePressed È£Ãâ (Æû¿¡ ¸Â´Â ±Û¶óÀÌµå ½ÇÇà)
-	// CurrentFormÀÌ RangeÀÌ¹Ç·Î HandleRangePressed°¡ È£ÃâµÊ
-	// - LaunchCharacter·Î À§·Î ¹ß»ç
-	// - GravityScaleÀ» RangeGlideGravityScale(0.1)·Î ¼³Á¤ ¡æ ÃµÃµÈ÷ ÇÏ°­
-	// - bIsRangeGliding = true ¼³Á¤
+	// 8. JumpComponentì˜ HandleSpacePressed í˜¸ì¶œ (í¼ì— ë§ëŠ” ê¸€ë¼ì´ë“œ ì‹¤í–‰)
+	// CurrentFormì´ Rangeì´ë¯€ë¡œ HandleRangePressedê°€ í˜¸ì¶œë¨
+	// - LaunchCharacterë¡œ ìœ„ë¡œ ë°œì‚¬
+	// - GravityScaleì„ RangeGlideGravityScale(0.1)ë¡œ ì„¤ì • â†’ ì²œì²œíˆ í•˜ê°•
+	// - bIsRangeGliding = true ì„¤ì •
 	CachedJumpComp->HandleSpacePressed();
 	
 	GlideStartTime = OwnerComp.GetWorld()->GetTimeSeconds();
@@ -110,7 +110,7 @@ void UTGlide::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	if (!CachedCharacter || !CachedJumpComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TGlide] Cached references invalid in TickTask"));
@@ -133,7 +133,7 @@ void UTGlide::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 		return;
 	}
 
-	// »óÇÏ ¼Óµµ°¡ 0ÀÌÇÏ (ÇÏ°­Áß)ÀÌ¶ó¸é Task Á¾·á
+	// ìƒí•˜ ì†ë„ê°€ 0ì´í•˜ (í•˜ê°•ì¤‘)ì´ë¼ë©´ Task ì¢…ë£Œ
 	if (MovementComp->Velocity.Z < 0.f)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[TGlide] Character started descending, finishing Glide task"));
@@ -144,21 +144,21 @@ void UTGlide::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 
 EBTNodeResult::Type UTGlide::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// HandleSpaceReleased È£ÃâÇÏ¿© Á¤¸®
+	// HandleSpaceReleased í˜¸ì¶œí•˜ì—¬ ì •ë¦¬
 	if (CachedJumpComp)
 	{
 		CachedJumpComp->HandleSpaceReleased();
 		UE_LOG(LogTemp, Log, TEXT("[TGlide] HandleSpaceReleased on abort"));
 	}
 
-	// AnimInstance ÇÃ·¡±× Áï½Ã ¸®¼Â
+	// AnimInstance í”Œë˜ê·¸ ì¦‰ì‹œ ë¦¬ì…‹
 	if (CachedAnimInstance)
 	{
 		CachedAnimInstance->SetIsJumping(false);
 		UE_LOG(LogTemp, Log, TEXT("[TGlide] Flags reset on abort"));
 	}
 
-	// Ä³½Ã Á¤¸®
+	// ìºì‹œ ì •ë¦¬
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
 	CachedAnimInstance = nullptr;

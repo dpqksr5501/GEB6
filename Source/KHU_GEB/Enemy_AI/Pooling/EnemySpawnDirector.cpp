@@ -1,4 +1,4 @@
-#include "EnemySpawnDirector.h"
+ï»¿#include "EnemySpawnDirector.h"
 #include "Enemy_AI/Enemy_Base.h"
 
 void UEnemySpawnDirector::SetMaxConcurrentSpawns(int32 NewMax)
@@ -26,7 +26,7 @@ bool UEnemySpawnDirector::RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass)
         return false;
     }
 
-    // 1. ÃÑ ´©Àû ½ºÆù ÇÑµµ È®ÀÎ
+    // 1. ì´ ëˆ„ì  ìŠ¤í° í•œë„ í™•ì¸
     if (TotalSpawnedCount >= MaxTotalSpawns)
     {
         UE_LOG(LogTemp, Warning, TEXT("EnemySpawnDirector: Total spawn limit reached (%d/%d)"), 
@@ -34,7 +34,7 @@ bool UEnemySpawnDirector::RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass)
         return false;
     }
 
-    // 2. ÇöÀç »ì¾ÆÀÖ´Â Enemy ¼ö È®ÀÎ
+    // 2. í˜„ì¬ ì‚´ì•„ìˆëŠ” Enemy ìˆ˜ í™•ì¸
     if (CurrentAliveCount >= MaxConcurrentSpawns)
     {
         UE_LOG(LogTemp, Warning, TEXT("EnemySpawnDirector: Concurrent spawn limit reached (%d/%d)"), 
@@ -42,7 +42,7 @@ bool UEnemySpawnDirector::RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass)
         return false;
     }
 
-    // 3. ÇØ´ç Å¸ÀÔÀÇ ½ºÆù ÇÑµµ È®ÀÎ (¼³Á¤µÈ °æ¿ì)
+    // 3. í•´ë‹¹ íƒ€ì…ì˜ ìŠ¤í° í•œë„ í™•ì¸ (ì„¤ì •ëœ ê²½ìš°)
     if (const int32* MaxForType = MaxSpawnsPerType.Find(EnemyClass))
     {
         const int32* CurrentForType = SpawnedCounts.Find(EnemyClass);
@@ -56,7 +56,7 @@ bool UEnemySpawnDirector::RequestSpawn(TSubclassOf<AEnemy_Base> EnemyClass)
         }
     }
 
-    // ½ºÆù Çã°¡ - Ä«¿îÅÍ Áõ°¡
+    // ìŠ¤í° í—ˆê°€ - ì¹´ìš´í„° ì¦ê°€
     TotalSpawnedCount++;
     CurrentAliveCount++;
     SpawnedCounts.FindOrAdd(EnemyClass, 0)++;
@@ -75,10 +75,10 @@ void UEnemySpawnDirector::OnEnemyDied(TSubclassOf<AEnemy_Base> EnemyClass)
         return;
     }
 
-    // ÇöÀç »ì¾ÆÀÖ´Â ¼ö °¨¼Ò
+    // í˜„ì¬ ì‚´ì•„ìˆëŠ” ìˆ˜ ê°ì†Œ
     CurrentAliveCount = FMath::Max(0, CurrentAliveCount - 1);
 
-    // Å¸ÀÔº° »ì¾ÆÀÖ´Â ¼ö °¨¼Ò
+    // íƒ€ì…ë³„ ì‚´ì•„ìˆëŠ” ìˆ˜ ê°ì†Œ
     if (int32* Count = AliveCounts.Find(EnemyClass))
     {
         *Count = FMath::Max(0, *Count - 1);
@@ -103,7 +103,7 @@ int32 UEnemySpawnDirector::GetMaxSpawnsForEnemyType(TSubclassOf<AEnemy_Base> Ene
     {
         return *MaxCount;
     }
-    return -1; // ¼³Á¤µÇÁö ¾ÊÀ½À» ÀÇ¹Ì
+    return -1; // ì„¤ì •ë˜ì§€ ì•ŠìŒì„ ì˜ë¯¸
 }
 
 void UEnemySpawnDirector::ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass)

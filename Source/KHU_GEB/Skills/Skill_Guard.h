@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,22 +15,22 @@ class KHU_GEB_API USkill_Guard : public USkillBase
     GENERATED_BODY()
 
 public:
-    /** ÇÑ ¹ø ½ºÅ³À» »ç¿ëÇÒ ¶§ °¡Áö°í ÀÖ´Â ÃÑ º¸È£¸· °³¼ö */
+    /** í•œ ë²ˆ ìŠ¤í‚¬ì„ ì‚¬ìš©í•  ë•Œ ê°€ì§€ê³  ìˆëŠ” ì´ ë³´í˜¸ë§‰ ê°œìˆ˜ */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     int32 MaxShields = 10;
 
-    /** ¹è¸®¾î ÇÑ ÀåÀÌ ±ğÀÏ ¶§¸¶´Ù ¼Ò¸ğÇÒ ¸¶³ª·® */
+    /** ë°°ë¦¬ì–´ í•œ ì¥ì´ ê¹ì¼ ë•Œë§ˆë‹¤ ì†Œëª¨í•  ë§ˆë‚˜ëŸ‰ */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ManaPerShield = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float DamagePerSheild = 0.f;
 
-    /** ¿ìÅ¬¸¯À» ¶¼¾úÀ» ¶§, ¼Ò¸ğµÈ º¸È£¸· ¼ö ¡¿ DamagePerSheild ¸¦ ÁÙ ±¤¿ª °ø°İ ¹İ°æ */
+    /** ìš°í´ë¦­ì„ ë–¼ì—ˆì„ ë•Œ, ì†Œëª¨ëœ ë³´í˜¸ë§‰ ìˆ˜ Ã— DamagePerSheild ë¥¼ ì¤„ ê´‘ì—­ ê³µê²© ë°˜ê²½ */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 0.f;
 
-    /** °¡µ¿ Áß ³ªÀÌ¾Æ°¡¶ó º¸È£¸· ÀÌÆåÆ® */
+    /** ê°€ë™ ì¤‘ ë‚˜ì´ì•„ê°€ë¼ ë³´í˜¸ë§‰ ì´í™íŠ¸ */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
@@ -39,12 +39,12 @@ public:
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
 
-    /** ÀÌ¹Ì ÄÑÁ® ÀÖÀ» ¶© ´Ù½Ã ¸ø ÄÑµµ·Ï + ÄğÅ¸ÀÓ Ã¼Å© */
+    /** ì´ë¯¸ ì¼œì ¸ ìˆì„ ë• ë‹¤ì‹œ ëª» ì¼œë„ë¡ + ì¿¨íƒ€ì„ ì²´í¬ */
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
 
-    /** Ä³¸¯ÅÍÀÇ HandleAnyDamage¿¡¼­ È£ÃâÇØ¼­, µ¥¹ÌÁö¸¦ º¸È£¸·À¸·Î ¸·À»Áö ¿©ºÎ¸¦ ÆÇ´Ü */
+    /** ìºë¦­í„°ì˜ HandleAnyDamageì—ì„œ í˜¸ì¶œí•´ì„œ, ë°ë¯¸ì§€ë¥¼ ë³´í˜¸ë§‰ìœ¼ë¡œ ë§‰ì„ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨ */
     bool HandleIncomingDamage(float Damage,
         const UDamageType* DamageType,
         AController* InstigatedBy,
@@ -52,7 +52,7 @@ public:
 
     bool IsActive() const { return bIsActive; }
 
-    // Enemy°¡ ¾²±â À§ÇØ PublicÀ¸·Î ¿Å°å½À´Ï´Ù.
+    // Enemyê°€ ì“°ê¸° ìœ„í•´ Publicìœ¼ë¡œ ì˜®ê²¼ìŠµë‹ˆë‹¤.
     int32 RemainingShields = 0;
     int32 ConsumedShields = 0;
 

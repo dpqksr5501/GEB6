@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Base.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -19,33 +19,33 @@ AEnemy_Base::AEnemy_Base()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// CharacterMovement ¼³Á¤ Ãß°¡
+	// CharacterMovement ì„¤ì • ì¶”ê°€
 	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 	if (MoveComp)
 	{
-		MoveComp->JumpZVelocity = 600.f;  // Á¡ÇÁ ¼Óµµ ¼³Á¤
-		MoveComp->AirControl = 0.5f;       // °øÁß Á¦¾î·Â
-		MoveComp->GravityScale = 1.0f;     // Áß·Â ½ºÄÉÀÏ
+		MoveComp->JumpZVelocity = 600.f;  // ì í”„ ì†ë„ ì„¤ì •
+		MoveComp->AirControl = 0.5f;       // ê³µì¤‘ ì œì–´ë ¥
+		MoveComp->GravityScale = 1.0f;     // ì¤‘ë ¥ ìŠ¤ì¼€ì¼
 	}
 
 	MeshRoot = CreateDefaultSubobject<USceneComponent>(TEXT("MeshRoot"));
 	MeshRoot->SetupAttachment(RootComponent);
 	GetMesh()->SetupAttachment(MeshRoot);
 
-	// HealthComponent »ı¼º ¹× ÃÊ±âÈ­
+	// HealthComponent ìƒì„± ë° ì´ˆê¸°í™”
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	if (!HealthComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - HealthComp creation failed"));
 	}
-	// WeaponComponent »ı¼º ¹× ÃÊ±âÈ­
+	// WeaponComponent ìƒì„± ë° ì´ˆê¸°í™”
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
 
 	if (!WeaponComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp creation failed"));
 	}
-	// JumpComponent »ı¼º ¹× ÃÊ±âÈ­
+	// JumpComponent ìƒì„± ë° ì´ˆê¸°í™”
 	JumpComp = CreateDefaultSubobject<UJumpComponent>(TEXT("JumpComp"));
 	if (!JumpComp)
 	{
@@ -63,22 +63,22 @@ void AEnemy_Base::BeginPlay()
 		WeaponComp->SetWeaponDefinition(DefaultWeaponData);
 	}
 	else {
-		// WeaponComp°¡ ¾ø´ÂÁö, DefaultWeaponData°¡ ¾ø´ÂÁö È®ÀÎ ¹× ·Î±× Ãâ·Â
+		// WeaponCompê°€ ì—†ëŠ”ì§€, DefaultWeaponDataê°€ ì—†ëŠ”ì§€ í™•ì¸ ë° ë¡œê·¸ ì¶œë ¥
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - WeaponComp or DefaultWeaponData is null. WeaponComp: %s, DefaultWeaponData: %s"),
 			WeaponComp ? *WeaponComp->GetName() : TEXT("null"),
 			DefaultWeaponData ? *DefaultWeaponData->GetName() : TEXT("null"));
 	}
 	
-	// SkillClasses°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ÀÚµ¿À¸·Î ÃÊ±âÈ­
+	// SkillClassesê°€ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ìë™ìœ¼ë¡œ ì´ˆê¸°í™”
 	if (SkillClasses.Num() > 0 && Equipped.Num() == 0)
 	{
 		InitializeSkills();
 	}
 	
-	// JumpComponent Æû ÃÊ±âÈ­
+	// JumpComponent í¼ ì´ˆê¸°í™”
 	if (JumpComp && DefaultFormDef)
 	{
-		// DefaultFormDefÀÇ FormTypeÀ» ÀĞ¾î¼­ JumpComponent¿¡ ¼³Á¤
+		// DefaultFormDefì˜ FormTypeì„ ì½ì–´ì„œ JumpComponentì— ì„¤ì •
 		JumpComp->SetForm(DefaultFormDef->FormType, DefaultFormDef);
 		UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] JumpComp initialized with FormType: %d"), 
 			static_cast<int32>(DefaultFormDef->FormType));
@@ -119,7 +119,7 @@ void AEnemy_Base::InitializeSkills()
 	}
 }
 
-// ±âº» ±¸Çö (ÇÏÀ§ Å¬·¡½º°¡ ¿À¹ö¶óÀÌµåÇÏÁö ¾ÊÀ¸¸é ÀÌ°Ô È£ÃâµÊ)
+// ê¸°ë³¸ êµ¬í˜„ (í•˜ìœ„ í´ë˜ìŠ¤ê°€ ì˜¤ë²„ë¼ì´ë“œí•˜ì§€ ì•Šìœ¼ë©´ ì´ê²Œ í˜¸ì¶œë¨)
 void AEnemy_Base::ActivateSkill()
 {
 	UE_LOG(LogTemp, Warning, 
@@ -127,18 +127,18 @@ void AEnemy_Base::ActivateSkill()
 		*GetClass()->GetName());
 }
 
-// ´Ù¸¥ ActorÀÇ ApplyDamage¿¡ ÀÇÇØ È£ÃâµÊ
+// ë‹¤ë¥¸ Actorì˜ ApplyDamageì— ì˜í•´ í˜¸ì¶œë¨
 float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
 	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::TakeDamage called. DamageAmount: %f, ActualDamage: %f"), DamageAmount, ActualDamage);
 
-	//ÇöÀç »óÅÂ¸¦ ÀúÀåÇÏ´Â CurrentState º¯¼ö¸¦ ¼±¾ğÇÏ°í, Blackboard¿¡¼­ EnemyState °ªÀ» °¡Á®¿Í ÀúÀå
+	//í˜„ì¬ ìƒíƒœë¥¼ ì €ì¥í•˜ëŠ” CurrentState ë³€ìˆ˜ë¥¼ ì„ ì–¸í•˜ê³ , Blackboardì—ì„œ EnemyState ê°’ì„ ê°€ì ¸ì™€ ì €ì¥
 	EEnemyState CurrentState = (EEnemyState)BlackboardComp->GetValueAsEnum("EnemyState");
 
 	if (BlackboardComp) {
-		// ÇöÀç °ø°İ ÁßÀÌ ¾Æ´Ï¶ó¸é ÇÇ°İ ÁßÀ¸·Î º¯°æ
+		// í˜„ì¬ ê³µê²© ì¤‘ì´ ì•„ë‹ˆë¼ë©´ í”¼ê²© ì¤‘ìœ¼ë¡œ ë³€ê²½
 		if (CurrentState != EEnemyState::EES_Attacking)
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
@@ -167,7 +167,7 @@ void AEnemy_Base::OnDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::OnDeath - Enemy has died!"));
 
-	// Director¿¡°Ô »ç¸Á ¾Ë¸²
+	// Directorì—ê²Œ ì‚¬ë§ ì•Œë¦¼
 	UGameInstance* GI = GetGameInstance();
 	if (GI)
 	{
@@ -177,7 +177,7 @@ void AEnemy_Base::OnDeath()
 			SpawnDirector->OnEnemyDied(GetClass());
 		}
 
-		// Pool¿¡ ¹İÈ¯
+		// Poolì— ë°˜í™˜
 		UEnemyPoolSubsystem* EnemyPool = GI->GetSubsystem<UEnemyPoolSubsystem>();
 		if (EnemyPool)
 		{

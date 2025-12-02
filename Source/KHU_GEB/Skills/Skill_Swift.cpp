@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Swift.h"
@@ -19,7 +19,7 @@ void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
 
 bool USkill_Swift::CanActivate() const
 {
-    // Áö±İÀº º°µµ Á¦¾à ¾øÀÌ ±âº» Á¶°Ç¸¸ »ç¿ë
+    // ì§€ê¸ˆì€ ë³„ë„ ì œì•½ ì—†ì´ ê¸°ë³¸ ì¡°ê±´ë§Œ ì‚¬ìš©
     return Super::CanActivate();
 }
 
@@ -35,9 +35,9 @@ void USkill_Swift::ActivateSkill()
         return;
     }
 
-    //¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ Àç»ı
+    //ì• ë‹ˆë©”ì´ì…˜ ëª½íƒ€ì£¼ ì¬ìƒ
     PlayFormSkillMontage();
-    // ÄğÅ¸ÀÓ ½ÃÀÛ + ¸¶³ª 1È¸ ¼Ò¸ğ.
+    // ì¿¨íƒ€ì„ ì‹œì‘ + ë§ˆë‚˜ 1íšŒ ì†Œëª¨.
     Super::ActivateSkill();
 
     if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
@@ -45,7 +45,7 @@ void USkill_Swift::ActivateSkill()
         PlayerChar->OnSwiftStrikeStarted(this);
     }
 
-    // ----- ½ÃÀÛ/³¡ À§Ä¡ °è»ê -----
+    // ----- ì‹œì‘/ë ìœ„ì¹˜ ê³„ì‚° -----
     const FVector StartLocation = Owner->GetActorLocation();
 
     FVector Forward = Owner->GetActorForwardVector();
@@ -53,16 +53,16 @@ void USkill_Swift::ActivateSkill()
     if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
 
     const FVector EndLocation = StartLocation + Forward * DashDistance;
-    // ¿©±â¼­ DashDistance°¡ 0ÀÌ³×?
+    // ì—¬ê¸°ì„œ DashDistanceê°€ 0ì´ë„¤?
 
-    // ----- Å« Á÷À°¸éÃ¼(Oriented Box) ¾ÈÀÇ Àû¿¡°Ô µ¥¹ÌÁö -----
-   // ----- °æ·Î »óÀÇ Àû(ACharacter) ¼öÁı¿ë ¹Ú½º °è»ê -----
+    // ----- í° ì§ìœ¡ë©´ì²´(Oriented Box) ì•ˆì˜ ì ì—ê²Œ ë°ë¯¸ì§€ -----
+   // ----- ê²½ë¡œ ìƒì˜ ì (ACharacter) ìˆ˜ì§‘ìš© ë°•ìŠ¤ ê³„ì‚° -----
     const FVector Segment = EndLocation - StartLocation;
     const float Distance = Segment.Size();
 
     SwiftTargets.Reset();
     CurrentHitIndex = 0;
-    // ¿©±â¼­ Distance°¡ 0ÀÌ¶ó.. ÀÌÀ¯°¡ ¹»±î?
+    // ì—¬ê¸°ì„œ Distanceê°€ 0ì´ë¼.. ì´ìœ ê°€ ë­˜ê¹Œ?
 
     if (Distance > KINDA_SMALL_NUMBER)
     {
@@ -70,8 +70,8 @@ void USkill_Swift::ActivateSkill()
         const FVector BoxCenter = StartLocation + 0.5f * Segment;
         const FQuat   BoxRotation = FRotationMatrix::MakeFromX(Direction).ToQuat();
 
-        // X: ÁøÇà ¹æÇâ, Y: ÁÂ¿ì, Z: »óÇÏ
-        const float ExtraForwardPadding = 50.f; // »ìÂ¦ ¿©À¯
+        // X: ì§„í–‰ ë°©í–¥, Y: ì¢Œìš°, Z: ìƒí•˜
+        const float ExtraForwardPadding = 50.f; // ì‚´ì§ ì—¬ìœ 
         const FVector HalfExtent(
             Distance * 0.5f + ExtraForwardPadding,
             BoxHalfWidth,
@@ -80,7 +80,7 @@ void USkill_Swift::ActivateSkill()
         TArray<FOverlapResult> Overlaps;
         FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSwift), false, Owner);
         FCollisionObjectQueryParams ObjParams;
-        ObjParams.AddObjectTypesToQuery(ECC_Pawn); // Pawn (Àûµé)¸¸ È®ÀÎ
+        ObjParams.AddObjectTypesToQuery(ECC_Pawn); // Pawn (ì ë“¤)ë§Œ í™•ì¸
 
         const bool bAnyHit = World->OverlapMultiByObjectType(
             Overlaps,
@@ -108,7 +108,7 @@ void USkill_Swift::ActivateSkill()
 #endif
     }
 
-    // ----- ½ÇÁ¦ Á¡¸ê ÀÌµ¿ (±âÁ¸ ÄÚµå ±×´ë·Î) -----
+    // ----- ì‹¤ì œ ì ë©¸ ì´ë™ (ê¸°ì¡´ ì½”ë“œ ê·¸ëŒ€ë¡œ) -----
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (UCapsuleComponent* Capsule = OwnerChar->GetCapsuleComponent())
@@ -127,7 +127,7 @@ void USkill_Swift::ActivateSkill()
     }
     else { Owner->SetActorLocation(EndLocation); }
 
-    // ----- ¼öÁıµÈ Å¸°ÙµéÀ» DamageSamples¹ø¿¡ °ÉÃÄ ¶§¸®±â -----
+    // ----- ìˆ˜ì§‘ëœ íƒ€ê²Ÿë“¤ì„ DamageSamplesë²ˆì— ê±¸ì³ ë•Œë¦¬ê¸° -----
     if (SwiftTargets.Num() > 0 && DamageSamples > 0)
     {
         const float Interval = FMath::Max(HitInterval, KINDA_SMALL_NUMBER);
@@ -189,7 +189,7 @@ void USkill_Swift::HandleSwiftDamageTick()
 
     ++CurrentHitIndex;
 
-    // Hit ÀÎµ¦½º°¡ DamageSamples¸¦ ³ÑÀ¸¸é Á¾·á
+    // Hit ì¸ë±ìŠ¤ê°€ DamageSamplesë¥¼ ë„˜ìœ¼ë©´ ì¢…ë£Œ
     if (CurrentHitIndex > DamageSamples)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
@@ -203,7 +203,7 @@ void USkill_Swift::HandleSwiftDamageTick()
         return;
     }
 
-    // Å¸°Ù ¸ñ·ÏÀ» µ¹¸é¼­ ÇÑ ¹ø¾¿ µ¥¹ÌÁö
+    // íƒ€ê²Ÿ ëª©ë¡ì„ ëŒë©´ì„œ í•œ ë²ˆì”© ë°ë¯¸ì§€
     for (int32 i = SwiftTargets.Num() - 1; i >= 0; --i)
     {
         ACharacter* TargetChar = SwiftTargets[i].Get();
@@ -213,15 +213,15 @@ void USkill_Swift::HandleSwiftDamageTick()
             continue;
         }
 
-        // °íÁ¤ ÇÇÇØ, ¹æ¾î·Â ¹«½Ã, 1Å¸¾¿ Á÷Á¢ ³Ö±â
+        // ê³ ì • í”¼í•´, ë°©ì–´ë ¥ ë¬´ì‹œ, 1íƒ€ì”© ì§ì ‘ ë„£ê¸°
         DealSkillDamage(
             TargetChar,
             DamagePerSample,
             /*bIgnoreDefense=*/true,
             /*bPeriodic=*/false,
-            /*HitCount=*/1); // ¿ì¸® ÂÊ¿¡¼­ 10¹ø ¹İº¹ È£ÃâÇÏ¹Ç·Î HitCount´Â 1·Î
+            /*HitCount=*/1); // ìš°ë¦¬ ìª½ì—ì„œ 10ë²ˆ ë°˜ë³µ í˜¸ì¶œí•˜ë¯€ë¡œ HitCountëŠ” 1ë¡œ
 
-        // Hit ÀÌÆåÆ®
+        // Hit ì´í™íŠ¸
         if (HitNS)
         {
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -232,7 +232,7 @@ void USkill_Swift::HandleSwiftDamageTick()
         }
     }
 
-    // ´õ ÀÌ»ó À¯È¿ Å¸°ÙÀÌ ¾øÀ¸¸é Å¸ÀÌ¸Ó Á¤¸®
+    // ë” ì´ìƒ ìœ íš¨ íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ íƒ€ì´ë¨¸ ì •ë¦¬
     if (SwiftTargets.Num() == 0)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,9 +7,9 @@
 #include "CheckCooldown.generated.h"
 
 /**
- * ºí·¢º¸µå¿¡ ÀúÀåµÈ ¸¶Áö¸· ½ÇÇà ½Ã°£°ú ÇöÀç ½Ã°£À» ºñ±³ÇÏ¿©
- * ¼³Á¤µÈ ÄğÅ¸ÀÓ(CompareValue)ÀÌ Áö³µ´ÂÁö È®ÀÎÇÏ´Â µ¥ÄÚ·¹ÀÌÅÍÀÔ´Ï´Ù.
- * ÄğÅ¸ÀÓÀÌ Áö³µÀ¸¸é true(Åë°ú)¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+ * ë¸”ë™ë³´ë“œì— ì €ì¥ëœ ë§ˆì§€ë§‰ ì‹¤í–‰ ì‹œê°„ê³¼ í˜„ì¬ ì‹œê°„ì„ ë¹„êµí•˜ì—¬
+ * ì„¤ì •ëœ ì¿¨íƒ€ì„(CompareValue)ì´ ì§€ë‚¬ëŠ”ì§€ í™•ì¸í•˜ëŠ” ë°ì½”ë ˆì´í„°ì…ë‹ˆë‹¤.
+ * ì¿¨íƒ€ì„ì´ ì§€ë‚¬ìœ¼ë©´ true(í†µê³¼)ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
  */
 UCLASS()
 class KHU_GEB_API UCheckCooldown : public UBTDecorator_BlackboardBase
@@ -19,11 +19,11 @@ class KHU_GEB_API UCheckCooldown : public UBTDecorator_BlackboardBase
 public:
 	UCheckCooldown();
 
-	/** ºñ±³ÇÒ ÄğÅ¸ÀÓ ½Ã°£ (ÃÊ) */
+	/** ë¹„êµí•  ì¿¨íƒ€ì„ ì‹œê°„ (ì´ˆ) */
 	UPROPERTY(EditAnywhere, Category = "Cooldown")
 	float CompareValue;
 
 protected:
-	/** µ¥ÄÚ·¹ÀÌÅÍÀÇ Á¶°Ç ·ÎÁ÷À» °è»êÇÕ´Ï´Ù. */
+	/** ë°ì½”ë ˆì´í„°ì˜ ì¡°ê±´ ë¡œì§ì„ ê³„ì‚°í•©ë‹ˆë‹¤. */
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 };

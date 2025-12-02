@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,21 +18,21 @@ public:
 	UCheckEnemyState();
 
 protected:
-	/** ºñÇìÀÌºñ¾î Æ®¸® ¿¡µğÅÍ¿¡¼­ ºñ±³ÇÏ°íÀÚ ÇÏ´Â »óÅÂ */
+	/** ë¹„í—¤ì´ë¹„ì–´ íŠ¸ë¦¬ ì—ë””í„°ì—ì„œ ë¹„êµí•˜ê³ ì í•˜ëŠ” ìƒíƒœ */
 	UPROPERTY(EditAnywhere, Category = "AI")
 	EEnemyState DesiredState;
 
-	// FBlackboardKeySelector º¯¼ö´Â UBTDecorator_BlackboardBase·ÎºÎÅÍ »ó¼Ó¹Ş¾Æ ÀÌ¹Ì Á¸ÀçÇÕ´Ï´Ù.
+	// FBlackboardKeySelector ë³€ìˆ˜ëŠ” UBTDecorator_BlackboardBaseë¡œë¶€í„° ìƒì†ë°›ì•„ ì´ë¯¸ ì¡´ì¬í•©ë‹ˆë‹¤.
 
-	/** Á¶°Ç °Ë»ç ½ÇÇà ÇÔ¼ö */
+	/** ì¡°ê±´ ê²€ì‚¬ ì‹¤í–‰ í•¨ìˆ˜ */
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 
-	/** Observer ±â´ÉÀ» À§ÇÑ ÇÔ¼öµé */
+	/** Observer ê¸°ëŠ¥ì„ ìœ„í•œ í•¨ìˆ˜ë“¤ */
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual EBlackboardNotificationResult OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID) override;
 
-	/** ¿¡µğÅÍ¿¡¼­ ³ëµå ÀÌ¸§À» ´õ ¾Ë±â ½±°Ô Ç¥½ÃÇÏ±â À§ÇÑ ÇÔ¼öÀÔ´Ï´Ù. */
+	/** ì—ë””í„°ì—ì„œ ë…¸ë“œ ì´ë¦„ì„ ë” ì•Œê¸° ì‰½ê²Œ í‘œì‹œí•˜ê¸° ìœ„í•œ í•¨ìˆ˜ì…ë‹ˆë‹¤. */
 	virtual FString GetStaticDescription() const override;
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TJump.h"
 #include "AIController.h"
@@ -28,7 +28,7 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	// 1. AI ÄÁÆ®·Ñ·¯ È¹µæ
+	// 1. AI ì»¨íŠ¸ë¡¤ëŸ¬ íšë“
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -36,7 +36,7 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		return EBTNodeResult::Failed;
 	}
 
-	// 2. Ä³¸¯ÅÍ È¹µæ
+	// 2. ìºë¦­í„° íšë“
 	CachedCharacter = Cast<ACharacter>(AIController->GetPawn());
 	if (!CachedCharacter)
 	{
@@ -44,7 +44,7 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		return EBTNodeResult::Failed;
 	}
 
-	// 3. CharacterMovementComponent È®ÀÎ
+	// 3. CharacterMovementComponent í™•ì¸
 	UCharacterMovementComponent* MovementComp = CachedCharacter->GetCharacterMovement();
 	if (!MovementComp)
 	{
@@ -52,7 +52,7 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		return EBTNodeResult::Failed;
 	}
 
-	// 4. Enemy_Base·Î Ä³½ºÆÃÇÏ¿© JumpComponent È¹µæ
+	// 4. Enemy_Baseë¡œ ìºìŠ¤íŒ…í•˜ì—¬ JumpComponent íšë“
 	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
 	{
 		CachedJumpComp = Enemy->JumpComp;
@@ -70,7 +70,7 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		return EBTNodeResult::Failed;
 	}
 
-	// 5. AnimInstance È¹µæ
+	// 5. AnimInstance íšë“
 	if (USkeletalMeshComponent* Mesh = CachedCharacter->GetMesh())
 	{
 		CachedAnimInstance = Cast<UEnemyAnimIntance>(Mesh->GetAnimInstance());
@@ -80,25 +80,25 @@ EBTNodeResult::Type UTJump::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 		}
 	}
 
-	// 6. ¶¥ À§¿¡¼­¸¸ ½ÇÇà °¡´É
+	// 6. ë•… ìœ„ì—ì„œë§Œ ì‹¤í–‰ ê°€ëŠ¥
 	if (!CachedJumpComp->IsOnGround())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TJump] Character is not on ground"));
 		return EBTNodeResult::Failed;
 	}
 
-	// 7. AnimInstance ÇÃ·¡±× ¼³Á¤ (Á¡ÇÁ ½ÃÀÛ)
+	// 7. AnimInstance í”Œë˜ê·¸ ì„¤ì • (ì í”„ ì‹œì‘)
 	if (CachedAnimInstance)
 	{
 		CachedAnimInstance->SetIsJumping(true);
 		UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(true)"));
 	}
 
-	// 8. JumpComponentÀÇ HandleSpacePressed È£Ãâ (Æû¿¡ ¸Â´Â Á¡ÇÁ ½ÇÇà)
+	// 8. JumpComponentì˜ HandleSpacePressed í˜¸ì¶œ (í¼ì— ë§ëŠ” ì í”„ ì‹¤í–‰)
 	CachedJumpComp->HandleSpacePressed();
 	
 	JumpStartTime = OwnerComp.GetWorld()->GetTimeSeconds();
-	bSecondJumpExecuted = false; // 2´Ü Á¡ÇÁ ÇÃ·¡±× ÃÊ±âÈ­
+	bSecondJumpExecuted = false; // 2ë‹¨ ì í”„ í”Œë˜ê·¸ ì´ˆê¸°í™”
 	
 	if (bEnableDoubleJump)
 	{
@@ -116,7 +116,7 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	if (!CachedCharacter || !CachedJumpComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TJump] Cached references invalid in TickTask"));
@@ -139,7 +139,7 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 		return;
 	}
 
-	// Å¸ÀÓ¾Æ¿ô Ã¼Å©
+	// íƒ€ì„ì•„ì›ƒ ì²´í¬
 	const float CurrentTime = World->GetTimeSeconds();
 	const float ElapsedTime = CurrentTime - JumpStartTime;
 
@@ -147,7 +147,7 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TJump] Jump timeout (%.2f seconds elapsed)"), ElapsedTime);
 		
-		// AnimInstance ÇÃ·¡±× ¸®¼Â
+		// AnimInstance í”Œë˜ê·¸ ë¦¬ì…‹
 		if (CachedAnimInstance)
 		{
 			CachedAnimInstance->SetIsJumping(false);
@@ -158,23 +158,23 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 		return;
 	}
 
-	// Á¡ÇÁ Á÷ÈÄ ÃÖ¼Ò ´ë±â ½Ã°£ (0.1ÃÊ) - ³Ê¹« »¡¸® ÂøÁö Ã¼Å©ÇÏÁö ¾Êµµ·Ï
+	// ì í”„ ì§í›„ ìµœì†Œ ëŒ€ê¸° ì‹œê°„ (0.1ì´ˆ) - ë„ˆë¬´ ë¹¨ë¦¬ ì°©ì§€ ì²´í¬í•˜ì§€ ì•Šë„ë¡
 	const float MinAirTime = 0.1f;
 	const bool bHasMinAirTime = ElapsedTime >= MinAirTime;
 
-	// === 2´Ü Á¡ÇÁ ·ÎÁ÷ ===
-	// bEnableDoubleJump°¡ trueÀÌ°í, ¾ÆÁ÷ 2´Ü Á¡ÇÁ¸¦ ½ÇÇàÇÏÁö ¾Ê¾ÒÀ¸¸ç,
-	// Z¼Óµµ°¡ À½¼ö(ÇÏ°­ ½ÃÀÛ)ÀÌ¸é 2´Ü Á¡ÇÁ ½ÇÇà
+	// === 2ë‹¨ ì í”„ ë¡œì§ ===
+	// bEnableDoubleJumpê°€ trueì´ê³ , ì•„ì§ 2ë‹¨ ì í”„ë¥¼ ì‹¤í–‰í•˜ì§€ ì•Šì•˜ìœ¼ë©°,
+	// Zì†ë„ê°€ ìŒìˆ˜(í•˜ê°• ì‹œì‘)ì´ë©´ 2ë‹¨ ì í”„ ì‹¤í–‰
 	if (bEnableDoubleJump && !bSecondJumpExecuted && bHasMinAirTime)
 	{
 		const float VerticalSpeed = MovementComp->Velocity.Z;
 		
-		// ÃÖ°íÁ¡ µµ´Ş °¨Áö: Z¼Óµµ°¡ À½¼ö·Î ÀüÈ¯ (ÇÏ°­ ½ÃÀÛ)
+		// ìµœê³ ì  ë„ë‹¬ ê°ì§€: Zì†ë„ê°€ ìŒìˆ˜ë¡œ ì „í™˜ (í•˜ê°• ì‹œì‘)
 		if (VerticalSpeed < 0.f)
 		{
 			UE_LOG(LogTemp, Log, TEXT("[TJump] Peak reached (Z Velocity: %.2f), executing second jump"), VerticalSpeed);
 			
-			// 2´Ü Á¡ÇÁ ½ÇÇà
+			// 2ë‹¨ ì í”„ ì‹¤í–‰
 			CachedJumpComp->HandleSpacePressed();
 			bSecondJumpExecuted = true;
 			
@@ -182,20 +182,20 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 		}
 	}
 
-	// ÂøÁö È®ÀÎ
+	// ì°©ì§€ í™•ì¸
 	if (bHasMinAirTime && CachedJumpComp->IsOnGround())
 	{
-		// Ãß°¡ ¾ÈÀüÀåÄ¡: ¼öÁ÷ ¼Óµµ°¡ °ÅÀÇ 0¿¡ °¡±î¿îÁö È®ÀÎ
+		// ì¶”ê°€ ì•ˆì „ì¥ì¹˜: ìˆ˜ì§ ì†ë„ê°€ ê±°ì˜ 0ì— ê°€ê¹Œìš´ì§€ í™•ì¸
 		const float VerticalSpeed = FMath::Abs(MovementComp->Velocity.Z);
-		if (VerticalSpeed < 50.f) // °ÅÀÇ Á¤Áö »óÅÂ
+		if (VerticalSpeed < 50.f) // ê±°ì˜ ì •ì§€ ìƒíƒœ
 		{
 			UE_LOG(LogTemp, Log, TEXT("[TJump] Landed successfully (%.2f seconds)"), ElapsedTime);
 			
-			// HandleSpaceReleased È£Ãâ (ÇÊ¿ä½Ã)
+			// HandleSpaceReleased í˜¸ì¶œ (í•„ìš”ì‹œ)
 			CachedJumpComp->HandleSpaceReleased();
 			
-			// AnimInstance ÇÃ·¡±×¸¦ Áï½Ã ¸®¼ÂÇÏÁö ¾Ê°í µô·¹ÀÌ ÈÄ ¸®¼Â
-			// (Landing ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ Àç»ıµÉ ½Ã°£À» ÁÖ±â À§ÇØ)
+			// AnimInstance í”Œë˜ê·¸ë¥¼ ì¦‰ì‹œ ë¦¬ì…‹í•˜ì§€ ì•Šê³  ë”œë ˆì´ í›„ ë¦¬ì…‹
+			// (Landing ì• ë‹ˆë©”ì´ì…˜ì´ ì¬ìƒë  ì‹œê°„ì„ ì£¼ê¸° ìœ„í•´)
 			if (CachedAnimInstance)
 			{
 				FTimerHandle ResetTimerHandle;
@@ -209,7 +209,7 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 							UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(false) after landing delay"));
 						}
 					},
-					0.1f, // 0.1ÃÊ µô·¹ÀÌ
+					0.1f, // 0.1ì´ˆ ë”œë ˆì´
 					false
 				);
 			}
@@ -222,21 +222,21 @@ void UTJump::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, floa
 
 EBTNodeResult::Type UTJump::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// HandleSpaceReleased È£ÃâÇÏ¿© Á¤¸®
+	// HandleSpaceReleased í˜¸ì¶œí•˜ì—¬ ì •ë¦¬
 	if (CachedJumpComp)
 	{
 		CachedJumpComp->HandleSpaceReleased();
 		UE_LOG(LogTemp, Log, TEXT("[TJump] HandleSpaceReleased on abort"));
 	}
 
-	// AnimInstance ÇÃ·¡±× Áï½Ã ¸®¼Â
+	// AnimInstance í”Œë˜ê·¸ ì¦‰ì‹œ ë¦¬ì…‹
 	if (CachedAnimInstance)
 	{
 		CachedAnimInstance->SetIsJumping(false);
 		UE_LOG(LogTemp, Log, TEXT("[TJump] SetIsJumping(false) on abort"));
 	}
 
-	// Ä³½Ã Á¤¸®
+	// ìºì‹œ ì •ë¦¬
 	CachedCharacter = nullptr;
 	CachedJumpComp = nullptr;
 	CachedAnimInstance = nullptr;

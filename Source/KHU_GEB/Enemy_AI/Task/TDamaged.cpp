@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TDamaged.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -13,9 +13,9 @@ UTDamaged::UTDamaged()
 {
 	NodeName = "TDamaged";
 
-	// ¸â¹ö º¯¼ö(AIController µî)¸¦ ¾ÈÀüÇÏ°Ô ÀúÀåÇÏ±â À§ÇØ true·Î ¼³Á¤
+	// ë©¤ë²„ ë³€ìˆ˜(AIController ë“±)ë¥¼ ì•ˆì „í•˜ê²Œ ì €ì¥í•˜ê¸° ìœ„í•´ trueë¡œ ì„¤ì •
 	bCreateNodeInstance = true;
-	// TickTask¸¦ »ç¿ëÇÏ±â À§ÇØ true·Î ¼³Á¤
+	// TickTaskë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ trueë¡œ ì„¤ì •
 	bNotifyTick = true;
 
 	CurrentMontage = nullptr;
@@ -30,7 +30,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 	
-	// AI Controller °¡Á®¿À±â
+	// AI Controller ê°€ì ¸ì˜¤ê¸°
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -38,7 +38,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 
-	// Character °¡Á®¿À±â
+	// Character ê°€ì ¸ì˜¤ê¸°
 	ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
 	if (!Character)
 	{
@@ -46,7 +46,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 
-	// Enemy_Base·Î Ä³½ºÆÃ
+	// Enemy_Baseë¡œ ìºìŠ¤íŒ…
 	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
 	if (!EnemyBase)
 	{
@@ -54,14 +54,14 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 
-	// DefaultFormDef È®ÀÎ
+	// DefaultFormDef í™•ì¸
 	if (!EnemyBase->DefaultFormDef)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TDamaged: DefaultFormDef is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// HitReactMontage °¡Á®¿À±â (TAttackÀÇ DefaultFormDef->AttackMontages ÆĞÅÏ°ú À¯»ç)
+	// HitReactMontage ê°€ì ¸ì˜¤ê¸° (TAttackì˜ DefaultFormDef->AttackMontages íŒ¨í„´ê³¼ ìœ ì‚¬)
 	CurrentMontage = EnemyBase->DefaultFormDef->HitReactMontage;
 
 	if (!CurrentMontage)
@@ -70,7 +70,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 
-	// AnimInstance °¡Á®¿À±â
+	// AnimInstance ê°€ì ¸ì˜¤ê¸°
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 	if (!AnimInstance)
 	{
@@ -78,7 +78,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return EBTNodeResult::Failed;
 	}
 
-	// ¸ùÅ¸ÁÖ Àç»ı
+	// ëª½íƒ€ì£¼ ì¬ìƒ
 	float MontageLength = AnimInstance->Montage_Play(CurrentMontage, 1.0f);
 	if (MontageLength <= 0.0f)
 	{
@@ -92,7 +92,7 @@ EBTNodeResult::Type UTDamaged::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 
 void UTDamaged::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// Montage È®ÀÎÀ» À§ÇØ AIController > Character > AnimInstance °¡Á®¿À±â
+	// Montage í™•ì¸ì„ ìœ„í•´ AIController > Character > AnimInstance ê°€ì ¸ì˜¤ê¸°
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -124,10 +124,10 @@ void UTDamaged::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, f
 		return;
 	}
 
-	// ¸ùÅ¸ÁÖ°¡ Àç»ı ÁßÀÎÁö È®ÀÎ
+	// ëª½íƒ€ì£¼ê°€ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸
 	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
-		// ¸ùÅ¸ÁÖ Àç»ıÀÌ ³¡³ª¸é »óÅÂ¸¦ Idle·Î º¯°æÇÏ°í Task ¼º°ø
+		// ëª½íƒ€ì£¼ ì¬ìƒì´ ëë‚˜ë©´ ìƒíƒœë¥¼ Idleë¡œ ë³€ê²½í•˜ê³  Task ì„±ê³µ
 		BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		UE_LOG(LogTemp, Log, TEXT("TDamaged: HitReactMontage finished, returning to Idle"));

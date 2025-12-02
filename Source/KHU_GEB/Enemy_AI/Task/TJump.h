@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,8 +11,8 @@ class UJumpComponent;
 class UEnemyAnimIntance;
 
 /**
- * Enemy AI°¡ JumpComponent¸¦ ÅëÇØ Á¡ÇÁ¸¦ ¼öÇàÇÏ´Â BTTaskNode
- * JumpComponentÀÇ HandleSpacePressed¸¦ È£ÃâÇÏ¿© Æû¿¡ ¸Â´Â Á¡ÇÁ¸¦ ½ÇÇà
+ * Enemy AIê°€ JumpComponentë¥¼ í†µí•´ ì í”„ë¥¼ ìˆ˜í–‰í•˜ëŠ” BTTaskNode
+ * JumpComponentì˜ HandleSpacePressedë¥¼ í˜¸ì¶œí•˜ì—¬ í¼ì— ë§ëŠ” ì í”„ë¥¼ ì‹¤í–‰
  */
 UCLASS()
 class KHU_GEB_API UTJump : public UBTTaskNode
@@ -27,31 +27,31 @@ public:
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 protected:
-	/** Ä³½ÃµÈ Character */
+	/** ìºì‹œëœ Character */
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacter> CachedCharacter;
 
-	/** Ä³½ÃµÈ JumpComponent */
+	/** ìºì‹œëœ JumpComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UJumpComponent> CachedJumpComp;
 
-	/** Ä³½ÃµÈ AnimInstance */
+	/** ìºì‹œëœ AnimInstance */
 	UPROPERTY(Transient)
 	TObjectPtr<UEnemyAnimIntance> CachedAnimInstance;
 
-	/** Á¡ÇÁ ½ÃÀÛ ½Ã°£ (Å¸ÀÓ¾Æ¿ô Ã¼Å©¿ë) */
+	/** ì í”„ ì‹œì‘ ì‹œê°„ (íƒ€ì„ì•„ì›ƒ ì²´í¬ìš©) */
 	float JumpStartTime;
 
-	/** 2´Ü Á¡ÇÁ¸¦ ÀÌ¹Ì ½ÇÇàÇß´ÂÁö ¿©ºÎ */
+	/** 2ë‹¨ ì í”„ë¥¼ ì´ë¯¸ ì‹¤í–‰í–ˆëŠ”ì§€ ì—¬ë¶€ */
 	bool bSecondJumpExecuted;
 
-	// === ¿¡µğÅÍ¿¡¼­ ¼³Á¤ °¡´ÉÇÑ ÇÁ·ÎÆÛÆ¼ ===
+	// === ì—ë””í„°ì—ì„œ ì„¤ì • ê°€ëŠ¥í•œ í”„ë¡œí¼í‹° ===
 
-	/** true¸é ÃÖ°íÁ¡¿¡¼­ 2´Ü Á¡ÇÁ ÀÚµ¿ ½ÇÇà (ÆûÀÌ Áö¿øÇÏ´Â °æ¿ì) */
+	/** trueë©´ ìµœê³ ì ì—ì„œ 2ë‹¨ ì í”„ ìë™ ì‹¤í–‰ (í¼ì´ ì§€ì›í•˜ëŠ” ê²½ìš°) */
 	UPROPERTY(EditAnywhere, Category = "Jump", meta = (DisplayName = "Enable Double Jump"))
 	bool bEnableDoubleJump = false;
 
-	/** Á¡ÇÁ Å¸ÀÓ¾Æ¿ô ½Ã°£ (ÃÊ) - ÀÌ ½Ã°£ µ¿¾È ÂøÁöÇÏÁö ¸øÇÏ¸é ½ÇÆĞ */
+	/** ì í”„ íƒ€ì„ì•„ì›ƒ ì‹œê°„ (ì´ˆ) - ì´ ì‹œê°„ ë™ì•ˆ ì°©ì§€í•˜ì§€ ëª»í•˜ë©´ ì‹¤íŒ¨ */
 	UPROPERTY(EditAnywhere, Category = "Jump", meta = (ClampMin = "0.5", ClampMax = "10.0"))
 	float JumpTimeout = 5.0f;
 };

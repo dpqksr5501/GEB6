@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,9 +11,9 @@ class UJumpComponent;
 class UEnemyAnimIntance;
 
 /**
- * Archer(Range Æû)°¡ ±Û¶óÀÌµå(È°°­)¸¦ ¼öÇàÇÏ´Â BTTaskNode
- * JumpComponentÀÇ HandleSpacePressed¸¦ È£ÃâÇÏ¿© ³ôÀÌ Á¡ÇÁ ÈÄ ÃµÃµÈ÷ ÇÏ°­
- * ÂøÁöÇÒ ¶§±îÁö InProgress »óÅÂ À¯Áö
+ * Archer(Range í¼)ê°€ ê¸€ë¼ì´ë“œ(í™œê°•)ë¥¼ ìˆ˜í–‰í•˜ëŠ” BTTaskNode
+ * JumpComponentì˜ HandleSpacePressedë¥¼ í˜¸ì¶œí•˜ì—¬ ë†’ì´ ì í”„ í›„ ì²œì²œíˆ í•˜ê°•
+ * ì°©ì§€í•  ë•Œê¹Œì§€ InProgress ìƒíƒœ ìœ ì§€
  */
 UCLASS()
 class KHU_GEB_API UTGlide : public UBTTaskNode
@@ -28,28 +28,28 @@ public:
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 protected:
-	/** Ä³½ÃµÈ Character */
+	/** ìºì‹œëœ Character */
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacter> CachedCharacter;
 
-	/** Ä³½ÃµÈ JumpComponent */
+	/** ìºì‹œëœ JumpComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UJumpComponent> CachedJumpComp;
 
-	/** Ä³½ÃµÈ AnimInstance */
+	/** ìºì‹œëœ AnimInstance */
 	UPROPERTY(Transient)
 	TObjectPtr<UEnemyAnimIntance> CachedAnimInstance;
 
-	/** ±Û¶óÀÌµå ½ÃÀÛ ½Ã°£ (Å¸ÀÓ¾Æ¿ô Ã¼Å©¿ë) */
+	/** ê¸€ë¼ì´ë“œ ì‹œì‘ ì‹œê°„ (íƒ€ì„ì•„ì›ƒ ì²´í¬ìš©) */
 	float GlideStartTime;
 
-	// === ¿¡µğÅÍ¿¡¼­ ¼³Á¤ °¡´ÉÇÑ ÇÁ·ÎÆÛÆ¼ ===
+	// === ì—ë””í„°ì—ì„œ ì„¤ì • ê°€ëŠ¥í•œ í”„ë¡œí¼í‹° ===
 
-	/** ±Û¶óÀÌµå Å¸ÀÓ¾Æ¿ô ½Ã°£ (ÃÊ) - ÀÌ ½Ã°£ µ¿¾È ÂøÁöÇÏÁö ¸øÇÏ¸é ½ÇÆĞ */
+	/** ê¸€ë¼ì´ë“œ íƒ€ì„ì•„ì›ƒ ì‹œê°„ (ì´ˆ) - ì´ ì‹œê°„ ë™ì•ˆ ì°©ì§€í•˜ì§€ ëª»í•˜ë©´ ì‹¤íŒ¨ */
 	UPROPERTY(EditAnywhere, Category = "Glide", meta = (ClampMin = "1.0", ClampMax = "20.0"))
 	float GlideTimeout = 10.0f;
 
-	// ±Û¶óÀÌµå ³ëµå¿¡ ¼±ÅÃ ÇÃ·¡±×¸¦ ¸¸µé¾îÁà. ±Û¶óÀÌµå ÇÏ´Ù°¡ È­¿°±¸¸¦ ½î°ÔÇÒ °Å¾ß.
+	// ê¸€ë¼ì´ë“œ ë…¸ë“œì— ì„ íƒ í”Œë˜ê·¸ë¥¼ ë§Œë“¤ì–´ì¤˜. ê¸€ë¼ì´ë“œ í•˜ë‹¤ê°€ í™”ì—¼êµ¬ë¥¼ ì˜ê²Œí•  ê±°ì•¼.
 	UPROPERTY(EditAnywhere, Category = "Fireball")
 	bool bCanFireballDuringGlide = false;
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,7 +20,7 @@ public:
 	virtual void ActivateSkill() override;
 	virtual void Tick(float DeltaTime) override;
 
-	// TakeDamage¸¦ ¿À¹ö¶óÀÌµåÇÏ¿© Guard ½ºÅ³ÀÇ ¹è¸®¾î Ã³¸®
+	// TakeDamageë¥¼ ì˜¤ë²„ë¼ì´ë“œí•˜ì—¬ Guard ìŠ¤í‚¬ì˜ ë°°ë¦¬ì–´ ì²˜ë¦¬
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
 		AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -28,10 +28,10 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	/** Guard ½ºÅ³ÀÌ È°¼ºÈ­µÇ¾î ÀÖ´ÂÁö ÃßÀû */
+	/** Guard ìŠ¤í‚¬ì´ í™œì„±í™”ë˜ì–´ ìˆëŠ”ì§€ ì¶”ì  */
 	bool bIsGuardSkillActive = false;
 
-	/** Guard ½ºÅ³ ÂüÁ¶¸¦ Ä³½Ì */
+	/** Guard ìŠ¤í‚¬ ì°¸ì¡°ë¥¼ ìºì‹± */
 	UPROPERTY()
 	class USkill_Guard* CachedGuardSkill = nullptr;
 };

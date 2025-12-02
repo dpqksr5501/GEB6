@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Templates/SubclassOf.h"
 #include "EnemyPoolSubsystem.generated.h"
 
-class AEnemy_Base; // ¸ğµç EnemyÀÇ °øÅë ºÎ¸ğ
+class AEnemy_Base; // ëª¨ë“  Enemyì˜ ê³µí†µ ë¶€ëª¨
 
-/** TMap°¡ TArray¸¦ ¿ä¼Ò·Î °¡Áú ¼ö ¾ø¾î¼­ TArray¸¦ ±¸Á¶Ã¼·Î ·¡ÇÎ */
+/** TMapê°€ TArrayë¥¼ ìš”ì†Œë¡œ ê°€ì§ˆ ìˆ˜ ì—†ì–´ì„œ TArrayë¥¼ êµ¬ì¡°ì²´ë¡œ ë˜í•‘ */
 USTRUCT()
 struct FEnemyPool
 {
@@ -18,8 +18,8 @@ struct FEnemyPool
 };
 
 /**
- * °ÔÀÓ ³» ¸ğµç Àû(Pawn) ¿ÀºêÁ§Æ® Ç®À» °ü¸®ÇÏ´Â ¼­ºê½Ã½ºÅÛÀÔ´Ï´Ù.
- * TSubclassOf<AEnemy_Base>À» Å°·Î »ç¿ëÇÏ¿© ¿©·¯ Á¾·ùÀÇ Àû Ç®À» °¡Áú ¼ö ÀÖ½À´Ï´Ù.
+ * ê²Œì„ ë‚´ ëª¨ë“  ì (Pawn) ì˜¤ë¸Œì íŠ¸ í’€ì„ ê´€ë¦¬í•˜ëŠ” ì„œë¸Œì‹œìŠ¤í…œì…ë‹ˆë‹¤.
+ * TSubclassOf<AEnemy_Base>ì„ í‚¤ë¡œ ì‚¬ìš©í•˜ì—¬ ì—¬ëŸ¬ ì¢…ë¥˜ì˜ ì  í’€ì„ ê°€ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
  */
 UCLASS()
 class KHU_GEB_API UEnemyPoolSubsystem : public UGameInstanceSubsystem
@@ -28,18 +28,18 @@ class KHU_GEB_API UEnemyPoolSubsystem : public UGameInstanceSubsystem
 
 public:
     /**
-     * ÁöÁ¤µÈ Å¬·¡½ºÀÇ ÀûÀ» Æ¯Á¤ ¼ö¸¸Å­ ¹Ì¸® »ı¼ºÇÏ¿© Ç®À» ÃÊ±âÈ­ÇÕ´Ï´Ù.
-     * @param EnemyClass Ç®¸µÇÒ Àû Å¬·¡½º
-     * @param PoolSize ÃÊ±â Ç® Å©±â
+     * ì§€ì •ëœ í´ë˜ìŠ¤ì˜ ì ì„ íŠ¹ì • ìˆ˜ë§Œí¼ ë¯¸ë¦¬ ìƒì„±í•˜ì—¬ í’€ì„ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+     * @param EnemyClass í’€ë§í•  ì  í´ë˜ìŠ¤
+     * @param PoolSize ì´ˆê¸° í’€ í¬ê¸°
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Pool")
     void InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, int32 PoolSize);
 
     /**
-     * Ç®¿¡¼­ »ç¿ë °¡´ÉÇÑ(ºñÈ°¼ºÈ­µÈ) ÀûÀ» °¡Á®¿É´Ï´Ù.
-     * »ç¿ë °¡´ÉÇÑ ÀûÀÌ ¾ø´Ù¸é »õ·Î »ı¼ºÇÏ¿© Ç®¿¡ Ãß°¡ÇÏ°í ¹İÈ¯ÇÕ´Ï´Ù.
-     * @param EnemyClass °¡Á®¿Ã Àû Å¬·¡½º
-     * @return È°¼ºÈ­ ÁØºñ°¡ µÈ AEnemy_Base* (À§Ä¡/È¸Àü ¼³Á¤ ¹× È°¼ºÈ­ ÇÊ¿ä)
+     * í’€ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ(ë¹„í™œì„±í™”ëœ) ì ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
+     * ì‚¬ìš© ê°€ëŠ¥í•œ ì ì´ ì—†ë‹¤ë©´ ìƒˆë¡œ ìƒì„±í•˜ì—¬ í’€ì— ì¶”ê°€í•˜ê³  ë°˜í™˜í•©ë‹ˆë‹¤.
+     * @param EnemyClass ê°€ì ¸ì˜¬ ì  í´ë˜ìŠ¤
+     * @return í™œì„±í™” ì¤€ë¹„ê°€ ëœ AEnemy_Base* (ìœ„ì¹˜/íšŒì „ ì„¤ì • ë° í™œì„±í™” í•„ìš”)
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Pool")
     AEnemy_Base* GetEnemyFromPool(TSubclassOf<AEnemy_Base> EnemyClass,
@@ -47,23 +47,23 @@ public:
         const FRotator& SpawnRotation = FRotator::ZeroRotator);
 
     /**
-     * »ç¿ëÀÌ ³¡³­ ÀûÀ» Ç®¿¡ ¹İÈ¯ÇÕ´Ï´Ù (ºñÈ°¼ºÈ­).
-     * @param Enemy ¹İÈ¯ÇÒ Àû ¾×ÅÍ
+     * ì‚¬ìš©ì´ ëë‚œ ì ì„ í’€ì— ë°˜í™˜í•©ë‹ˆë‹¤ (ë¹„í™œì„±í™”).
+     * @param Enemy ë°˜í™˜í•  ì  ì•¡í„°
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Pool")
     void ReturnEnemyToPool(AEnemy_Base* Enemy);
 
-    // GameInstanceSubsystem ¿À¹ö¶óÀÌµå
+    // GameInstanceSubsystem ì˜¤ë²„ë¼ì´ë“œ
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
 private:
-    /** * Àû Å¬·¡½ºº°·Î ¿ÀºêÁ§Æ® Ç®À» °ü¸®ÇÕ´Ï´Ù.
-     * TArray¸¦ Á÷Á¢ °ªÀ¸·Î »ç¿ëÇÒ ¼ö ¾øÀ¸¹Ç·Î FEnemyPool ±¸Á¶Ã¼·Î ·¡ÇÎÇÕ´Ï´Ù.
+    /** * ì  í´ë˜ìŠ¤ë³„ë¡œ ì˜¤ë¸Œì íŠ¸ í’€ì„ ê´€ë¦¬í•©ë‹ˆë‹¤.
+     * TArrayë¥¼ ì§ì ‘ ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ FEnemyPool êµ¬ì¡°ì²´ë¡œ ë˜í•‘í•©ë‹ˆë‹¤.
      */
     UPROPERTY()
     TMap<TSubclassOf<AEnemy_Base>, FEnemyPool> EnemyPools;
 
-    /** Enemy¸¦ È°¼ºÈ­/ºñÈ°¼ºÈ­ ÇÏ´Â ÇÔ¼ö */
+    /** Enemyë¥¼ í™œì„±í™”/ë¹„í™œì„±í™” í•˜ëŠ” í•¨ìˆ˜ */
     void SetEnemyActive(AEnemy_Base* Enemy, bool bIsActive);
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Range.h"
@@ -30,7 +30,7 @@ void USkill_Range::SpawnOrUpdateIndicator()
     if (!World || !TargetAreaNS) return;
 
     const float Radius = GetCurrentTargetRadius();
-    const float UniformScale = (Radius > 0.f) ? (Radius / 100.f) : 1.f; // ÀÌÆåÆ® »çÀÌÁî¿¡ ¸Â°Ô Á¶Á¤
+    const float UniformScale = (Radius > 0.f) ? (Radius / 100.f) : 1.f; // ì´í™íŠ¸ ì‚¬ì´ì¦ˆì— ë§ê²Œ ì¡°ì •
 
     if (!TargetAreaComp)
     {
@@ -81,7 +81,7 @@ void USkill_Range::ActivateSkill()
         const float MaxDist = GetMaxAimDistance();
         const FVector StartLoc = OwnerChar->GetActorLocation();
 
-        // --- 1) ±âº» ÃÊ±â À§Ä¡ = ÀÚ±â ¾ÕÂÊ RangeÀÇ Àı¹İ ÁöÁ¡ ---
+        // --- 1) ê¸°ë³¸ ì´ˆê¸° ìœ„ì¹˜ = ìê¸° ì•ìª½ Rangeì˜ ì ˆë°˜ ì§€ì  ---
         FVector InitialLoc;
 
         FVector Forward = OwnerChar->GetActorForwardVector();
@@ -92,14 +92,14 @@ void USkill_Range::ActivateSkill()
         }
         InitialLoc = StartLoc + Forward * (Radius * 0.5f);
 
-        // --- 2) ¸¸¾à ÇÃ·¹ÀÌ¾îÀÌ°í, ¶ô¿Â Å¸°ÙÀÌ ÀÖ´Ù¸é ¡æ ¶ô¿Â Å¸°Ù À§Ä¡¸¦ ¿ì¼± »ç¿ë ---
+        // --- 2) ë§Œì•½ í”Œë ˆì´ì–´ì´ê³ , ë½ì˜¨ íƒ€ê²Ÿì´ ìˆë‹¤ë©´ â†’ ë½ì˜¨ íƒ€ê²Ÿ ìœ„ì¹˜ë¥¼ ìš°ì„  ì‚¬ìš© ---
         if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
         {
             if (AActor* LockOnTarget = PlayerChar->GetLockOnTarget())
             {
                 InitialLoc = LockOnTarget->GetActorLocation();
 
-                // ³Ê¹« ¸Ö¸® ÀÖÀ¸¸é MaxAimDistance ¾ÈÀ¸·Î Å¬·¥ÇÁ
+                // ë„ˆë¬´ ë©€ë¦¬ ìˆìœ¼ë©´ MaxAimDistance ì•ˆìœ¼ë¡œ í´ë¨í”„
                 if (MaxDist > 0.f)
                 {
                     FVector FlatOwner(StartLoc.X, StartLoc.Y, 0.f);
@@ -117,13 +117,13 @@ void USkill_Range::ActivateSkill()
                 }
             }
 
-            // Ä³¸¯ÅÍ¿¡°Ô "Áö±İ Range Á¶ÁØ Áß" ¾Ë¸®±â (±âÁ¸ ÄÚµå À¯Áö)
+            // ìºë¦­í„°ì—ê²Œ "ì§€ê¸ˆ Range ì¡°ì¤€ ì¤‘" ì•Œë¦¬ê¸° (ê¸°ì¡´ ì½”ë“œ ìœ ì§€)
             PlayerChar->OnRangeAimingStarted(this);
         }
 
         CurrentTargetLocation = InitialLoc;
 
-        // --- 3) ¿©±â¼­ Áö¸éÀ¸·Î ½º³À (±âÁ¸ ÄÚµå Àç»ç¿ë) ---
+        // --- 3) ì—¬ê¸°ì„œ ì§€ë©´ìœ¼ë¡œ ìŠ¤ëƒ… (ê¸°ì¡´ ì½”ë“œ ì¬ì‚¬ìš©) ---
         const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
         const FVector TraceEnd = CurrentTargetLocation - FVector(0.f, 0.f, GroundTraceHalfHeight);
 
@@ -141,7 +141,7 @@ void USkill_Range::ActivateSkill()
         }
         else { CurrentTargetLocation.Z = StartLoc.Z; }
 
-        // Ä³¸¯ÅÍ ÀÌµ¿ ¸ØÃß±â (±âÁ¸)
+        // ìºë¦­í„° ì´ë™ ë©ˆì¶”ê¸° (ê¸°ì¡´)
         if (UCharacterMovementComponent* MoveComp = OwnerChar->GetCharacterMovement())
         {
             MoveComp->StopMovementImmediately();
@@ -149,10 +149,10 @@ void USkill_Range::ActivateSkill()
     }
     else { CurrentTargetLocation = Owner->GetActorLocation(); }
 
-    // ¹üÀ§ Ç¥½Ã ÀÌÆåÆ® ½ºÆù/°»½Å
+    // ë²”ìœ„ í‘œì‹œ ì´í™íŠ¸ ìŠ¤í°/ê°±ì‹ 
     SpawnOrUpdateIndicator();
 
-    // ÀÔ¿¡¼­ ³ª°¡´Â Ä³½ºÆÃ ÀÌÆåÆ® (¿øÇÏ½Ã¸é ±×´ë·Î À¯Áö)
+    // ì…ì—ì„œ ë‚˜ê°€ëŠ” ìºìŠ¤íŒ… ì´í™íŠ¸ (ì›í•˜ì‹œë©´ ê·¸ëŒ€ë¡œ ìœ ì§€)
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
@@ -190,11 +190,11 @@ void USkill_Range::TickComponent(
     AController* Controller = OwnerChar->GetController();
     if (!Controller) return;
 
-    const float Radius = GetCurrentTargetRadius();   // Á¶ÁØ ¿ø Å©±â
-    const float MaxDist = GetMaxAimDistance();        // ÀÌµ¿ °¡´ÉÇÑ ÃÖ´ë °Å¸®
+    const float Radius = GetCurrentTargetRadius();   // ì¡°ì¤€ ì› í¬ê¸°
+    const float MaxDist = GetMaxAimDistance();        // ì´ë™ ê°€ëŠ¥í•œ ìµœëŒ€ ê±°ë¦¬
     const FVector OwnerLoc = OwnerChar->GetActorLocation();
 
-    // --- XY Æò¸é¿¡¼­ ÀÌµ¿ (ÁöÇüÁö¹° ¹«½Ã) ---
+    // --- XY í‰ë©´ì—ì„œ ì´ë™ (ì§€í˜•ì§€ë¬¼ ë¬´ì‹œ) ---
     if (!AimMoveInput.IsNearlyZero())
     {
         const FRotator Rotation = Controller->GetControlRotation();
@@ -211,7 +211,7 @@ void USkill_Range::TickComponent(
             const FVector Delta = MoveDir.GetSafeNormal() * AimMoveSpeed * DeltaTime;
             CurrentTargetLocation += Delta;
 
-            // Ä³¸¯ÅÍ ±âÁØ ÃÖ´ë °Å¸® Á¦ÇÑ (XY¸¸)
+            // ìºë¦­í„° ê¸°ì¤€ ìµœëŒ€ ê±°ë¦¬ ì œí•œ (XYë§Œ)
             FVector FlatOwner(OwnerLoc.X, OwnerLoc.Y, 0.f);
             FVector FlatTarget(CurrentTargetLocation.X, CurrentTargetLocation.Y, 0.f);
             FVector FlatDir = FlatTarget - FlatOwner;
@@ -227,7 +227,7 @@ void USkill_Range::TickComponent(
         }
     }
 
-    // --- Z¸¦ ÁöÇü¿¡ ¸ÂÃç º¸Á¤ (Áß¾Ó Æ÷ÀÎÆ®¸¦ ¶¥¿¡ ºÙÀÌ±â) ---
+    // --- Zë¥¼ ì§€í˜•ì— ë§ì¶° ë³´ì • (ì¤‘ì•™ í¬ì¸íŠ¸ë¥¼ ë•…ì— ë¶™ì´ê¸°) ---
     if (UWorld* World = GetWorld())
     {
         const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
@@ -245,7 +245,7 @@ void USkill_Range::TickComponent(
         {
             CurrentTargetLocation = Hit.ImpactPoint + FVector(0.f, 0.f, GroundOffsetZ);
         }
-        // Áö¸éÀ» ¸ø Ã£À¸¸é ÃÖ¼ÒÇÑ Ä³¸¯ÅÍ ¹ß ³ôÀÌ ±ÙÃ³¿¡ À¯Áö
+        // ì§€ë©´ì„ ëª» ì°¾ìœ¼ë©´ ìµœì†Œí•œ ìºë¦­í„° ë°œ ë†’ì´ ê·¼ì²˜ì— ìœ ì§€
         else { CurrentTargetLocation.Z = OwnerLoc.Z; }
     }
 
@@ -270,7 +270,7 @@ void USkill_Range::TickComponent(
     );
 #endif
 
-    // --- Ä«¸Ş¶ó/Ä³¸¯ÅÍ°¡ Á¶ÁØ ¿ø Áß½ÉÀ» ¹Ù¶óº¸µµ·Ï Yaw È¸Àü ---
+    // --- ì¹´ë©”ë¼/ìºë¦­í„°ê°€ ì¡°ì¤€ ì› ì¤‘ì‹¬ì„ ë°”ë¼ë³´ë„ë¡ Yaw íšŒì „ ---
     if (Controller)
     {
         FVector ToTarget = CurrentTargetLocation - OwnerLoc;
@@ -278,9 +278,9 @@ void USkill_Range::TickComponent(
 
         if (!ToTarget.IsNearlyZero())
         {
-            const float InterpSpeed = 10.f; // ÇÊ¿äÇÏ¸é UPROPERTY·Î »©µµ µÊ
+            const float InterpSpeed = 10.f; // í•„ìš”í•˜ë©´ UPROPERTYë¡œ ë¹¼ë„ ë¨
 
-            const FRotator DesiredYawRot = ToTarget.Rotation(); // Yaw¸¸ ÀÇ¹Ì ÀÖÀ½
+            const FRotator DesiredYawRot = ToTarget.Rotation(); // Yawë§Œ ì˜ë¯¸ ìˆìŒ
             const FRotator CurrentRot = Controller->GetControlRotation();
 
             FRotator TargetRot = CurrentRot;
@@ -330,15 +330,15 @@ void USkill_Range::StopSkill()
         return;
     }
 
-    // "Á¶ÁØ ¿ø Áß½É"ÀÌ °ğ ÃÖÁ¾ Å¸°Ù
+    // "ì¡°ì¤€ ì› ì¤‘ì‹¬"ì´ ê³§ ìµœì¢… íƒ€ê²Ÿ
     FVector FinalTarget = CurrentTargetLocation;
 
-    //¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ Àç»ı
+    //ì• ë‹ˆë©”ì´ì…˜ ëª½íƒ€ì£¼ ì¬ìƒ
     PlayFormSkillMontage();
-    // === ¿©±â¼­ ½ÇÁ¦ ºñ¿ë Ã³¸® (ÄğÅ¸ÀÓ + ¸¶³ª) ===
+    // === ì—¬ê¸°ì„œ ì‹¤ì œ ë¹„ìš© ì²˜ë¦¬ (ì¿¨íƒ€ì„ + ë§ˆë‚˜) ===
     Super::ActivateSkill();
 
-    // === ¹ß»ç ===
+    // === ë°œì‚¬ ===
     if (bHasValidTarget) { SpawnProjectileTowards(FinalTarget); }
     else { SpawnDefaultProjectile(); }
 
@@ -357,7 +357,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
     FVector SpawnLocation = Owner->GetActorLocation();
     FRotator SpawnRotation = Owner->GetActorRotation();
 
-    // Ä³¸¯ÅÍÀÇ ÀÔ ¼ÒÄÏ ±âÁØ
+    // ìºë¦­í„°ì˜ ì… ì†Œì¼“ ê¸°ì¤€
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
@@ -367,8 +367,8 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
                 SpawnLocation = Mesh->GetSocketLocation(MuzzleSocketName);
                 SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
 
-                // ÀÔ¿¡¼­ ³ª°¡´Â ÀÌÆåÆ®(ÀÌ¹Ì Á¶ÁØ ½ÃÀÛ ½Ã Àç»ıÇß´Ù¸é »ı·« °¡´É)
-                // ¿©±â¼­´Â »ı·«
+                // ì…ì—ì„œ ë‚˜ê°€ëŠ” ì´í™íŠ¸(ì´ë¯¸ ì¡°ì¤€ ì‹œì‘ ì‹œ ì¬ìƒí–ˆë‹¤ë©´ ìƒëµ ê°€ëŠ¥)
+                // ì—¬ê¸°ì„œëŠ” ìƒëµ
             }
         }
     }
@@ -390,13 +390,13 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
 
     UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned toward target."));
 
-    // µ¥¹ÌÁö/¹üÀ§ ¼¼ÆÃ (±âÁ¸ ·ÎÁ÷ À¯Áö)
+    // ë°ë¯¸ì§€/ë²”ìœ„ ì„¸íŒ… (ê¸°ì¡´ ë¡œì§ ìœ ì§€)
     const float BaseDamage = Params.Damage;
     Fireball->DirectDamage = BaseDamage * 1.0f;
     Fireball->ExplosionDamage = BaseDamage * 0.5f;
     if (Params.Range > 0.f) { Fireball->ExplosionRadius = Params.Range; }
 
-    // ºñÇà Áß ²¿¸® ÀÌÆåÆ®
+    // ë¹„í–‰ ì¤‘ ê¼¬ë¦¬ ì´í™íŠ¸
     if (ProjectileNS)
     {
         UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -410,7 +410,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
         );
     }
 
-    // ==== Æ÷¹°¼± ÃÊ±â ¼Óµµ °è»ê ====
+    // ==== í¬ë¬¼ì„  ì´ˆê¸° ì†ë„ ê³„ì‚° ====
     if (UProjectileMovementComponent* Proj = Fireball->ProjectileMovement)
     {
         const float Speed = Proj->InitialSpeed;
@@ -423,7 +423,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
         const float DistXY = Flat.Size();
         const float DeltaZ = End.Z - Start.Z;
 
-        const float GravityZ = World->GetGravityZ() * Proj->ProjectileGravityScale; // À½¼ö
+        const float GravityZ = World->GetGravityZ() * Proj->ProjectileGravityScale; // ìŒìˆ˜
         const float g = -GravityZ;
 
         FVector InitialVelocity;
@@ -437,7 +437,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
 
             if (Disc >= 0.f)
             {
-                // µÎ °³ÀÇ ÇØ Áß ÇÏ³ª ¼±ÅÃ (¿©±â¼­´Â ³·Àº Åºµµ)
+                // ë‘ ê°œì˜ í•´ ì¤‘ í•˜ë‚˜ ì„ íƒ (ì—¬ê¸°ì„œëŠ” ë‚®ì€ íƒ„ë„)
                 const float RootDisc = FMath::Sqrt(Disc);
                 const float TanTheta = (Speed2 - RootDisc) / (g * DistXY);
 
@@ -450,10 +450,10 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
                     DirXY * (Speed * CosTheta) +
                     FVector::UpVector * (Speed * SinTheta);
             }
-            // ÇØ´ç ¼Óµµ·Î´Â µµ´Ş ºÒ°¡ ¡æ ±×³É Á÷¼± ¹ß»ç
+            // í•´ë‹¹ ì†ë„ë¡œëŠ” ë„ë‹¬ ë¶ˆê°€ â†’ ê·¸ëƒ¥ ì§ì„  ë°œì‚¬
             else { InitialVelocity = ToTarget.GetSafeNormal() * Speed; }
         }
-        // ÀÌ»ó°ª ¡æ ±×³É Á÷¼± ¹ß»ç
+        // ì´ìƒê°’ â†’ ê·¸ëƒ¥ ì§ì„  ë°œì‚¬
         else { InitialVelocity = ToTarget.GetSafeNormal() * (Speed > 0.f ? Speed : 1000.f); }
 
         Proj->Velocity = InitialVelocity;
@@ -462,7 +462,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
 
 void USkill_Range::SpawnDefaultProjectile()
 {
-    // ±âÁ¸ ActivateSkill¿¡¼­ ÇÏ´ø "±×³É ¾ÕÂÊÀ¸·Î ¹ß»ç" ·ÎÁ÷À» ¿©±â·Î ¿Å±è
+    // ê¸°ì¡´ ActivateSkillì—ì„œ í•˜ë˜ "ê·¸ëƒ¥ ì•ìª½ìœ¼ë¡œ ë°œì‚¬" ë¡œì§ì„ ì—¬ê¸°ë¡œ ì˜®ê¹€
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
     if (!World || !Owner || !FireballClass) return;
@@ -532,8 +532,8 @@ void USkill_Range::SpawnDefaultProjectile()
 
 float USkill_Range::GetCurrentTargetRadius() const
 {
-    // ÀÌÁ¦ SkillDefinition.Params.Range ´Â "Æø¹ß ¹İ°æ"¸¸ ¾²°í
-    // Á¶ÁØ ¿ø Å©±â´Â ÀÌ °ª¸¸ »ç¿ëÇÕ´Ï´Ù.
+    // ì´ì œ SkillDefinition.Params.Range ëŠ” "í­ë°œ ë°˜ê²½"ë§Œ ì“°ê³ 
+    // ì¡°ì¤€ ì› í¬ê¸°ëŠ” ì´ ê°’ë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     return TargetRadius;
 }
 

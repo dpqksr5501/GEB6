@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Enemy_AI/EnemyAnimIntance.h"
@@ -40,14 +40,14 @@ void UEnemyAnimIntance::NativeUpdateAnimation(float DeltaSeconds)
 
 	bIsFalling = MovementComponent->IsFalling();
 
-	// bWasInAir´Â ÂøÁö °¨Áö¿ëÀ¸·Î¸¸ »ç¿ë (Landing »óÅÂ ÁøÀÔ Æ®¸®°Å)
+	// bWasInAirëŠ” ì°©ì§€ ê°ì§€ìš©ìœ¼ë¡œë§Œ ì‚¬ìš© (Landing ìƒíƒœ ì§„ìž… íŠ¸ë¦¬ê±°)
 	if (bIsFalling)
 	{
 		bWasInAir = true;
 	}
 	else if (bWasInAir)
 	{
-		// ÂøÁö °¨Áö´Â ÇÏÁö¸¸ bIsJumpingÀº TJump¿¡¼­¸¸ °ü¸®
+		// ì°©ì§€ ê°ì§€ëŠ” í•˜ì§€ë§Œ bIsJumpingì€ TJumpì—ì„œë§Œ ê´€ë¦¬
 		bWasInAir = false;
 	}
 }

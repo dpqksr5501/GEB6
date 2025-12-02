@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Enemy_Special.h"
 #include "Skills/Skill_Special.h"
@@ -6,26 +6,26 @@
 
 AEnemy_Special::AEnemy_Special()
 {
-	// »ı¼ºÀÚ¿¡¼­ ½ºÅ³ Å¬·¡½º ¼³Á¤
+	// ìƒì„±ìì—ì„œ ìŠ¤í‚¬ í´ë˜ìŠ¤ ì„¤ì •
 	SkillClasses.Add(ESkillSlot::Active, USkill_Special::StaticClass());
 }
 
 void AEnemy_Special::BeginPlay()
 {
 	Super::BeginPlay();
-	// ½ºÅ³ ÃÊ±âÈ­´Â ºÎ¸ğ¿¡¼­ Ã³¸®µÊ
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”ëŠ” ë¶€ëª¨ì—ì„œ ì²˜ë¦¬ë¨
 }
 
 void AEnemy_Special::ActivateSkill()
 {
-	// 1. ½ºÅ³ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+	// 1. ìŠ¤í‚¬ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) return;
 
 	USkill_Special* SpecialSkill = Cast<USkill_Special>(Skill);
 	if (!SpecialSkill) return;
 	
-	// InitializeFromDefinition È£Ãâ >> ÇöÀç ½ºÅ³ ±âº» °ªÀ» ¼¼ÆÃ
+	// InitializeFromDefinition í˜¸ì¶œ >> í˜„ì¬ ìŠ¤í‚¬ ê¸°ë³¸ ê°’ì„ ì„¸íŒ…
 	if (DefaultFormDef && DefaultFormDef->SkillSet)
 	{
 		if (USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Active))
@@ -34,7 +34,7 @@ void AEnemy_Special::ActivateSkill()
 		}
 	}
 
-	// ¿©±â¼­ È£ÃâµÇ´Â °ÍÀº USkill_Special::ActivateSkill()
+	// ì—¬ê¸°ì„œ í˜¸ì¶œë˜ëŠ” ê²ƒì€ USkill_Special::ActivateSkill()
 	SpecialSkill->ActivateSkill(); 
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Special] Special skill component activated!"));

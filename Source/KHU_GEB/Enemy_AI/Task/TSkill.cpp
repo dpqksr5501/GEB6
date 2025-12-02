@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemy_AI/Task/TSkill.h"
 #include "AIController.h"
@@ -15,16 +15,16 @@ UTSkill::UTSkill()
 {
 	NodeName = TEXT("Skill");
 
-	// TickTask ÇÔ¼ö°¡ È£ÃâµÇµµ·Ï bNotifyTickÀ» true·Î ¼³Á¤ÇÕ´Ï´Ù.
+	// TickTask í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë„ë¡ bNotifyTickì„ trueë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
 	bNotifyTick = true;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	CurrentMontage = nullptr;
 }
 
 EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// ºÎ¸ğ Å¬·¡½ºÀÇ ExecuteTask¸¦ ¸ÕÀú È£ÃâÇÕ´Ï´Ù.
+	// ë¶€ëª¨ í´ë˜ìŠ¤ì˜ ExecuteTaskë¥¼ ë¨¼ì € í˜¸ì¶œí•©ë‹ˆë‹¤.
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
@@ -34,7 +34,7 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// AI ÄÁÆ®·Ñ·¯¿Í ÄÁÆ®·Ñ·¯°¡ Á¶Á¾ÇÏ´Â Ä³¸¯ÅÍ¸¦ °¡Á®¿É´Ï´Ù.
+	// AI ì»¨íŠ¸ë¡¤ëŸ¬ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ì¡°ì¢…í•˜ëŠ” ìºë¦­í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -49,7 +49,7 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// Enemy_Base·Î Ä³½ºÆÃ
+	// Enemy_Baseë¡œ ìºìŠ¤íŒ…
 	AEnemy_Base* EnemyBase = Cast<AEnemy_Base>(Character);
 	if (!EnemyBase)
 	{
@@ -57,14 +57,14 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// DefaultFormDef È®ÀÎ
+	// DefaultFormDef í™•ì¸
 	if (!EnemyBase->DefaultFormDef)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TSkill: DefaultFormDef is missing"));
 		return EBTNodeResult::Failed;
 	}
 
-	// ¾Ö´Ô ÀÎ½ºÅÏ½º °¡Á®¿À±â
+	// ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ ê°€ì ¸ì˜¤ê¸°
 	UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 	if (!AnimInstance)
 	{
@@ -72,8 +72,8 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		return EBTNodeResult::Failed;
 	}
 
-	// ½ºÅ³ È°¼ºÈ­ (SkillSlotToActivate°¡ NoneÀÌ ¾Æ´Ñ °æ¿ì)
-	if (SkillSlotToActivate != ESkillSlot::Active) // None °ªÀÌ ¾ø¾î¼­ Active°¡ ¾Æ´Ñ °æ¿ì·Î Ã¼Å©
+	// ìŠ¤í‚¬ í™œì„±í™” (SkillSlotToActivateê°€ Noneì´ ì•„ë‹Œ ê²½ìš°)
+	if (SkillSlotToActivate != ESkillSlot::Active) // None ê°’ì´ ì—†ì–´ì„œ Activeê°€ ì•„ë‹Œ ê²½ìš°ë¡œ ì²´í¬
 	{
 		UE_LOG(LogTemp, Log, TEXT("TSkill: No skill slot specified"));
 	}
@@ -83,16 +83,16 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 		if (!Caster) return EBTNodeResult::Failed;
 
 		UE_LOG(LogTemp, Log, TEXT("TSkill: Activating skill from Enemy_Base"));
-		Caster->ActivateSkill(); // Enemy ·¹º§ÀÇ ½ºÅ³ ½ÇÇà
+		Caster->ActivateSkill(); // Enemy ë ˆë²¨ì˜ ìŠ¤í‚¬ ì‹¤í–‰
 	}
 
-	// ÇöÀç ½Ã°£ °¡Á®¿À±â
+	// í˜„ì¬ ì‹œê°„ ê°€ì ¸ì˜¤ê¸°
 	float CurrentTime = OwnerComp.GetWorld()->GetTimeSeconds();
 
-	// »óÅÂ º¯°æ
+	// ìƒíƒœ ë³€ê²½
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Attacking);
 	
-	// LastActionTime ¼³Á¤
+	// LastActionTime ì„¤ì •
 	BlackboardComp->SetValueAsFloat("LastActionTime", CurrentTime);
 	BlackboardComp->SetValueAsFloat(CooldownKey.SelectedKeyName, CurrentTime);
 	
@@ -101,10 +101,10 @@ EBTNodeResult::Type UTSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint
 
 void UTSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// ºÎ¸ğ Å¬·¡½ºÀÇ TickTask¸¦ ¸ÕÀú È£ÃâÇÕ´Ï´Ù.
+	// ë¶€ëª¨ í´ë˜ìŠ¤ì˜ TickTaskë¥¼ ë¨¼ì € í˜¸ì¶œí•©ë‹ˆë‹¤.
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
 	{
@@ -129,10 +129,10 @@ void UTSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 		return;
 	}
 
-	// ¸ùÅ¸ÁÖ°¡ Àç»ı ÁßÀÎÁö È®ÀÎ
+	// ëª½íƒ€ì£¼ê°€ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸
 	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 	{
-		// ¸ùÅ¸ÁÖ Àç»ıÀÌ ³¡³ª¸é »óÅÂ¸¦ Idle·Î º¯°æÇÏ°í ÅÂ½ºÅ© ¼º°ø
+		// ëª½íƒ€ì£¼ ì¬ìƒì´ ëë‚˜ë©´ ìƒíƒœë¥¼ Idleë¡œ ë³€ê²½í•˜ê³  íƒœìŠ¤í¬ ì„±ê³µ
 		if (BlackboardComp)
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
@@ -144,7 +144,7 @@ void UTSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, flo
 
 EBTNodeResult::Type UTSkill::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// AI ÄÁÆ®·Ñ·¯¿Í Ä³¸¯ÅÍ¸¦ °¡Á®¿É´Ï´Ù.
+	// AI ì»¨íŠ¸ë¡¤ëŸ¬ì™€ ìºë¦­í„°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController)
 	{
@@ -154,7 +154,7 @@ EBTNodeResult::Type UTSkill::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8*
 			UAnimInstance* AnimInstance = Character->GetMesh() ? Character->GetMesh()->GetAnimInstance() : nullptr;
 			if (AnimInstance)
 			{
-				// ¸ùÅ¸ÁÖ Áß´Ü
+				// ëª½íƒ€ì£¼ ì¤‘ë‹¨
 				CurrentMontage = AnimInstance->GetCurrentActiveMontage();
 				if (CurrentMontage) {
 					AnimInstance->Montage_Stop(0.2f, CurrentMontage);
@@ -164,7 +164,7 @@ EBTNodeResult::Type UTSkill::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 	}
 
-	// »óÅÂ Á¤¸®
+	// ìƒíƒœ ì •ë¦¬
 	CurrentMontage = nullptr;
 
 	return Super::AbortTask(OwnerComp, NodeMemory);

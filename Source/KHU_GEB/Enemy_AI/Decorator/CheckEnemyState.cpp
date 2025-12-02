@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CheckEnemyState.h"
@@ -8,19 +8,19 @@ UCheckEnemyState::UCheckEnemyState()
 {
 	NodeName = TEXT("Check Enemy State");
 
-	// »ó¼Ó¹ŞÀº 'BlackboardKey' º¯¼ö¿¡ Enum ÇÊÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+	// ìƒì†ë°›ì€ 'BlackboardKey' ë³€ìˆ˜ì— Enum í•„í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 	BlackboardKey.AddEnumFilter(this, GET_MEMBER_NAME_CHECKED(UCheckEnemyState, BlackboardKey), StaticEnum<EEnemyState>());
 
-	// Observer Abort ¼³Á¤ - ºí·¢º¸µå °ª º¯°æ ½Ã ÀçÆò°¡
-	bNotifyBecomeRelevant = true; // ÀÌ node¿¡ ÁøÀÔÇÒ ¶§ OnBecomeRelevant¸¦ È£ÃâÇÏ°Ô µÈ´Ù.
-	bNotifyTick = false; // TickÀº ÇÊ¿ä ¾øÀ½
+	// Observer Abort ì„¤ì • - ë¸”ë™ë³´ë“œ ê°’ ë³€ê²½ ì‹œ ì¬í‰ê°€
+	bNotifyBecomeRelevant = true; // ì´ nodeì— ì§„ì…í•  ë•Œ OnBecomeRelevantë¥¼ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
+	bNotifyTick = false; // Tickì€ í•„ìš” ì—†ìŒ
 }
 
 void UCheckEnemyState::InitializeFromAsset(UBehaviorTree& Asset)
 {
 	Super::InitializeFromAsset(Asset);
 
-	// ºí·¢º¸µå Å° º¯°æ °¨Áö ¼³Á¤
+	// ë¸”ë™ë³´ë“œ í‚¤ ë³€ê²½ ê°ì§€ ì„¤ì •
 	UBlackboardData* BBAsset = GetBlackboardAsset();
 	if (BBAsset)
 	{
@@ -32,19 +32,19 @@ void UCheckEnemyState::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 
-	// ³ëµå°¡ È°¼ºÈ­ µÉ ¶§ ºÎ¸ğ Å¬·¡½º¿¡¼­ Observer¸¦ µî·Ï
+	// ë…¸ë“œê°€ í™œì„±í™” ë  ë•Œ ë¶€ëª¨ í´ë˜ìŠ¤ì—ì„œ Observerë¥¼ ë“±ë¡
 }
 
 void UCheckEnemyState::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
 
-	// ³ëµå°¡ ºñÈ°¼ºÈ­ µÉ ¶§ ºÎ¸ğ Å¬·¡½º¿¡¼­ Observer¸¦ ÇØÁ¦
+	// ë…¸ë“œê°€ ë¹„í™œì„±í™” ë  ë•Œ ë¶€ëª¨ í´ë˜ìŠ¤ì—ì„œ Observerë¥¼ í•´ì œ
 }
 
 EBlackboardNotificationResult UCheckEnemyState::OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID)
 {
-	// BlackboardKey °ªÀÌ º¯°æµÉ ¶§ ¸¶´Ù Á¶°ÇÀ» ÀçÆò°¡
+	// BlackboardKey ê°’ì´ ë³€ê²½ë  ë•Œ ë§ˆë‹¤ ì¡°ê±´ì„ ì¬í‰ê°€
 	return Super::OnBlackboardKeyValueChange(Blackboard, ChangedKeyID);
 }
 
@@ -56,7 +56,7 @@ bool UCheckEnemyState::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerC
 		return false;
 	}
 
-	// »ó¼Ó¹ŞÀº 'BlackboardKey'¸¦ »ç¿ëÇÏ¿© °ªÀ» °¡Á®¿É´Ï´Ù.
+	// ìƒì†ë°›ì€ 'BlackboardKey'ë¥¼ ì‚¬ìš©í•˜ì—¬ ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	const uint8 CurrentStateValue = BlackboardComp->GetValueAsEnum(BlackboardKey.SelectedKeyName);
 
 	const EEnemyState CurrentState = static_cast<EEnemyState>(CurrentStateValue);
@@ -66,8 +66,8 @@ bool UCheckEnemyState::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerC
 
 FString UCheckEnemyState::GetStaticDescription() const
 {
-	// ¿¡µğÅÍ¿¡ "BlackboardKeyÀÇ ÀÌ¸§ == DesiredState" ÇüÅÂ·Î Ç¥½ÃµË´Ï´Ù.
-	// ¿¹: "EnemyState == Attacking"
+	// ì—ë””í„°ì— "BlackboardKeyì˜ ì´ë¦„ == DesiredState" í˜•íƒœë¡œ í‘œì‹œë©ë‹ˆë‹¤.
+	// ì˜ˆ: "EnemyState == Attacking"
 	FString StateString = StaticEnum<EEnemyState>()->GetNameStringByValue((int64)DesiredState);
 	return FString::Printf(TEXT("%s: == %s"), *Super::GetStaticDescription(), *StateString);
 }

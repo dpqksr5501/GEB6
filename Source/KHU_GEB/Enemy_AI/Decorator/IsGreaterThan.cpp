@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "IsGreaterThan.h"
@@ -6,22 +6,22 @@
 
 UIsGreaterThan::UIsGreaterThan()
 {
-	// ³ëµå ÀÌ¸§ ¼³Á¤
+	// ë…¸ë“œ ì´ë¦„ ì„¤ì •
 	NodeName = TEXT("Is Greater Than");
 
-	// ±âº» ºñ±³ °ª ¼³Á¤
+	// ê¸°ë³¸ ë¹„êµ ê°’ ì„¤ì •
 	CompareValue = 0.0f;
 
-	// Observer Abort ¼³Á¤ - ºí·¢º¸µå °ª º¯°æ ½Ã ÀçÆò°¡
-	bNotifyBecomeRelevant = true; // ÀÌ node¿¡ ÁøÀÔÇÒ ¶§ OnBecomeRelevant¸¦ È£ÃâÇÏ°Ô µÈ´Ù.
-	bNotifyTick = false; // TickÀº ÇÊ¿ä ¾øÀ½
+	// Observer Abort ì„¤ì • - ë¸”ëž™ë³´ë“œ ê°’ ë³€ê²½ ì‹œ ìž¬í‰ê°€
+	bNotifyBecomeRelevant = true; // ì´ nodeì— ì§„ìž…í•  ë•Œ OnBecomeRelevantë¥¼ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
+	bNotifyTick = false; // Tickì€ í•„ìš” ì—†ìŒ
 }
 
 void UIsGreaterThan::InitializeFromAsset(UBehaviorTree& Asset)
 {
 	Super::InitializeFromAsset(Asset);
 
-	// ºí·¢º¸µå Å° º¯°æ °¨Áö ¼³Á¤
+	// ë¸”ëž™ë³´ë“œ í‚¤ ë³€ê²½ ê°ì§€ ì„¤ì •
 	UBlackboardData* BBAsset = GetBlackboardAsset();
 	if (BBAsset)
 	{
@@ -33,19 +33,19 @@ void UIsGreaterThan::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* 
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 
-	// ³ëµå°¡ È°¼ºÈ­ µÉ ¶§ ºÎ¸ð Å¬·¡½º¿¡¼­ Observer¸¦ µî·Ï
+	// ë…¸ë“œê°€ í™œì„±í™” ë  ë•Œ ë¶€ëª¨ í´ëž˜ìŠ¤ì—ì„œ Observerë¥¼ ë“±ë¡
 }
 
 void UIsGreaterThan::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
 
-	// ³ëµå°¡ ºñÈ°¼ºÈ­ µÉ ¶§ ºÎ¸ð Å¬·¡½º¿¡¼­ Observer¸¦ ÇØÁ¦
+	// ë…¸ë“œê°€ ë¹„í™œì„±í™” ë  ë•Œ ë¶€ëª¨ í´ëž˜ìŠ¤ì—ì„œ Observerë¥¼ í•´ì œ
 }
 
 EBlackboardNotificationResult UIsGreaterThan::OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID)
 {
-	// BlackboardKey °ªÀÌ º¯°æµÉ ¶§ ¸¶´Ù Á¶°ÇÀ» ÀçÆò°¡
+	// BlackboardKey ê°’ì´ ë³€ê²½ë  ë•Œ ë§ˆë‹¤ ì¡°ê±´ì„ ìž¬í‰ê°€
 	return Super::OnBlackboardKeyValueChange(Blackboard, ChangedKeyID);
 }
 
@@ -57,16 +57,16 @@ bool UIsGreaterThan::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerCom
 		return false;
 	}
 
-	// 1. ºí·¢º¸µå¿¡¼­ (BlackboardKey¿¡ ¿¬°áµÈ) Float °ªÀ» ÀÐ¾î¿É´Ï´Ù.
+	// 1. ë¸”ëž™ë³´ë“œì—ì„œ (BlackboardKeyì— ì—°ê²°ëœ) Float ê°’ì„ ì½ì–´ì˜µë‹ˆë‹¤.
 	const float BlackboardValue = BlackboardComp->GetValueAsFloat(BlackboardKey.SelectedKeyName);
 
-	// 2. ºñ±³: BlackboardValue > CompareValue
+	// 2. ë¹„êµ: BlackboardValue > CompareValue
 	return BlackboardValue > CompareValue;
 }
 
 FString UIsGreaterThan::GetStaticDescription() const
 {
-	// ¿¡µðÅÍ¿¡ "BlackboardKeyÀÇ ÀÌ¸§ > CompareValue" ÇüÅÂ·Î Ç¥½ÃµË´Ï´Ù.
-	// ¿¹: "LastAttackCounter > 5.0"
+	// ì—ë””í„°ì— "BlackboardKeyì˜ ì´ë¦„ > CompareValue" í˜•íƒœë¡œ í‘œì‹œë©ë‹ˆë‹¤.
+	// ì˜ˆ: "LastAttackCounter > 5.0"
 	return FString::Printf(TEXT("%s: > %.1f"), *Super::GetStaticDescription(), CompareValue);
 }

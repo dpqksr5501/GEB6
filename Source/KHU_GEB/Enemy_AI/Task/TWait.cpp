@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Enemy_AI/Task/TWait.h"
@@ -8,7 +8,7 @@ UTWait::UTWait()
 {
 	NodeName = "TWait";
 
-	// ¸â¹ö º¯¼ö(AIController µî)¸¦ ¾ÈÀüÇÏ°Ô ÀúÀåÇÏ±â À§ÇØ true·Î ¼³Á¤
+	// ë©¤ë²„ ë³€ìˆ˜(AIController ë“±)ë¥¼ ì•ˆì „í•˜ê²Œ ì €ìž¥í•˜ê¸° ìœ„í•´ trueë¡œ ì„¤ì •
 	bCreateNodeInstance = true;
 }
 
@@ -18,7 +18,7 @@ EBTNodeResult::Type UTWait::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8
 	{
 		return EBTNodeResult::Failed;
 	}
-	// »óÅÂ º¯È¯
+	// ìƒíƒœ ë³€í™˜
 	BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
 
 	return EBTNodeResult::Succeeded;
