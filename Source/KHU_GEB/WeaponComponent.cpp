@@ -8,8 +8,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h" // ApplyDamage용
-#include "FormDefinition.h" // EFormType
-#include "KHU_GEBCharacter.h" // GetMesh()를 위해 필요시
+#include "FormDefinition.h"			// EFormType
+#include "KHU_GEBCharacter.h"		// GetMesh()를 위해 필요시
+#include "HealthComponent.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -139,26 +140,67 @@ void UWeaponComponent::DisableCollision()
 /** [복사] AttackComponent.cpp에서 가져옴 */
 void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// UE_LOG 디버깅용 OnAttackOverlap 진입 로그
-	UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] OnAttackOverlap triggered with %s"), *GetNameSafe(OtherActor));
+	UE_LOG(LogTemp, Log,
+		TEXT("[WeaponComponent] OnAttackOverlap triggered with %s"),
+		*GetNameSafe(OtherActor));
+
 	AActor* Owner = GetOwner();
 	if (!Owner || OtherActor == Owner) return;
+
+	// 한 스윙 동안 이미 맞은 액터는 무시
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
 
-	// 데미지 적용 로직
-	float DamageToApply = 10.f; // (임시) TODO: UWeaponData나 UFormDefinition에서 가져와야 함
-	APawn* OwnerPawn = Cast<APawn>(Owner);
+	// 1) 피격 대상에서 HealthComponent를 찾는다.
+	UHealthComponent* Health = OtherActor->FindComponentByClass<UHealthComponent>();
+	if (!Health)
+	{
+		// HealthComponent가 없는 대상이면 공격 판정만 있고 실제 데미지는 없음
+		return;
+	}
 
-	UGameplayStatics::ApplyDamage(OtherActor,
-		DamageToApply,
-		(OwnerPawn ? OwnerPawn->GetController() : nullptr),
-		Owner,
-		nullptr);
-	// 누구와 충돌했는지 UE_LOG로 출력 (디버깅용)
-	UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] %s hit %s for %f damage."), *Owner->GetName(), *OtherActor->GetName(), DamageToApply);
+	// 2) 데미지 양 결정 (우선은 임시 값 10 유지)
+	float DamageToApply = 10.f;
+
+	// TODO: 나중에 StatManager/WeaponData에서 공격력을 가져오고 싶으면 여기서 계산
+	// if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
+	// {
+	//     if (OwnerChar->StatManager)
+	//     {
+	//         if (const FFormRuntimeStats* Stats =
+	//             OwnerChar->StatManager->GetStats(OwnerChar->FormManager->CurrentForm))
+	//         {
+	//             DamageToApply = Stats->Attack;
+	//         }
+	//     }
+	// }
+
+	// 3) FDamageSpec 를 채워서 HealthComponent 파이프라인으로 보낸다.
+	FDamageSpec Spec;
+	Spec.RawDamage = DamageToApply;
+	Spec.bIgnoreDefense = false;   // 평타는 방어력 적용
+	Spec.bPeriodic = false;   // 주기 데미지 아님
+	Spec.bFixedDot = false;
+	Spec.HitCount = 1;
 	
-	HitActorsThisSwing.Add(OtherActor);
+	// Instigator 를 "공격한 캐릭터(무기 소유자)"로 설정해야
+	// HealthComponent::ApplyDamageSpec 안에서 Swift 은신/배수 로직이 동작합니다.
+	Spec.Instigator = Owner;
+	Spec.SourceSkill = nullptr;    // 평타라서 스킬은 없음
 
+	const float FinalDamage = Health->ApplyDamageSpec(Spec);
+
+	APawn* OwnerPawn = Cast<APawn>(Owner);
+	UGameplayStatics::ApplyDamage(OtherActor, FinalDamage, (OwnerPawn ? OwnerPawn->GetController() : nullptr), Owner, nullptr);
+
+	UE_LOG(LogTemp, Log,
+		TEXT("[WeaponComponent] %s hit %s for %.1f (final=%.1f)"),
+		*Owner->GetName(),
+		*OtherActor->GetName(),
+		DamageToApply,
+		FinalDamage);
+
+	// 한 번 맞은 액터는 이 스윙 동안 다시 안 맞도록 기록
+	HitActorsThisSwing.Add(OtherActor);
 }
 
 /** [복사] AttackComponent.cpp에서 가져옴 */
