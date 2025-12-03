@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,37 +6,79 @@
 #include "Animation/AnimInstance.h"
 #include "MonsterAnimInstanceBase.generated.h"
 
+class UNiagaraSystem;
+class UNiagaraComponent;
+class USkeletalMeshComponent;
+class AMonsterBase; // 전방 선언
+class IMyAnimDataProvider; // 1. 인터페이스 전방 선언 추가
+
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
 {
 	Idle	UMETA(DisplayName = "Idle"),
 	Attack	UMETA(DisplayName = "Attack"),
-	Skill1	UMETA(DisplayName = "Skill1"), //��Ŭ��
+	Skill1	UMETA(DisplayName = "Skill1"), //우클릭
 	Hit		UMETA(DisplayName = "Hit"),
 	Die		UMETA(DisplayName = "Die")
 };
 
-class AMonsterBase;
-/**
- * 
- */
+
+
 UCLASS()
 class KHU_GEB_API UMonsterAnimInstanceBase : public UAnimInstance
 {
 	GENERATED_BODY()
 
 public:
-	// ��������Ʈ���� �б� �������� ����� ������
+	// 블루프린트에서 읽기 전용으로 사용할 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	float Speed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
+	//좌/우 방향의 delta값을 가져옴
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	float YawDeltaSpeed;
+
+	/** 캐릭터가 방금 점프 입력을 했는지 여부 (신호용) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bJumpInput_Anim;
+
+	//캐릭터가 추락하는지 여부
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bIsFalling;
+
+
+	//ABP의 Transition Rule(화살표 조건)에서 사용할 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Action")
+	bool bSpaceAction_Anim;
+
+
+	// [추가] ABP 상태 머신 조건으로 쓸 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement")
+	bool bIsRangeGliding_Anim;
+
+
+	//락온 활성화 여부 (ABP의 Transition 조건으로 사용)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|LockOn")
+	bool bIsLockedOn_Anim;
+
+	//이동 방향 (-180 ~ 180도). 2D BS의 가로축(Horizontal Axis)에 연결
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|LockOn")
+	float Direction;
+
+
 protected:
-	UPROPERTY()
-	AMonsterBase* OwningMonster;
+
+	//인터페이스 포인터를 저장할 변수로 변경합니다.
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "Owner")
+	TScriptInterface<IMyAnimDataProvider> OwningDataProvider;
 
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	float LastYaw;	//delta yaw를 구하기 위해서
+
+	
 };

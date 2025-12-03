@@ -18,8 +18,10 @@ public class KHU_GEB : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
-		});
+			"Slate",
+			"Niagara",
+			"GameplayTasks"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
@@ -37,7 +39,11 @@ public class KHU_GEB : ModuleRules
 			"KHU_GEB/Variant_SideScrolling/AI",
 			"KHU_GEB/Variant_SideScrolling/Gameplay",
 			"KHU_GEB/Variant_SideScrolling/Interfaces",
-			"KHU_GEB/Variant_SideScrolling/UI"
+			"KHU_GEB/Variant_SideScrolling/UI",
+			"KHU_GEB/Enemy_AI/Composite",
+			"KHU_GEB/Enemy_AI/Decorator",
+			"KHU_GEB/Enemy_AI/Task",
+			"KHU_GEB/Enemy_AI"
 		});
 
 		// Uncomment if you are using Slate UI

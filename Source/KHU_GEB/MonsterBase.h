@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,56 +6,70 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "MonsterAnimInstanceBase.h"
+#include "MyAnimDataProvider.h" //ì¸í„°í˜ì´ìŠ¤ í—¤ë” í¬í•¨
 #include "MonsterBase.generated.h"
 
 
 UCLASS()
-class KHU_GEB_API AMonsterBase : public ACharacter
+class KHU_GEB_API AMonsterBase : public ACharacter, public IMyAnimDataProvider // ìƒì† ì¶”ê°€
 {
 	GENERATED_BODY()
 
 public:
 	AMonsterBase();
 
-	//// Ã¼·Â°ü·Ã
+	/** ìºë¦­í„°ê°€ ë°©ê¸ˆ ì í”„ ì…ë ¥ì„ í–ˆëŠ”ì§€ ì—¬ë¶€ */ //ì¶”ê°€ì½”ë“œ
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bJumpInput; // (ê¸°ì¡´ bWantsToJump ë³€ìˆ˜)
+
+	//// ì²´ë ¥ê´€ë ¨
 	UFUNCTION()
-	void HandleAnyDamage(AActor* DamagedActor, float Damage,
-		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	void HandleAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComp;
 
-	/** ºí·çÇÁ¸°Æ®¿¡¼­ ÇöÀç Ã¼·Â °¡Á®¿À±â */
+	/** ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í˜„ì¬ ì²´ë ¥ ê°€ì ¸ì˜¤ê¸° */
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetHealth() const;
 
-	/** ºí·çÇÁ¸°Æ®¿¡¼­ Ã¼·Â È¸º¹ÇÏ±â */
+	/** ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì²´ë ¥ íšŒë³µí•˜ê¸° */
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float Amount);
 
-
-
-
-
-	///////////
-
-	// »óÅÂ¸¦ ¾ÈÀüÇÏ°Ô °¡Á®°¥ ¼ö ÀÖ´Â public ÇÔ¼ö
+	// ìƒíƒœë¥¼ ì•ˆì „í•˜ê²Œ ê°€ì ¸ê°ˆ ìˆ˜ ìˆëŠ” public í•¨ìˆ˜
 	UFUNCTION(BlueprintPure, Category = "State")
 	ECharacterState GetCharacterState() const { return CharacterState; }
 
-	// »óÅÂ¸¦ ¾ÈÀüÇÏ°Ô º¯°æÇÒ ¼ö ÀÖ´Â public ÇÔ¼ö
+	// ìƒíƒœë¥¼ ì•ˆì „í•˜ê²Œ ë³€ê²½í•  ìˆ˜ ìˆëŠ” public í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "State")
 	void SetCharacterState(ECharacterState NewState);
 
+
+	//ì¸í„°í˜ì´ìŠ¤(IMyAnimDataProvider)ì˜ í•¨ìˆ˜ 4ê°œë¥¼ êµ¬í˜„í•˜ê² ë‹¤ê³  ì„ ì–¸í•©ë‹ˆë‹¤.
+	virtual float GetAnimSpeed_Implementation() const override;
+	virtual ECharacterState GetAnimCharacterState_Implementation() const override;
+	virtual bool GetAnimIsFalling_Implementation() const override;
+	virtual bool GetAnimJumpInput_Implementation(bool bConsumeInput) override;
+	//ìŠ¤í˜ì´ìŠ¤ë°” ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ êµ¬í˜„ ì„ ì–¸
+	virtual bool GetAnimSpaceActionInput_Implementation(bool bConsumeInput) override;
+
+	//ìŠ¤í˜ì´ìŠ¤ë°” íŠ¹ìˆ˜ í–‰ë™ ì‹ í˜¸ ì €ì¥ìš© ë³€ìˆ˜
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Movement")
+	bool bSpaceActionInput;
+
+	
+
+
 protected:
-	// »óÅÂ º¯¼ö´Â ¿ÜºÎ¿¡¼­ Á÷Á¢ °Çµå¸®Áö ¸øÇÏµµ·Ï protected·Î º¸È£ÇÕ´Ï´Ù.
+	// ìƒíƒœ ë³€ìˆ˜ëŠ” ì™¸ë¶€ì—ì„œ ì§ì ‘ ê±´ë“œë¦¬ì§€ ëª»í•˜ë„ë¡ protectedë¡œ ë³´í˜¸í•©ë‹ˆë‹¤.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionMove;
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ IA_MouseLook ¾Ö¼ÂÀ» ÁöÁ¤ÇÒ º¯¼ö
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ IA_MouseLook ì• ì…‹ì„ ì§€ì •í•  ë³€ìˆ˜
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionLook;
 
@@ -65,44 +79,47 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputMappingContext* InputMappingContext;
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ IA_Jump ¾Ö¼ÂÀ» ÁöÁ¤ÇÒ º¯¼ö
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ IA_Jump ì• ì…‹ì„ ì§€ì •í•  ë³€ìˆ˜
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionJump;
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ IA_Ctrl ¾Ö¼ÂÀ» ÁöÁ¤ÇÒ º¯¼ö
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ IA_Ctrl ì• ì…‹ì„ ì§€ì •í•  ë³€ìˆ˜
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionCtrl;
 
-	//¿¡µğÅÍ¿¡¼­ IA_LAttackÀ» ÃßÀû
+	//ì—ë””í„°ì—ì„œ IA_LAttackì„ ì¶”ì 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InputActionLAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InputActionRAttack;
 
 	///////////////////////////////////////////
 
 	
-	//IA_Move ÀÔ·Â ¹ß»ı ½Ã È£ÃâµÇ´Â ÇÔ¼ö
+	//IA_Move ì…ë ¥ ë°œìƒ ì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	// IA_MouseLook ÀÔ·ÂÀÌ ¹ß»ıÇßÀ» ¶§ È£ÃâµÉ ÇÔ¼ö
+	// IA_MouseLook ì…ë ¥ì´ ë°œìƒí–ˆì„ ë•Œ í˜¸ì¶œë  í•¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ½¬ÇÁÆ® ¾×¼ÇÀ» ½ÃÀÛÇÒ ¶§ È£ÃâµÉ ÇÔ¼ö (¿¡µğÅÍ¿¡¼­ ÀçÁ¤ÀÇ °¡´É)
+	// ì‰¬í”„íŠ¸ ì•¡ì…˜ì„ ì‹œì‘í•  ë•Œ í˜¸ì¶œë  í•¨ìˆ˜ (ì—ë””í„°ì—ì„œ ì¬ì •ì˜ ê°€ëŠ¥)
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void StartShiftAction();
 
-	// ½¬ÇÁÆ® ¾×¼ÇÀ» ¸ØÃâ ¶§ È£ÃâµÉ ÇÔ¼ö (virtual Ãß°¡)
+	// ì‰¬í”„íŠ¸ ì•¡ì…˜ì„ ë©ˆì¶œ ë•Œ í˜¸ì¶œë  í•¨ìˆ˜ (virtual ì¶”ê°€)
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void StopShiftAction();
 
-	// Á¡ÇÁ Å° ¾×¼ÇÀ» Ã³¸®ÇÒ ÇÔ¼öµé (¿¡µğÅÍ¿¡¼­ ÀçÁ¤ÀÇÇÒ ¼ö ÀÖµµ·Ï)
+	// ì í”„ í‚¤ ì•¡ì…˜ì„ ì²˜ë¦¬í•  í•¨ìˆ˜ë“¤ (ì—ë””í„°ì—ì„œ ì¬ì •ì˜í•  ìˆ˜ ìˆë„ë¡)
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-	void JumpAction_Start();   // Ã³À½ ´­·¶À» ¶§
+	void JumpAction_Start();   // ì²˜ìŒ ëˆŒë €ì„ ë•Œ
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-	void JumpAction_Triggered(); // ´©¸£°í ÀÖÀ» ¶§
+	void JumpAction_Triggered(); // ëˆ„ë¥´ê³  ìˆì„ ë•Œ
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-	void JumpAction_Stop();    // ¶ÃÀ» ¶§
+	void JumpAction_Stop();    // ë—ì„ ë•Œ
 
-	// ÄÁÆ®·Ñ Å° ¾×¼ÇÀ» Ã³¸®ÇÒ ÇÔ¼ö
+	// ì»¨íŠ¸ë¡¤ í‚¤ ì•¡ì…˜ì„ ì²˜ë¦¬í•  í•¨ìˆ˜
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void CtrlAction_Start();
 
@@ -111,6 +128,14 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 	void LAttackAction_Start();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+	void RAttackAction_Start();
+
+	//ê³µê²© íŒì • ë””ë²„ê¹…ìš©
+	UFUNCTION()
+	void HandleDamage(AActor* DamagedActor, float Damage,
+		const class UDamageType* DamageType, class AController* InstigatedBy,
+		AActor* DamageCauser);
 
 public:	
 	// Called every frame
