@@ -18,9 +18,7 @@
 #include "AttackComponent.h"
 #include "Skills/SkillManagerComponent.h"
 #include "Skills/Skill_Range.h"
-#include "Skills/Skill_Swift.h"
 #include "Skills/Skill_Guard.h"
-#include "Skills/Skill_Special.h"
 #include "StatManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEB.h"
@@ -341,11 +339,11 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	// Range 조준 중이면, 이동 대신 스킬에 입력 전달
-	if (bIsRangeAiming)
+	if (SkillManager && SkillManager->IsRangeAiming())
 	{
-		if (ActiveRangeSkill.IsValid())
+		if (SkillManager->GetActiveRangeSkill().IsValid())
 		{
-			ActiveRangeSkill->HandleAimMoveInput(MovementVector);
+			SkillManager->GetActiveRangeSkill()->HandleAimMoveInput(MovementVector);
 		}
 		// 캐릭터는 실제로는 움직이지 않음
 		return;
@@ -409,35 +407,35 @@ void AKHU_GEBCharacter::UltimateEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
-	if (IsFormChangeLocked()) return;
+	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Base);
 }
 
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
-	if (IsFormChangeLocked()) return;
+	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Range);
 }
 
 void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 {
-	if (IsFormChangeLocked()) return;
+	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Swift);
 }
 
 void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 {
-	if (IsFormChangeLocked()) return;
+	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Guard);
 }
 
 void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 {
-	if (IsFormChangeLocked()) return;
+	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Special);
 }
@@ -712,110 +710,10 @@ void AKHU_GEBCharacter::UpdateMovementSpeed()
 	}
 }
 
-
 void AKHU_GEBCharacter::SetSkillSpeedMultiplier(float InMultiplier)
 {
 	SkillSpeedMultiplier = InMultiplier;
 	UpdateMovementSpeed();
-}
-
-void AKHU_GEBCharacter::OnRangeAimingStarted(USkill_Range* Skill)
-{
-	bIsRangeAiming = true;
-	ActiveRangeSkill = Skill;
-
-	// 스킬 시작 시점에 현재 락온 타겟을 저장
-	if (LockOnComp)
-	{
-		SavedRangeLockOnTarget = LockOnComp->GetCurrentTarget();
-	}
-	else
-	{
-		SavedRangeLockOnTarget = nullptr;
-	}
-}
-
-void AKHU_GEBCharacter::OnRangeAimingEnded(USkill_Range* Skill)
-{
-	if (ActiveRangeSkill.Get() == Skill)
-	{
-		ActiveRangeSkill = nullptr;
-		bIsRangeAiming = false;
-	}
-
-	// 저장해 두었던 락온 타겟이 아직 유효하면 다시 락온
-	if (LockOnComp)
-	{
-		if (SavedRangeLockOnTarget.IsValid())
-		{
-			LockOnComp->LockOnToTarget(SavedRangeLockOnTarget.Get());
-		}
-	}
-
-	// 한 번 쓰고 나면 정리
-	SavedRangeLockOnTarget = nullptr;
-}
-
-void AKHU_GEBCharacter::OnSwiftStrikeStarted(USkill_Swift* Skill)
-{
-	ActiveSwiftSkill = Skill;
-	bIsSwiftStriking = true;
-}
-
-void AKHU_GEBCharacter::OnSwiftStrikeEnded(USkill_Swift* Skill)
-{
-	if (ActiveSwiftSkill.Get() == Skill)
-	{
-		ActiveSwiftSkill = nullptr;
-		bIsSwiftStriking = false;
-	}
-}
-
-void AKHU_GEBCharacter::OnGuardSkillStarted(USkill_Guard* Skill)
-{
-	ActiveGuardSkill = Skill;
-	bIsGuardSkillActiveForForm = true;
-}
-
-void AKHU_GEBCharacter::OnGuardSkillEnded(USkill_Guard* Skill)
-{
-	if (ActiveGuardSkill.Get() == Skill)
-	{
-		ActiveGuardSkill = nullptr;
-		bIsGuardSkillActiveForForm = false;
-	}
-}
-
-void AKHU_GEBCharacter::OnSpecialSkillStarted(USkill_Special* Skill)
-{
-	ActiveSpecialSkill = Skill;
-	bIsSpecialSkillActiveForForm = true;
-}
-
-void AKHU_GEBCharacter::OnSpecialSkillEnded(USkill_Special* Skill)
-{
-	if (ActiveSpecialSkill.Get() == Skill)
-	{
-		ActiveSpecialSkill = nullptr;
-		bIsSpecialSkillActiveForForm = false;
-	}
-}
-
-bool AKHU_GEBCharacter::IsFormChangeLocked() const
-{
-	// Range 조준 중
-	if (IsRangeAiming()) return true;
-
-	// Swift 다단히트 중
-	if (bIsSwiftStriking && ActiveSwiftSkill.IsValid()) return true;
-
-	// Guard 보호막 유지 중
-	if (bIsGuardSkillActiveForForm && ActiveGuardSkill.IsValid()) return true;
-
-	// Special 흑안개 유지 중
-	if (bIsSpecialSkillActiveForForm && ActiveSpecialSkill.IsValid()) return true;
-
-	return false;
 }
 
 /*Guard Form일 때 움직임 고정하는 함수*/
@@ -902,7 +800,7 @@ void AKHU_GEBCharacter::RefreshRotationMode()
 		bShouldUseControllerYaw = true;
 	}
 
-	if (bIsRangeAiming)
+	if (SkillManager && SkillManager->IsRangeAiming())
 	{
 		bShouldUseControllerYaw = true;
 	}

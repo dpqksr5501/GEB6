@@ -9,6 +9,7 @@
 #include "Engine/OverlapResult.h"
 #include "KHU_GEBCharacter.h"
 #include "HealthComponent.h"
+#include "SkillManagerComponent.h"
 
 void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1);
 
@@ -56,11 +57,15 @@ void USkill_Special::ActivateSkill()
 
     bIsActive = true;
 
+    if (USkillManagerComponent* Manager = GetSkillManager())
+    {
+        Manager->OnSpecialSkillStarted(this);
+    }
+
     // 1) 플레이어 이동속도 배율 적용
     if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
     {
         CachedOwnerChar = OwnerChar;
-        OwnerChar->OnSpecialSkillStarted(this);
         OwnerChar->SetSkillSpeedMultiplier(SelfMoveSpeedMultiplier);
     }
 
@@ -245,9 +250,9 @@ void USkill_Special::EndSpecial()
 
     bIsActive = false;
 
-    if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(GetOwner()))
+    if (USkillManagerComponent* Manager = GetSkillManager())
     {
-        OwnerChar->OnSpecialSkillEnded(this);
+        Manager->OnSpecialSkillEnded(this);
     }
 
     UWorld* World = GetWorld();

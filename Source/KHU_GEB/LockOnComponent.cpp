@@ -6,15 +6,16 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "HealthComponent.h"
 #include "KHU_GEBCharacter.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "HealthComponent.h"
+#include "Skills/SkillManagerComponent.h"
 
 ULockOnComponent::ULockOnComponent()
 {
@@ -53,9 +54,9 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// --- Range 조준 중이면 카메라 회전은 Range 스킬에 맡긴다 ---
 	if (AActor* Owner = GetOwner())
 	{
-		if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+		if (USkillManagerComponent* Manager = Owner->GetComponentByClass<USkillManagerComponent>())
 		{
-			if (PlayerChar->IsRangeAiming())
+			if (Manager->IsRangeAiming())
 			{
 				// 락온 타겟은 유지하지만, 카메라 회전은 건드리지 않음
 				return;

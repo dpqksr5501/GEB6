@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "Engine/OverlapResult.h"
 #include "KHU_GEBCharacter.h"
+#include "SkillManagerComponent.h"
 
 void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -40,9 +41,9 @@ void USkill_Swift::ActivateSkill()
     // 쿨타임 시작 + 마나 1회 소모.
     Super::ActivateSkill();
 
-    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    if (USkillManagerComponent* Manager = GetSkillManager())
     {
-        PlayerChar->OnSwiftStrikeStarted(this);
+        Manager->OnSwiftStrikeStarted(this);
     }
 
     // ----- 시작/끝 위치 계산 -----
@@ -146,9 +147,9 @@ void USkill_Swift::ActivateSkill()
     {
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] No targets found for multi hit."));
 
-        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        if (USkillManagerComponent* Manager = GetSkillManager())
         {
-            PlayerChar->OnSwiftStrikeEnded(this);
+            Manager->OnSwiftStrikeEnded(this);
         }
     }
 }
@@ -163,9 +164,9 @@ void USkill_Swift::StopSkill()
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
     }
 
-    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    if (USkillManagerComponent* Manager = GetSkillManager())
     {
-        PlayerChar->OnSwiftStrikeEnded(this);
+        Manager->OnSwiftStrikeEnded(this);
     }
 
     Super::StopSkill();
@@ -179,9 +180,9 @@ void USkill_Swift::HandleSwiftDamageTick()
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
 
-        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        if (USkillManagerComponent* Manager = GetSkillManager())
         {
-            PlayerChar->OnSwiftStrikeEnded(this);
+            Manager->OnSwiftStrikeEnded(this);
         }
 
         return;
@@ -194,9 +195,9 @@ void USkill_Swift::HandleSwiftDamageTick()
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
 
-        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        if (USkillManagerComponent* Manager = GetSkillManager())
         {
-            PlayerChar->OnSwiftStrikeEnded(this);
+            Manager->OnSwiftStrikeEnded(this);
         }
 
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit finished."));
@@ -237,9 +238,9 @@ void USkill_Swift::HandleSwiftDamageTick()
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
 
-        if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+        if (USkillManagerComponent* Manager = GetSkillManager())
         {
-            PlayerChar->OnSwiftStrikeEnded(this);
+            Manager->OnSwiftStrikeEnded(this);
         }
 
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit stopped (no more targets)."));
