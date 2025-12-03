@@ -7,7 +7,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
-#include "MonsterBase.h"
 #include "KHU_GEBCharacter.h"
 #include "Enemy_AI/EnemyAnimIntance.h"
 #include "Enemy_AI/Enemy_Dragon.h"
@@ -41,6 +40,10 @@ void UJumpComponent::BeginPlay()
 		if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter))
 		{
 			SwiftSpinRoot = Player->GetMeshRoot();
+		}
+		else if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
+		{
+			SwiftSpinRoot = Enemy->GetMeshRoot();
 		}
 
 		// 혹시 MeshRoot를 못 찾았으면 마지막 fallback으로 Mesh 사용

@@ -76,4 +76,8 @@ protected:
 	// 죽음
 	UFUNCTION(BlueprintCallable)
 	void OnDeath();
+
+public:
+	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
+
 };
