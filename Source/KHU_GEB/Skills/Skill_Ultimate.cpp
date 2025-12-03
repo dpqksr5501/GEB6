@@ -15,7 +15,7 @@
 #include "HealthComponent.h"
 #include "FormDefinition.h"
 
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1);
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount);
 
 void USkill_Ultimate::BeginPlay()
 {

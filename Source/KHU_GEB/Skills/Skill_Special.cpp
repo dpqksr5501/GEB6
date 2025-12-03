@@ -11,7 +11,7 @@
 #include "HealthComponent.h"
 #include "SkillManagerComponent.h"
 
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount = 1);
+void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount);
 
 void USkill_Special::InitializeFromDefinition(const USkillDefinition* Def)
 {

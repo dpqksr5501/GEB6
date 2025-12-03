@@ -2,8 +2,8 @@
 
 #include "Enemy_AI/Enemy_Dragon.h"
 #include "Skills/Skill_Range.h"
+#include "Skills/FireballProjectile.h"
 #include "FormDefinition.h"
-#include "FireballProjectile.h"
 
 AEnemy_Dragon::AEnemy_Dragon()
 {

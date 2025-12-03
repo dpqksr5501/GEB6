@@ -242,8 +242,8 @@ void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float Dama
     FDamageSpec Spec;
     Spec.RawDamage = DamagePerTick;
     Spec.bIgnoreDefense = true;     // 방어력 무시
-    Spec.bPeriodic = true;     // 주기적(DoT) 플래그
-    Spec.bFixedDot = true;     // 고정 도트 모드 ON
+    Spec.bPeriodic = true;          // 주기적(DoT) 플래그
+    Spec.bFixedDot = true;          // 고정 도트 모드 ON
     Spec.HitCount = HitCount;
     Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
     Spec.SourceSkill = SourceSkill;
