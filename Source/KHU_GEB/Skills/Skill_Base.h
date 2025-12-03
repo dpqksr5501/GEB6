@@ -15,8 +15,8 @@ class KHU_GEB_API USkill_Base : public USkillBase
     GENERATED_BODY()
 
 public:
-    /*virtual void ActivateSkill() override;*/
+    USkill_Base();
 
-private:
-
+    /** Base 스킬 사용 시: 몽타주 재생 + 시전자 중심 구형 범위 데미지 */
+    virtual void ActivateSkill() override;
 };
