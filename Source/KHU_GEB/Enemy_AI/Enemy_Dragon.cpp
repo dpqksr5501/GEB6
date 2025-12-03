@@ -4,6 +4,7 @@
 #include "Skills/Skill_Range.h"
 #include "Skills/FireballProjectile.h"
 #include "FormDefinition.h"
+#include "Skills/Skill_Ultimate.h"
 
 AEnemy_Dragon::AEnemy_Dragon()
 {
@@ -51,5 +52,30 @@ void AEnemy_Dragon::ActivateSkill()
 	RangeSkill->StopSkill(); // 사거리 스킬은 즉시 정지
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Dragon] Range skill component activated!"));
+}
+
+void AEnemy_Dragon::ActivateUltimate()
+{	
+
+	// 1. 스킬 컴포넌트 가져오기
+	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Ultimate);
+	if (!Skill) return;
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Dragon] Activating Ultimate Skill..."));
+	USkill_Ultimate* RangeSkill = Cast<USkill_Ultimate>(Skill);
+	if (!RangeSkill) return;
+
+	// InitializeFromDefinition 호출 >> 현재 스킬 기본 값을 세팅
+	if (DefaultFormDef && DefaultFormDef->SkillSet)
+	{
+		if (USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Ultimate))
+		{
+			RangeSkill->InitializeFromDefinition(SkillDef);
+		}
+	}
+
+	// 여기서 호출되는 것은 USkill_Range::ActivateSkill()
+	RangeSkill->ActivateSkill();
+
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Dragon] Range Ultimate component activated!"));
 }
 

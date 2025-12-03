@@ -19,6 +19,8 @@ public:
 
 	virtual void ActivateSkill() override;
 
+	virtual void ActivateUltimate() override;
+
 protected:
 	virtual void BeginPlay() override;
 };

@@ -226,10 +226,15 @@ EFormType USkillBase::GetCurrentFormType() const
         {
             return OwnerChar->FormManager->CurrentForm;
         }
+		else return EFormType::Base;
     }
 
     // Enemy 등 다른 타입에서 FormManager를 안 쓰는 경우를 대비한 기본값
-    return EFormType::Base;
+	else if (const AEnemy_Base* EnemyChar = Cast<AEnemy_Base>(GetOwner()))
+    {
+        return EnemyChar->DefaultFormDef ? EnemyChar->DefaultFormDef->FormType : EFormType::Base;
+    }
+	else return EFormType::Base;
 }
 
 void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount)

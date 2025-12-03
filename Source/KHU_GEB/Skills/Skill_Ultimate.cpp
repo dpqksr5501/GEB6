@@ -59,6 +59,7 @@ bool USkill_Ultimate::CanActivate() const
 
 void USkill_Ultimate::ActivateSkill()
 {
+	UE_LOG(LogTemp, Log, TEXT("[Skill_Ultimate] ActivateSkill called"));
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
     if (!World || !Owner) return;

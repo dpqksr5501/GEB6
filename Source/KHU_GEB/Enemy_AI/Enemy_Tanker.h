@@ -18,6 +18,7 @@ public:
 	AEnemy_Tanker();
 
 	virtual void ActivateSkill() override;
+	virtual void ActivateUltimate() override;
 	virtual void Tick(float DeltaTime) override;
 
 	// TakeDamage를 오버라이드하여 Guard 스킬의 배리어 처리

@@ -3,6 +3,7 @@
 #include "Enemy_AI/Enemy_Tanker.h"
 #include "Skills/Skill_Guard.h"
 #include "FormDefinition.h"
+#include "Skills/Skill_Ultimate.h"
 
 AEnemy_Tanker::AEnemy_Tanker()
 {
@@ -95,8 +96,6 @@ void AEnemy_Tanker::ActivateSkill()
 		}
 	}
 	
-	// 마나 검사를 해서 꺼놨음. 문제가 되면 키죠
-	//if (!GuardSkill->CanActivate()) return; 
 
 	// 여기서 호출되는 것은 USkill_Guard::ActivateSkill()
 	GuardSkill->ActivateSkill(); 
@@ -106,5 +105,38 @@ void AEnemy_Tanker::ActivateSkill()
 	CachedGuardSkill = GuardSkill;
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Guard skill component activated!"));
+}
+
+void AEnemy_Tanker::ActivateUltimate()
+{
+	// 1. 스킬 컴포넌트 가져오기
+	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Ultimate);
+	if (!Skill)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Enemy_Tanker] No skill found in Ultimate slot."));
+		return;
+	}
+
+	USkill_Ultimate* GuardSkill = Cast<USkill_Ultimate>(Skill);
+	if (!GuardSkill)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Enemy_Tanker] Skill is not USkill_Guard."));
+		return;
+	}
+
+	// InitializeFromDefinition 호출 >> 현재 스킬 기본 값을 세팅
+	if (DefaultFormDef && DefaultFormDef->SkillSet)
+	{
+		const USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Ultimate);
+		if (SkillDef)
+		{
+			GuardSkill->InitializeFromDefinition(SkillDef);
+		}
+	}
+
+
+	// 여기서 호출되는 것은 USkill_Guard::ActivateSkill()
+	GuardSkill->ActivateSkill();
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Guard Ultimate component activated!"));
 }
 

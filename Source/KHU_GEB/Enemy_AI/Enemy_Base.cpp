@@ -127,6 +127,14 @@ void AEnemy_Base::ActivateSkill()
 		*GetClass()->GetName());
 }
 
+// 기본 구현 (하위 클래스가 오버라이드하지 않으면 이게 호출됨)
+void AEnemy_Base::ActivateUltimate()
+{
+	UE_LOG(LogTemp, Warning,
+		TEXT("[Enemy_Base] ActivateUltimate called but not overridden! Class: %s"),
+		*GetClass()->GetName());
+}
+
 // 다른 Actor의 ApplyDamage에 의해 호출됨
 float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {

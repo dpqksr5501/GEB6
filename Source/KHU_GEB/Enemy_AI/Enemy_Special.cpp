@@ -3,6 +3,7 @@
 #include "Enemy_AI/Enemy_Special.h"
 #include "Skills/Skill_Special.h"
 #include "FormDefinition.h"
+#include "Skills/Skill_Ultimate.h"
 
 AEnemy_Special::AEnemy_Special()
 {
@@ -38,5 +39,29 @@ void AEnemy_Special::ActivateSkill()
 	SpecialSkill->ActivateSkill(); 
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Special] Special skill component activated!"));
+}
+
+void AEnemy_Special::ActivateUltimate()
+{
+	// 1. 스킬 컴포넌트 가져오기
+	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Ultimate);
+	if (!Skill) return;
+
+	USkill_Ultimate* SpecialSkill = Cast<USkill_Ultimate>(Skill);
+	if (!SpecialSkill) return;
+
+	// InitializeFromDefinition 호출 >> 현재 스킬 기본 값을 세팅
+	if (DefaultFormDef && DefaultFormDef->SkillSet)
+	{
+		if (USkillDefinition* SkillDef = DefaultFormDef->SkillSet->Skills.FindRef(ESkillSlot::Ultimate))
+		{
+			SpecialSkill->InitializeFromDefinition(SkillDef);
+		}
+	}
+
+	// 여기서 호출되는 것은 USkill_Range::ActivateSkill()
+	SpecialSkill->ActivateSkill();
+
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Special] Special Ultimate component activated!"));
 }
 
