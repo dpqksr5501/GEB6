@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h" // ApplyDamage용
 #include "FormDefinition.h" // EFormType
 #include "KHU_GEBCharacter.h" // GetMesh()를 위해 필요시
+#include "Enemy_AI/Enemy_Base.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -106,12 +107,9 @@ void UWeaponComponent::EnableCollision()
 	// 현재 폼이 가진 모든 콜리전 볼륨(히트박스)을 활성화
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
 		if (Collider)
 		{
 			Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			// 디버깅 메시지 각 콜리전 활성화 로그 UE_LOG로
-			UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
 
 		}
 	}
@@ -141,9 +139,18 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	// UE_LOG 디버깅용 OnAttackOverlap 진입 로그
 	UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] OnAttackOverlap triggered with %s"), *GetNameSafe(OtherActor));
+	
 	AActor* Owner = GetOwner();
 	if (!Owner || OtherActor == Owner) return;
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
+
+	// [추가] Enemy가 Enemy를 공격하지 못하도록 체크
+	if (Owner->IsA(AEnemy_Base::StaticClass()) && 
+	    OtherActor->IsA(AEnemy_Base::StaticClass()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[WeaponComponent] Enemy hit another Enemy, ignoring"));
+		return;
+	}
 
 	// 데미지 적용 로직
 	float DamageToApply = 10.f; // (임시) TODO: UWeaponData나 UFormDefinition에서 가져와야 함
@@ -246,6 +253,7 @@ UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 	NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	NewBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	NewBox->SetHiddenInGame(false);
+	// 오너 이름과 함께 로그 출력
 	return NewBox;
 }
 
