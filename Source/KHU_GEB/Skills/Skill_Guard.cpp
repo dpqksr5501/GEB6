@@ -9,7 +9,7 @@
 #include "KHU_GEBCharacter.h"
 #include "HealthComponent.h" 
 #include "ManaComponent.h"
-#include "DrawDebugHelpers.h"
+#include "SkillManagerComponent.h"
 
 void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -76,9 +76,9 @@ void USkill_Guard::ActivateSkill()
 
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
 
-    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    if (USkillManagerComponent* Manager = GetSkillManager())
     {
-        PlayerChar->OnGuardSkillStarted(this);
+        Manager->OnGuardSkillStarted(this);
     }
 
     // 보호막 이펙트 켜기
@@ -157,9 +157,9 @@ void USkill_Guard::StopSkill()
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
 
-    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+    if (USkillManagerComponent* Manager = GetSkillManager())
     {
-        PlayerChar->OnGuardSkillEnded(this);
+        Manager->OnGuardSkillEnded(this);
     }
 
     //우클릭 떼면 몽타주 재생 해제

@@ -2,7 +2,13 @@
 
 
 #include "Skills/SkillManagerComponent.h"
-#include "Skills/SkillBase.h"
+#include "Skills/Skill_Base.h"
+#include "Skills/Skill_Range.h"
+#include "Skills/Skill_Swift.h"
+#include "Skills/Skill_Guard.h"
+#include "Skills/Skill_Special.h"
+#include "KHU_GEBCharacter.h"
+#include "LockOnComponent.h"
 
 USkillManagerComponent::USkillManagerComponent() {}
 
@@ -76,5 +82,118 @@ bool USkillManagerComponent::TryStop(ESkillSlot Slot)
 		return true;
 	}
 	UE_LOG(LogTemp, Warning, TEXT("[SkillManager] Stop failed. Slot=%d not equipped"), (int32)Slot);
+	return false;
+}
+
+void USkillManagerComponent::OnRangeAimingStarted(USkill_Range* Skill)
+{
+	bIsRangeAiming = true;
+	ActiveRangeSkill = Skill;
+
+	// 스킬 시작 시점에 현재 락온 타겟을 저장
+	auto Owner = GetOwner();
+	if (auto OwnerChar = Cast<ACharacter>(Owner))
+	{
+		if (auto PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
+		{
+			if (PlayerChar->LockOnComp)
+			{
+				SavedRangeLockOnTarget = PlayerChar->LockOnComp->GetCurrentTarget();
+			}
+			else
+			{
+				SavedRangeLockOnTarget = nullptr;
+			}
+		}
+	}
+}
+
+void USkillManagerComponent::OnRangeAimingEnded(USkill_Range* Skill)
+{
+	if (ActiveRangeSkill.Get() == Skill)
+	{
+		ActiveRangeSkill = nullptr;
+		bIsRangeAiming = false;
+	}
+
+	// 저장해 두었던 락온 타겟이 아직 유효하면 다시 락온
+	auto Owner = GetOwner();
+	if (auto OwnerChar = Cast<ACharacter>(Owner))
+	{
+		if (auto PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
+		{
+			if (PlayerChar->LockOnComp)
+			{
+				if (SavedRangeLockOnTarget.IsValid())
+				{
+					PlayerChar->LockOnComp->LockOnToTarget(SavedRangeLockOnTarget.Get());
+				}
+			}
+		}
+	}
+
+	// 한 번 쓰고 나면 정리
+	SavedRangeLockOnTarget = nullptr;
+}
+
+void USkillManagerComponent::OnSwiftStrikeStarted(USkill_Swift* Skill)
+{
+	ActiveSwiftSkill = Skill;
+	bIsSwiftStriking = true;
+}
+
+void USkillManagerComponent::OnSwiftStrikeEnded(USkill_Swift* Skill)
+{
+	if (ActiveSwiftSkill.Get() == Skill)
+	{
+		ActiveSwiftSkill = nullptr;
+		bIsSwiftStriking = false;
+	}
+}
+
+void USkillManagerComponent::OnGuardSkillStarted(USkill_Guard* Skill)
+{
+	ActiveGuardSkill = Skill;
+	bIsGuardSkillActiveForForm = true;
+}
+
+void USkillManagerComponent::OnGuardSkillEnded(USkill_Guard* Skill)
+{
+	if (ActiveGuardSkill.Get() == Skill)
+	{
+		ActiveGuardSkill = nullptr;
+		bIsGuardSkillActiveForForm = false;
+	}
+}
+
+void USkillManagerComponent::OnSpecialSkillStarted(USkill_Special* Skill)
+{
+	ActiveSpecialSkill = Skill;
+	bIsSpecialSkillActiveForForm = true;
+}
+
+void USkillManagerComponent::OnSpecialSkillEnded(USkill_Special* Skill)
+{
+	if (ActiveSpecialSkill.Get() == Skill)
+	{
+		ActiveSpecialSkill = nullptr;
+		bIsSpecialSkillActiveForForm = false;
+	}
+}
+
+bool USkillManagerComponent::IsFormChangeLocked() const
+{
+	// Range 조준 중
+	if (bIsRangeAiming) return true;
+
+	// Swift 다단히트 중
+	if (bIsSwiftStriking && ActiveSwiftSkill.IsValid()) return true;
+
+	// Guard 보호막 유지 중
+	if (bIsGuardSkillActiveForForm && ActiveGuardSkill.IsValid()) return true;
+
+	// Special 흑안개 유지 중
+	if (bIsSpecialSkillActiveForForm && ActiveSpecialSkill.IsValid()) return true;
+
 	return false;
 }

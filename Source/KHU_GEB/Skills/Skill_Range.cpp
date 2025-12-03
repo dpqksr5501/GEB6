@@ -9,6 +9,7 @@
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
+#include "SkillManagerComponent.h"
 #include "FireballProjectile.h"
 
 USkill_Range::USkill_Range()
@@ -75,6 +76,11 @@ void USkill_Range::ActivateSkill()
     AimMoveInput = FVector2D::ZeroVector;
     SetComponentTickEnabled(true);
 
+    if (USkillManagerComponent* Manager = GetSkillManager())
+    {
+        Manager->OnRangeAimingStarted(this);
+    }
+
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         const float Radius = GetCurrentTargetRadius();
@@ -116,9 +122,6 @@ void USkill_Range::ActivateSkill()
                     }
                 }
             }
-
-            // 캐릭터에게 "지금 Range 조준 중" 알리기 (기존 코드 유지)
-            PlayerChar->OnRangeAimingStarted(this);
         }
 
         CurrentTargetLocation = InitialLoc;
@@ -317,9 +320,9 @@ void USkill_Range::StopSkill()
             CleanupIndicator();
             SetComponentTickEnabled(false);
 
-            if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
+            if (USkillManagerComponent* Manager = GetSkillManager())
             {
-                PlayerChar->OnRangeAimingEnded(this);
+                Manager->OnRangeAimingEnded(this);
             }
         };
 

@@ -10,6 +10,7 @@
 
 class UManaComponent;
 class UHealthComponent;
+class USkillManagerComponent;
 class AActor;
 class AKHU_GEBCharacter;
 
@@ -25,6 +26,7 @@ public:
 	ESkillSlot Slot = ESkillSlot::Active;
 
 protected:
+
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Skill")
     FSkillParams Params;
 
@@ -32,9 +34,11 @@ protected:
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Skill")
     float NextAvailableTime = 0.f;
 
+    mutable TWeakObjectPtr<USkillManagerComponent> CachedManager;
+    USkillManagerComponent* GetSkillManager() const;
+
     // 캐릭터의 마나 컴포넌트 캐시
     mutable TWeakObjectPtr<UManaComponent> CachedManaComp;
-
     UManaComponent* GetManaComponent() const;
 
     // HealthComponent를 통해 스킬 데미지를 넣는 공통 헬퍼

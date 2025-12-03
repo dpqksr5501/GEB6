@@ -11,13 +11,32 @@
 #include "HealthComponent.h"
 #include "ManaComponent.h"
 #include "FormManagerComponent.h"
+#include "SkillManagerComponent.h"
 
 USkillBase::USkillBase() {}
+
+USkillManagerComponent* USkillBase::GetSkillManager() const
+{
+    if (CachedManager.IsValid())
+        return CachedManager.Get();
+
+
+    if (AActor* Owner = GetOwner())
+    {
+        if (USkillManagerComponent* Comp = Owner->FindComponentByClass<USkillManagerComponent>())
+        {
+            CachedManager = Comp;
+            return Comp;
+        }
+    }
+    return nullptr;
+}
 
 UManaComponent* USkillBase::GetManaComponent() const
 {
     if (CachedManaComp.IsValid())
         return CachedManaComp.Get();
+
 
     if (AActor* Owner = GetOwner())
     {
