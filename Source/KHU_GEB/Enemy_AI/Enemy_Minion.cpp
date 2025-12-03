@@ -3,3 +3,6 @@
 
 #include "Enemy_AI/Enemy_Minion.h"
 
+void AEnemy_Minion::BeginPlay() {
+	Super::BeginPlay();
+}

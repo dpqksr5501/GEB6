@@ -189,6 +189,9 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 
 	const float FinalDamage = Health->ApplyDamageSpec(Spec);
 
+	APawn* OwnerPawn = Cast<APawn>(Owner);
+	UGameplayStatics::ApplyDamage(OtherActor, FinalDamage, (OwnerPawn ? OwnerPawn->GetController() : nullptr), Owner, nullptr);
+
 	UE_LOG(LogTemp, Log,
 		TEXT("[WeaponComponent] %s hit %s for %.1f (final=%.1f)"),
 		*Owner->GetName(),

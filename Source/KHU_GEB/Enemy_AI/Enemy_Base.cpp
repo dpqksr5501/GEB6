@@ -142,7 +142,8 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		if (CurrentState != EEnemyState::EES_Attacking)
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Damaged);
-			HealthComp->ReduceHealth(ActualDamage);
+			// 중첩 감소 인해 주석 처리
+			// HealthComp->ReduceHealth(ActualDamage);
 			if (HealthComp->Health <= 0.f)
 			{
 				BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Dead);

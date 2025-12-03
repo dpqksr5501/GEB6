@@ -14,4 +14,6 @@ class KHU_GEB_API AEnemy_Minion : public AEnemy_Base
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void BeginPlay() override;
 };
