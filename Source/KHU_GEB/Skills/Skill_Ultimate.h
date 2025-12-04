@@ -117,7 +117,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialRadius = 600.f;
 
-    /** 플레이어에게 들어가는 방어무시 도트 데미지 (틱당) */
+    /** 플레이어에게 들어가는 도트 데미지 (틱당) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialSelfDotDamage = 30.f;
 
@@ -180,8 +180,8 @@ private:
 
     /** 소유자가 데미지를 받았을 때 콜백 → 피격 시 은신 해제 */
     UFUNCTION()
-    void HandleOwnerDamaged(float NewHealth, float FinalDamage, float RawDamage,
-        AActor* InstigatorActor, USkillBase* SourceSkill);
+    void HandleOwnerDamaged(float NewHealth, float RawDamage, float FinalDamage,
+        AActor* InstigatorActor, AActor* DamageCauser);
 
     // Guard용 헬퍼들
 

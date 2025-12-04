@@ -78,6 +78,10 @@ protected:
 	void OnDeath();
 
 public:
+	// 상대가 적인지 판정하는 함수
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool IsEnemyFor(const AActor* Other) const;
+
 	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
 
 };

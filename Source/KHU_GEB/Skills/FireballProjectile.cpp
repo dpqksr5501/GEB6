@@ -20,7 +20,6 @@ AFireballProjectile::AFireballProjectile()
     CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     CollisionComp->SetCollisionObjectType(ECC_WorldDynamic);
     CollisionComp->SetCollisionResponseToAllChannels(ECR_Block);
-    // 필요하다면 소환자 팀 등은 Ignore로 바꿔주세요.
 
     CollisionComp->SetNotifyRigidBodyCollision(true); // Hit 이벤트
     CollisionComp->SetGenerateOverlapEvents(true);    // Overlap 이벤트
@@ -138,7 +137,7 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
         }
         if (DirectHitActor)
         {
-            // 직접 맞은 대상은 폭발 데미지 중복 방지 (원하면 빼도 됨)
+            // 직접 맞은 대상은 폭발 데미지 중복 방지
             IgnoreActors.Add(DirectHitActor);
         }
 
@@ -168,8 +167,6 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
         );
 #endif
     }
-
-
 
     // 3) 폭발 이펙트
     if (ExplosionNS)

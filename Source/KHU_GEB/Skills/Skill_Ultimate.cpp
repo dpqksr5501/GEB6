@@ -14,8 +14,8 @@
 #include "DrawDebugHelpers.h"
 #include "HealthComponent.h"
 #include "FormDefinition.h"
-
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount);
+#include "KHU_GEBCharacter.h"
+#include "Enemy_AI/Enemy_Base.h" 
 
 void USkill_Ultimate::BeginPlay()
 {
@@ -297,26 +297,53 @@ void USkill_Ultimate::OnBreathTick()
 
     if (!bAnyHit) return;
 
-    // 한 틱에 같은 캐릭터 중복 타격 방지
-    TSet<ACharacter*> UniqueTargets;
+    // 한 틱에 같은 액터 중복 타격 방지
+    TSet<AActor*> UniqueTargets;
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
+
+    // InstigatorController (ApplyDamage용)
+    AController* InstigatorController = nullptr;
+    if (APawn* PawnOwner = Cast<APawn>(Owner))
+    {
+        InstigatorController = PawnOwner->GetController();
+    }
 
     for (const FOverlapResult& O : Overlaps)
     {
         AActor* Other = O.GetActor();
-        ACharacter* OtherChar = Cast<ACharacter>(Other);
-        if (!OtherChar || OtherChar == Owner) continue;
+        if (!Other || Other == Owner) continue;
 
-        if (UniqueTargets.Contains(OtherChar)) continue;
-        UniqueTargets.Add(OtherChar);
+        if (UniqueTargets.Contains(Other)) continue;
 
-        // 고정 도트 데미지 1회
-        ApplyFixedDotDamage(
-            this,
-            OtherChar,
+        // === 팀/타입 필터: 플레이어면 Enemy만, Enemy면 플레이어만 ===
+        if (bOwnerIsPlayer)
+        {
+            if (!Other->IsA<AEnemy_Base>()) continue;
+        }
+        else if (bOwnerIsEnemy)
+        {
+            if (!Other->IsA<AKHU_GEBCharacter>()) continue;
+        }
+
+        UniqueTargets.Add(Other);
+
+        // 틱당 일반 데미지 1회
+        UGameplayStatics::ApplyDamage(
+            Other,
             DamagePerTick,
-            1);
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
+
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Ultimate] Range breath tick: ApplyDamage %.1f to %s"),
+            DamagePerTick,
+            *GetNameSafe(Other));
     }
 }
+
 /*============================= Swift =============================*/
 
 void USkill_Ultimate::ActivateSwiftUltimate()
@@ -443,15 +470,12 @@ void USkill_Ultimate::OnAttackFromStealth()
 
 void USkill_Ultimate::HandleOwnerDamaged(
     float NewHealth,
-    float FinalDamage,
     float RawDamage,
+    float FinalDamage,
     AActor* InstigatorActor,
-    USkillBase* SourceSkill)
+    AActor* DamageCauser)
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth broken by taking damage."));
@@ -464,10 +488,13 @@ void USkill_Ultimate::ActivateGuardUltimate()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
+
+    AController* InstigatorController = nullptr;
+    if (APawn* PawnOwner = Cast<APawn>(Owner)) { InstigatorController = PawnOwner->GetController(); }
 
     const FVector Origin = Owner->GetActorLocation();
     const FVector Forward = Owner->GetActorForwardVector();
@@ -554,20 +581,16 @@ void USkill_Ultimate::ActivateGuardUltimate()
         // 2) 데미지 부여
         if (GuardDamage > 0.f)
         {
-            UHealthComponent* Health = TargetChar->FindComponentByClass<UHealthComponent>();
-            if (Health)
-            {
-                FDamageSpec Spec;
-                Spec.RawDamage = GuardDamage;
-                Spec.bIgnoreDefense = false;              // 기절용이라 방어력 적용
-                Spec.bPeriodic = false;
-                Spec.HitCount = 1;
-                Spec.bFixedDot = false;
-                Spec.Instigator = Owner;
-                Spec.SourceSkill = this;
+            // 팀 필터도 여기서 한 번 더 할 수 있음 (선택 사항)
+            if (bOwnerIsPlayer && !TargetChar->IsA<AEnemy_Base>()) { /*continue;*/ }
+            if (bOwnerIsEnemy && !TargetChar->IsA<AKHU_GEBCharacter>()) { /*continue;*/ }
 
-                Health->ApplyDamageSpec(Spec);           // 기존 시스템 사용 :contentReference[oaicite:5]{index=5}
-            }
+            UGameplayStatics::ApplyDamage(
+                TargetChar,
+                GuardDamage,
+                InstigatorController,
+                Owner,
+                UDamageType::StaticClass());
         }
 
         // 3) 추락 + 기절(속박)
@@ -768,10 +791,7 @@ void USkill_Ultimate::OnSpecialDurationEnded()
 void USkill_Ultimate::OnSpecialSelfDotTick()
 {
     UWorld* World = GetWorld();
-    if (!World)
-    {
-        return;
-    }
+    if (!World) return;
 
     // 0번 플레이어 캐릭터 (주인공)
     ACharacter* PlayerChar = Cast<ACharacter>(
@@ -786,12 +806,21 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
 
     if (SpecialSelfDotDamage > 0.f)
     {
-        // HealthComponent 쪽 static 헬퍼 (방어무시, 고정 도트 데미지)
-        ApplyFixedDotDamage(
-            this,
+        // 도트도 결국 "일반 데미지"를 주기적으로 넣는 형태
+        // InstigatorController는 이 스킬의 소유자 기준
+        AActor* Owner = GetOwner();
+        AController* InstigatorController = nullptr;
+        if (APawn* PawnOwner = Cast<APawn>(Owner))
+        {
+            InstigatorController = PawnOwner->GetController();
+        }
+
+        UGameplayStatics::ApplyDamage(
             PlayerChar,
             SpecialSelfDotDamage,
-            1);
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
     }
 
     --SpecialSelfDotTicksRemaining;

@@ -126,7 +126,7 @@ void USkill_Range::ActivateSkill()
 
         CurrentTargetLocation = InitialLoc;
 
-        // --- 3) 여기서 지면으로 스냅 (기존 코드 재사용) ---
+        // --- 3) 여기서 지면으로 스냅 ---
         const FVector TraceStart = CurrentTargetLocation + FVector(0.f, 0.f, GroundTraceHalfHeight);
         const FVector TraceEnd = CurrentTargetLocation - FVector(0.f, 0.f, GroundTraceHalfHeight);
 
@@ -155,7 +155,7 @@ void USkill_Range::ActivateSkill()
     // 범위 표시 이펙트 스폰/갱신
     SpawnOrUpdateIndicator();
 
-    // 입에서 나가는 캐스팅 이펙트 (원하시면 그대로 유지)
+    // 입에서 나가는 캐스팅 이펙트
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
         if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
@@ -393,7 +393,7 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
 
     UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned toward target."));
 
-    // 데미지/범위 세팅 (기존 로직 유지)
+    // 데미지/범위 세팅
     const float BaseDamage = Params.Damage;
     Fireball->DirectDamage = BaseDamage * 1.0f;
     Fireball->ExplosionDamage = BaseDamage * 0.5f;
@@ -533,19 +533,6 @@ void USkill_Range::SpawnDefaultProjectile()
     }
 }
 
-float USkill_Range::GetCurrentTargetRadius() const
-{
-    // 이제 SkillDefinition.Params.Range 는 "폭발 반경"만 쓰고
-    // 조준 원 크기는 이 값만 사용합니다.
-    return TargetRadius;
-}
-
-float USkill_Range::GetMaxAimDistance() const
-{
-    return MaxAimDistance;
-}
-
-void USkill_Range::HandleAimMoveInput(const FVector2D& Input)
-{
-    AimMoveInput = Input;
-}
+float USkill_Range::GetCurrentTargetRadius() const { return TargetRadius; }
+float USkill_Range::GetMaxAimDistance() const { return MaxAimDistance; }
+void USkill_Range::HandleAimMoveInput(const FVector2D& Input) { AimMoveInput = Input; }
