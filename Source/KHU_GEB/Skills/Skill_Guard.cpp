@@ -9,6 +9,7 @@
 #include "KHU_GEBCharacter.h"
 #include "ManaComponent.h"
 #include "SkillManagerComponent.h"
+#include "Enemy_Base.h"
 
 void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -170,6 +171,15 @@ void USkill_Guard::StopSkill()
             Anim->Montage_Stop(0.2f, nullptr);
         }
     }
+    if (AEnemy_Base* OwnerChar = Cast<AEnemy_Base>(Owner))
+    {
+        if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+        {
+            // 현재 재생 중인 몽타주가 있다면 0.2초 동안 보간 멈춤
+            Anim->Montage_Stop(0.2f, nullptr);
+        }
+    }
+
 
     // 이펙트 끄기
     if (SpawnedNS)

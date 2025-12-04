@@ -551,8 +551,26 @@ void UJumpComponent::HandleSwiftReleased()
 
 void UJumpComponent::HandleGuardPressed()
 {	
-	// 쿨타임 중이거나 이미 끌어당기는 중이면 무시
-	if (!bCanGuardPull || bGuardPullActive) return;
+	// Enemy_Base인 경우 쿨타임 무시, 그 외 액터는 쿨타임 체크
+	if (AEnemy_Base* EnemyActor = Cast<AEnemy_Base>(CachedCharacter))
+	{
+		// Enemy_Base는 쿨타임 무시하고 진행 (단, 이미 끌어당김이 활성화된 경우는 중복 실행 방지)
+		if (bGuardPullActive)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Enemy_Base already pulling, skipping"));
+			return;
+		}
+	}
+	else
+	{
+		// 플레이어나 다른 액터는 기존 쿨타임 체크 유지
+		if (!bCanGuardPull || bGuardPullActive)
+		{
+			return;
+		}
+	}
+
+
 	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Attempting to start Guard Pull"));
 	UWorld* World = GetWorld();
 	if (!World) return;

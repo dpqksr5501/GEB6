@@ -148,7 +148,15 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 	AActor* Owner = GetOwner();
 	if (!Owner || !OtherActor || OtherActor == Owner) return;
 
-	// 한 스윙 동안 이미 맞은 액터는 무시
+	// Enemy���� ���� ����
+	if (Owner->IsA(AEnemy_Base::StaticClass()) &&
+		OtherActor->IsA(AEnemy_Base::StaticClass()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[WeaponComponent] Enemy hit Enemy, ignoring"));
+		return;
+	}
+
+	// �� ���� ���� �̹� ���� ���ʹ� ����
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
 
 	// 1) 우선 피격 대상이 '데미지를 받을 수 있는' 대상인지 확인 (HealthComponent 존재 여부)

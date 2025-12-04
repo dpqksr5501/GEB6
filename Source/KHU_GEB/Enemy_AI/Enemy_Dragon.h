@@ -21,6 +21,8 @@ public:
 
 	virtual void ActivateSkill() override;
 
+	virtual void ActivateUltimate() override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dragon|Skill")
 	TSubclassOf<AFireballProjectile> FireballClass;
 
