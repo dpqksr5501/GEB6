@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "WeaponData.h" //Ãß°¡
+#include "WeaponData.h" //ì¶”ê°€
 #include "WeaponComponent.generated.h"
 
 class UBoxComponent;
@@ -13,8 +13,8 @@ class UShapeComponent;
 class UWeaponData;
 
 /**
- * ¹«±âÀÇ ¹°¸®ÀûÀÎ Äİ¸®Àü°ú ¿À¹ö·¦ ÀÌº¥Æ®¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.
- * UAttackComponent´Â 'ÄŞº¸ ·ÎÁ÷'¸¸ ´ã´çÇÏ°í, ÀÌ ÄÄÆ÷³ÍÆ®°¡ '¹°¸® ÆÇÁ¤'À» ´ã´çÇÕ´Ï´Ù.
+ * ë¬´ê¸°ì˜ ë¬¼ë¦¬ì ì¸ ì½œë¦¬ì „ê³¼ ì˜¤ë²„ë© ì´ë²¤íŠ¸ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸ì…ë‹ˆë‹¤.
+ * UAttackComponentëŠ” 'ì½¤ë³´ ë¡œì§'ë§Œ ë‹´ë‹¹í•˜ê³ , ì´ ì»´í¬ë„ŒíŠ¸ê°€ 'ë¬¼ë¦¬ íŒì •'ì„ ë‹´ë‹¹í•©ë‹ˆë‹¤.
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KHU_GEB_API UWeaponComponent : public UActorComponent
@@ -25,15 +25,15 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
-	// UAttackComponentÀÇ ¾Ö´Ô ³ëÆ¼ÆÄÀÌ(StartAttack)¿¡¼­ È£ÃâµÉ ÇÔ¼ö
+	// UAttackComponentì˜ ì• ë‹˜ ë…¸í‹°íŒŒì´(StartAttack)ì—ì„œ í˜¸ì¶œë  í•¨ìˆ˜
 	void EnableCollision();
 
-	// UAttackComponentÀÇ ¾Ö´Ô ³ëÆ¼ÆÄÀÌ(EndAttack)¿¡¼­ È£ÃâµÉ ÇÔ¼ö
+	// UAttackComponentì˜ ì• ë‹˜ ë…¸í‹°íŒŒì´(EndAttack)ì—ì„œ í˜¸ì¶œë  í•¨ìˆ˜
 	void DisableCollision();
 
 	/**
-	 * Ä³¸¯ÅÍÀÇ OnFormChanged°¡ È£ÃâµÉ ¶§, ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
-	 * ÇöÀç Æû¿¡ ¸Â´Â ¹«±â(ÀÇ È÷Æ®¹Ú½º)¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+	 * ìºë¦­í„°ì˜ OnFormChangedê°€ í˜¸ì¶œë  ë•Œ, ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+	 * í˜„ì¬ í¼ì— ë§ëŠ” ë¬´ê¸°(ì˜ íˆíŠ¸ë°•ìŠ¤)ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 	 */
 	void SetWeaponDefinition(const UWeaponData* Def);
 
@@ -41,27 +41,27 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	/** ¹Ì¸® »ı¼ºÇØ µĞ ±¸Ã¼ Äİ¸®Àü Ç® */
+	/** ë¯¸ë¦¬ ìƒì„±í•´ ë‘” êµ¬ì²´ ì½œë¦¬ì „ í’€ */
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<USphereComponent>> SphereColliderPool;
 
-	/** ¹Ì¸® »ı¼ºÇØ µĞ ¹Ú½º Äİ¸®Àü Ç® */
+	/** ë¯¸ë¦¬ ìƒì„±í•´ ë‘” ë°•ìŠ¤ ì½œë¦¬ì „ í’€ */
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UBoxComponent>> BoxColliderPool;
 
-	/** ÇöÀç Æû¿¡¼­ 'È°¼ºÈ­'µÇ¾î »ç¿ë ÁßÀÎ Äİ¸®Àü ¸ñ·Ï (Ç®ÀÇ ÀÏºÎ) */
+	/** í˜„ì¬ í¼ì—ì„œ 'í™œì„±í™”'ë˜ì–´ ì‚¬ìš© ì¤‘ì¸ ì½œë¦¬ì „ ëª©ë¡ (í’€ì˜ ì¼ë¶€) */
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UShapeComponent>> ActiveColliders;
 
-	/** ÀÌ ½ºÀ®(Enable~Disable »çÀÌ)¿¡¼­ ÀÌ¹Ì ¸ÂÀº ¾×ÅÍ ¸ñ·Ï (Áßº¹ È÷Æ® ¹æÁö) */
+	/** ì´ ìŠ¤ìœ™(Enable~Disable ì‚¬ì´)ì—ì„œ ì´ë¯¸ ë§ì€ ì•¡í„° ëª©ë¡ (ì¤‘ë³µ íˆíŠ¸ ë°©ì§€) */
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<AActor>> HitActorsThisSwing;
 
-	/** ÇöÀç ÀåÂøµÈ ¹«±â µ¥ÀÌÅÍ (Ä³½Ã¿ë) */
+	/** í˜„ì¬ ì¥ì°©ëœ ë¬´ê¸° ë°ì´í„° (ìºì‹œìš©) */
 	UPROPERTY(Transient)
 	const UWeaponData* CurrentWeaponDef = nullptr;
 
-	/** ¼ÒÀ¯ÀÚ(Ä³¸¯ÅÍ)ÀÇ ½ºÄÌ·¹Å» ¸Ş½Ã (Ä³½Ã¿ë) */
+	/** ì†Œìœ ì(ìºë¦­í„°)ì˜ ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ (ìºì‹œìš©) */
 	UPROPERTY(Transient)
 	TWeakObjectPtr<USkeletalMeshComponent> CachedMesh;
 
@@ -70,18 +70,18 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	/** Ç®¿¡¼­ »ç¿ë °¡´ÉÇÑ ¹Ú½º Äİ¸®ÀüÀ» °¡Á®¿É´Ï´Ù. */
+	/** í’€ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ë°•ìŠ¤ ì½œë¦¬ì „ì„ ê°€ì ¸ì˜µë‹ˆë‹¤. */
 	UBoxComponent* GetPooledBoxCollider();
-	/** Ç®¿¡¼­ »ç¿ë °¡´ÉÇÑ ±¸Ã¼ Äİ¸®ÀüÀ» °¡Á®¿É´Ï´Ù. */
+	/** í’€ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ êµ¬ì²´ ì½œë¦¬ì „ì„ ê°€ì ¸ì˜µë‹ˆë‹¤. */
 	USphereComponent* GetPooledSphereCollider();
-	/** ¸ğµç È°¼º Äİ¸®ÀüÀÇ »ç¿ëÀ» ÁßÁöÇÏ°í Ç®·Î µÇµ¹¸³´Ï´Ù. */
+	/** ëª¨ë“  í™œì„± ì½œë¦¬ì „ì˜ ì‚¬ìš©ì„ ì¤‘ì§€í•˜ê³  í’€ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤. */
 	void DeactivateAllColliders();
-	/** Äİ¸®Àü Ç®À» »ı¼ºÇÕ´Ï´Ù. (³»ºÎ¿ë) */
+	/** ì½œë¦¬ì „ í’€ì„ ìƒì„±í•©ë‹ˆë‹¤. (ë‚´ë¶€ìš©) */
 	UBoxComponent* CreateNewBoxCollider();
 	USphereComponent* CreateNewSphereCollider();
 	void InitializeColliderPool(int32 PoolSize = 5);
 
-	/** [ÇÙ½É] UAttackComponent¿¡¼­ °¡Á®¿Â ¿À¹ö·¦ ÇÚµé·¯ */
+	/** [í•µì‹¬] UAttackComponentì—ì„œ ê°€ì ¸ì˜¨ ì˜¤ë²„ë© í•¸ë“¤ëŸ¬ */
 	UFUNCTION()
 	void OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

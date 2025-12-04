@@ -15,7 +15,7 @@ class KHU_GEB_API USkill_Swift : public USkillBase
     GENERATED_BODY()
 
 public:
-    /** 한 번 점멸할 때 이동할 거리 (SkillDefinition의 Range로 덮어씌워질 수 있음) */
+    /** 한 번 점멸할 때 이동할 거리 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float DashDistance = 0.f;
 
@@ -27,10 +27,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float BoxHalfHeight = 100.f;
 
-    /** 박스 데미지를 몇 번 샘플링할지 (클수록 같은 적에게 여러 번 데미지) */
+    /** Swift 타격 횟수 (항상 10타로 사용) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     int32 DamageSamples = 10;
 
+    /** 1타당 들어갈 일반 데미지 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     float DamagePerSample = 0.f;
 
@@ -46,7 +47,7 @@ public:
 private:
     /** Swift에 맞은 타겟들 (10타 동안 계속 두들길 대상) */
     UPROPERTY()
-    TArray<TWeakObjectPtr<ACharacter>> SwiftTargets;
+    TArray<TWeakObjectPtr<AActor>> SwiftTargets;
 
     /** 현재 몇 번째 타격인지 (1 ~ DamageSamples) */
     int32 CurrentHitIndex = 0;

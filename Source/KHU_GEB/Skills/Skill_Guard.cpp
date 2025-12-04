@@ -7,7 +7,6 @@
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
-#include "HealthComponent.h" 
 #include "ManaComponent.h"
 #include "SkillManagerComponent.h"
 
@@ -16,7 +15,7 @@ void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
     Super::InitializeFromDefinition(Def);
 
     if (Params.ManaCost > 0.f) { ManaPerShield = Params.ManaCost; }
-    if (Params.Damage > 0.f) { DamagePerSheild = Params.Damage; }
+    if (Params.Damage > 0.f) { DamagePerShield = Params.Damage; }
     if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
 }
 
@@ -195,9 +194,9 @@ void USkill_Guard::StopSkill()
     }
 
     // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
-    if (World && Owner && ConsumedShields > 0 && DamagePerSheild > 0.f && !bEndedByDepletion)
+    if (World && Owner && ConsumedShields > 0 && DamagePerShield > 0.f && !bEndedByDepletion)
     {
-        const float TotalDamage = DamagePerSheild * ConsumedShields;
+        const float TotalDamage = DamagePerShield * ConsumedShields;
 
         TArray<AActor*> IgnoreActors;
         IgnoreActors.Add(Owner);
