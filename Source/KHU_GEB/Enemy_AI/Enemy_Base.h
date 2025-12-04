@@ -63,13 +63,10 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
-	UPROPERTY(BlueprintReadWrite, Category = "AI")
-	UBlackboardComponent* BlackboardComp;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Health")
 	UHealthComponent* HealthComp;
@@ -87,5 +84,9 @@ public:
 	bool IsEnemyFor(const AActor* Other) const;
 
 	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
+
+	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
+	UPROPERTY(BlueprintReadWrite, Category = "AI")
+	UBlackboardComponent* BlackboardComp;
 
 };

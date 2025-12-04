@@ -194,7 +194,8 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		else
 		{
 			UE_LOG(LogTemp, Warning,
-				TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed."));
+				TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed. Health after damage: %f"),
+				HealthComp->Health);
 		}
 	}
 	else
