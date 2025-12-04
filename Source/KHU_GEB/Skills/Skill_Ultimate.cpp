@@ -14,8 +14,8 @@
 #include "DrawDebugHelpers.h"
 #include "HealthComponent.h"
 #include "FormDefinition.h"
-
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount);
+#include "KHU_GEBCharacter.h"
+#include "Enemy_AI/Enemy_Base.h" 
 
 void USkill_Ultimate::BeginPlay()
 {
@@ -298,26 +298,53 @@ void USkill_Ultimate::OnBreathTick()
 
     if (!bAnyHit) return;
 
-    // 한 틱에 같은 캐릭터 중복 타격 방지
-    TSet<ACharacter*> UniqueTargets;
+    // 한 틱에 같은 액터 중복 타격 방지
+    TSet<AActor*> UniqueTargets;
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
+
+    // InstigatorController (ApplyDamage용)
+    AController* InstigatorController = nullptr;
+    if (APawn* PawnOwner = Cast<APawn>(Owner))
+    {
+        InstigatorController = PawnOwner->GetController();
+    }
 
     for (const FOverlapResult& O : Overlaps)
     {
         AActor* Other = O.GetActor();
-        ACharacter* OtherChar = Cast<ACharacter>(Other);
-        if (!OtherChar || OtherChar == Owner) continue;
+        if (!Other || Other == Owner) continue;
 
-        if (UniqueTargets.Contains(OtherChar)) continue;
-        UniqueTargets.Add(OtherChar);
+        if (UniqueTargets.Contains(Other)) continue;
 
-        // 고정 도트 데미지 1회
-        ApplyFixedDotDamage(
-            this,
-            OtherChar,
+        // === 팀/타입 필터: 플레이어면 Enemy만, Enemy면 플레이어만 ===
+        if (bOwnerIsPlayer)
+        {
+            if (!Other->IsA<AEnemy_Base>()) continue;
+        }
+        else if (bOwnerIsEnemy)
+        {
+            if (!Other->IsA<AKHU_GEBCharacter>()) continue;
+        }
+
+        UniqueTargets.Add(Other);
+
+        // 틱당 일반 데미지 1회
+        UGameplayStatics::ApplyDamage(
+            Other,
             DamagePerTick,
-            1);
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
+
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Ultimate] Range breath tick: ApplyDamage %.1f to %s"),
+            DamagePerTick,
+            *GetNameSafe(Other));
     }
 }
+
 /*============================= Swift =============================*/
 
 void USkill_Ultimate::ActivateSwiftUltimate()
@@ -376,10 +403,7 @@ void USkill_Ultimate::ActivateSwiftUltimate()
 
 void USkill_Ultimate::EndSwiftUltimate()
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UWorld* World = GetWorld();
     if (World)
@@ -432,10 +456,7 @@ void USkill_Ultimate::OnSwiftDurationEnded()
 
 void USkill_Ultimate::OnAttackFromStealth()
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth broken by attacking."));
@@ -444,15 +465,12 @@ void USkill_Ultimate::OnAttackFromStealth()
 
 void USkill_Ultimate::HandleOwnerDamaged(
     float NewHealth,
-    float FinalDamage,
     float RawDamage,
+    float FinalDamage,
     AActor* InstigatorActor,
-    USkillBase* SourceSkill)
+    AActor* DamageCauser)
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth broken by taking damage."));
@@ -465,10 +483,13 @@ void USkill_Ultimate::ActivateGuardUltimate()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
+
+    AController* InstigatorController = nullptr;
+    if (APawn* PawnOwner = Cast<APawn>(Owner)) { InstigatorController = PawnOwner->GetController(); }
 
     const FVector Origin = Owner->GetActorLocation();
     const FVector Forward = Owner->GetActorForwardVector();
@@ -555,20 +576,16 @@ void USkill_Ultimate::ActivateGuardUltimate()
         // 2) 데미지 부여
         if (GuardDamage > 0.f)
         {
-            UHealthComponent* Health = TargetChar->FindComponentByClass<UHealthComponent>();
-            if (Health)
-            {
-                FDamageSpec Spec;
-                Spec.RawDamage = GuardDamage;
-                Spec.bIgnoreDefense = false;              // 기절용이라 방어력 적용
-                Spec.bPeriodic = false;
-                Spec.HitCount = 1;
-                Spec.bFixedDot = false;
-                Spec.Instigator = Owner;
-                Spec.SourceSkill = this;
+            // 팀 필터도 여기서 한 번 더 할 수 있음 (선택 사항)
+            if (bOwnerIsPlayer && !TargetChar->IsA<AEnemy_Base>()) { /*continue;*/ }
+            if (bOwnerIsEnemy && !TargetChar->IsA<AKHU_GEBCharacter>()) { /*continue;*/ }
 
-                Health->ApplyDamageSpec(Spec);           // 기존 시스템 사용 :contentReference[oaicite:5]{index=5}
-            }
+            UGameplayStatics::ApplyDamage(
+                TargetChar,
+                GuardDamage,
+                InstigatorController,
+                Owner,
+                UDamageType::StaticClass());
         }
 
         // 3) 추락 + 기절(속박)
@@ -609,10 +626,7 @@ void USkill_Ultimate::ActivateGuardUltimate()
 
 void USkill_Ultimate::EndGuardStun(ACharacter* Target)
 {
-    if (!Target)
-    {
-        return;
-    }
+    if (!Target) return;
 
     if (UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement())
     {
@@ -631,10 +645,7 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
 
     if (!SpecialOrbClass)
     {
@@ -649,8 +660,11 @@ void USkill_Ultimate::ActivateSpecialUltimate()
     const FVector Forward = Owner->GetActorForwardVector();
     const FVector Right = Owner->GetActorRightVector();
 
-    // 오브 높이 약간 띄우기
     const float HeightOffset = 50.f;
+
+    // 오브의 스폰 위치를 저장할 배열
+    TArray<FVector> OrbLocations;
+    OrbLocations.Reserve(5);
 
     // 5개의 구체를 오망성 모양(원 위 5점)으로 배치
     for (int32 i = 0; i < 5; ++i)
@@ -661,7 +675,6 @@ void USkill_Ultimate::ActivateSpecialUltimate()
         const float X = FMath::Cos(AngleRad);
         const float Y = FMath::Sin(AngleRad);
 
-        // Right / Forward 기준으로 원형 배치
         FVector Offset = Right * (X * SpecialRadius)
             + Forward * (Y * SpecialRadius)
             + FVector(0.f, 0.f, HeightOffset);
@@ -680,17 +693,25 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 
         if (Orb)
         {
-            // 시전자에 붙여서 같이 이동하도록
-            Orb->AttachToActor(Owner,
+            Orb->AttachToActor(
+                Owner,
                 FAttachmentTransformRules::KeepWorldTransform);
 
             SpecialOrbs.Add(Orb);
 
-            // 파괴될 때 콜백
             Orb->OnDestroyed.AddDynamic(
                 this,
                 &USkill_Ultimate::HandleSpecialOrbDestroyed);
+
+            // 스폰된 위치 저장
+            OrbLocations.Add(SpawnLocation);
         }
+    }
+
+    // Orb들이 모두 생성된 뒤, 바닥에 오망성 그리기
+    if (bDrawSpecialPentagram && OrbLocations.Num() == 5)
+    {
+        DrawPentagramOnGround(OrbLocations);
     }
 
     // Special 지속시간 타이머
@@ -712,19 +733,13 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 void USkill_Ultimate::OnSpecialDurationEnded()
 {
     UWorld* World = GetWorld();
-    if (World)
-    {
-        World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle);
-    }
+    if (World) { World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle); }
 
     // 아직 살아있는 구체 수 세기
     int32 AliveCount = 0;
     for (TWeakObjectPtr<AActor>& WeakOrb : SpecialOrbs)
     {
-        if (AActor* Orb = WeakOrb.Get())
-        {
-            ++AliveCount;
-        }
+        if (AActor* Orb = WeakOrb.Get()) { ++AliveCount; }
     }
 
     // 사용 끝났으니 구체들은 제거
@@ -769,10 +784,7 @@ void USkill_Ultimate::OnSpecialDurationEnded()
 void USkill_Ultimate::OnSpecialSelfDotTick()
 {
     UWorld* World = GetWorld();
-    if (!World)
-    {
-        return;
-    }
+    if (!World) return;
 
     // 0번 플레이어 캐릭터 (주인공)
     ACharacter* PlayerChar = Cast<ACharacter>(
@@ -787,12 +799,21 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
 
     if (SpecialSelfDotDamage > 0.f)
     {
-        // HealthComponent 쪽 static 헬퍼 (방어무시, 고정 도트 데미지)
-        ApplyFixedDotDamage(
-            this,
+        // 도트도 결국 "일반 데미지"를 주기적으로 넣는 형태
+        // InstigatorController는 이 스킬의 소유자 기준
+        AActor* Owner = GetOwner();
+        AController* InstigatorController = nullptr;
+        if (APawn* PawnOwner = Cast<APawn>(Owner))
+        {
+            InstigatorController = PawnOwner->GetController();
+        }
+
+        UGameplayStatics::ApplyDamage(
             PlayerChar,
             SpecialSelfDotDamage,
-            1);
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
     }
 
     --SpecialSelfDotTicksRemaining;
@@ -804,24 +825,15 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
 
 void USkill_Ultimate::ApplyRootToPlayer(float Duration)
 {
-    if (Duration <= 0.f)
-    {
-        return;
-    }
+    if (Duration <= 0.f) return;
 
     UWorld* World = GetWorld();
-    if (!World)
-    {
-        return;
-    }
+    if (!World) return;
 
     ACharacter* PlayerChar = Cast<ACharacter>(
         UGameplayStatics::GetPlayerCharacter(World, 0));
 
-    if (!PlayerChar)
-    {
-        return;
-    }
+    if (!PlayerChar) return;
 
     SpecialRootedPlayer = PlayerChar;
 
@@ -846,10 +858,7 @@ void USkill_Ultimate::ApplyRootToPlayer(float Duration)
 void USkill_Ultimate::EndSpecialRoot()
 {
     UWorld* World = GetWorld();
-    if (World)
-    {
-        World->GetTimerManager().ClearTimer(SpecialRootTimerHandle);
-    }
+    if (World) { World->GetTimerManager().ClearTimer(SpecialRootTimerHandle); }
 
     if (ACharacter* PlayerChar = Cast<ACharacter>(SpecialRootedPlayer.Get()))
     {
@@ -864,6 +873,63 @@ void USkill_Ultimate::EndSpecialRoot()
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Special: player root ended."));
+}
+
+void USkill_Ultimate::DrawPentagramOnGround(const TArray<FVector>& OrbWorldLocations)
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+    if (OrbWorldLocations.Num() < 5) return;
+
+    // 1) 각 오브 위치를 바닥으로 투영 (라인트레이스)
+    TArray<FVector> GroundPoints;
+    GroundPoints.SetNum(5);
+
+    for (int32 i = 0; i < 5; ++i)
+    {
+        const FVector& P = OrbWorldLocations[i];
+
+        FVector Start = P + FVector(0.f, 0.f, 500.f);
+        FVector End = P - FVector(0.f, 0.f, 5000.f);
+
+        FHitResult Hit;
+        FCollisionQueryParams QueryParams(
+            SCENE_QUERY_STAT(SpecialPentagramTrace),
+            false,
+            nullptr);
+
+        if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, QueryParams))
+        {
+            GroundPoints[i] = Hit.ImpactPoint;      // 실제 바닥
+        }
+        else
+        {
+            // 바닥이 안 잡히면 그냥 위치의 Z를 약간 내린 값 사용
+            GroundPoints[i] = FVector(P.X, P.Y, P.Z - 50.f);
+        }
+    }
+
+    // 2) 오망성 연결 순서: 0 → 2 → 4 → 1 → 3 → 0
+    static const int32 StarOrder[6] = { 0, 2, 4, 1, 3, 0 };
+
+    const float LifeTime = SpecialDuration;  // Special 유지시간 동안 유지
+    const float Thickness = 6.f;
+
+    for (int32 i = 0; i < 5; ++i)
+    {
+        const FVector& A = GroundPoints[StarOrder[i]];
+        const FVector& B = GroundPoints[StarOrder[i + 1]];
+
+        DrawDebugLine(
+            World,
+            A,
+            B,
+            SpecialPentagramColor,
+            false,
+            LifeTime,
+            0,
+            Thickness);
+    }
 }
 
 void USkill_Ultimate::HandleSpecialOrbDestroyed(AActor* DestroyedActor)

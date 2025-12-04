@@ -7,8 +7,7 @@
 #include "Engine/OverlapResult.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/Actor.h"
-#include "KHU_GEBCharacter.h"
-#include "Enemy_Base.h"
+#include "Kismet/GameplayStatics.h"
 
 USkill_Base::USkill_Base()
 {
@@ -84,9 +83,13 @@ void USkill_Base::ActivateSkill()
     // 5) 한 번의 시전에서 같은 액터를 두 번 치지 않도록 Set 사용
     TSet<AActor*> UniqueTargets;
 
-    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
-    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
     const float RadiusSq = Radius * Radius;
+
+    // ApplyDamage에 쓸 InstigatorController 미리 계산
+    APawn* PawnOwner = Cast<APawn>(Owner);
+    AController* InstigatorController = PawnOwner ? PawnOwner->GetController() : nullptr;
+
+    const float DamageAmount = Params.Damage;
 
     for (const FOverlapResult& O : Overlaps)
     {
@@ -95,20 +98,7 @@ void USkill_Base::ActivateSkill()
 
         if (UniqueTargets.Contains(Other)) continue;
 
-        // 5-1) "적"만 필터링
-        if (bOwnerIsPlayer)
-        {
-            // 플레이어가 시전자면 Enemy만 맞음
-            if (!Other->IsA<AEnemy_Base>()) continue;
-        }
-        else if (bOwnerIsEnemy)
-        {
-            // 적이 시전자면 플레이어만 맞음
-            if (!Other->IsA<AKHU_GEBCharacter>()) continue;
-        }
-        // 둘 다 아니면(툴용 더미 Actor 등) 그냥 모두 맞게 해도 됨
-
-        // 시전자와 타겟의 XY 평면 거리만 사용
+        // 시전자와 타겟의 XY 평면 거리만 사용 (원형 판 느낌)
         const FVector Delta = Other->GetActorLocation() - Center;
         const float   DistSq2D = Delta.X * Delta.X + Delta.Y * Delta.Y;
 
@@ -120,21 +110,19 @@ void USkill_Base::ActivateSkill()
 
         UniqueTargets.Add(Other);
 
-        // 5-2) 스킬 데미지 적용
-        const float DamageAmount = Params.Damage;
-        const float Dealt = DealSkillDamage(
+        if (DamageAmount <= 0.f) continue;
+
+        // 5-2) 스킬 데미지 적용 – AActor::ApplyDamage 파이프라인 사용
+        UGameplayStatics::ApplyDamage(
             Other,
             DamageAmount,
-            /*bIgnoreDefense=*/false,
-            /*bPeriodic=*/false,
-            /*HitCount=*/1);
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
 
-        if (Dealt > 0.f)
-        {
-            UE_LOG(LogTemp, Log,
-                TEXT("[Skill_Base] Dealt %.1f damage to %s"),
-                Dealt,
-                *GetNameSafe(Other));
-        }
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Base] ApplyDamage %.1f to %s"),
+            DamageAmount,
+            *GetNameSafe(Other));
     }
 }

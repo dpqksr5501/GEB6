@@ -51,7 +51,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
     float SelfHealPerTick = 0.f;
 
-    /** 2초마다 흑안개 안의 적에게 들어갈 고정 피해 */
+    /** 2초마다 흑안개 안의 적에게 들어갈 데미지 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
     float DotDamagePerTick = 0.f;
 

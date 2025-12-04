@@ -117,7 +117,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialRadius = 600.f;
 
-    /** 플레이어에게 들어가는 방어무시 도트 데미지 (틱당) */
+    /** 플레이어에게 들어가는 도트 데미지 (틱당) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialSelfDotDamage = 30.f;
 
@@ -132,6 +132,14 @@ public:
     /** 소환할 오브(구체) 클래스 (BP에서 Health = 1 로 설정해두면 좋음) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     TSubclassOf<AActor> SpecialOrbClass;
+
+    /** 디버그: 오브 위치를 꼭짓점으로 하는 오망성을 바닥에 그릴지 여부 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
+    bool bDrawSpecialPentagram = true;
+
+    /** 오망성 라인 색상 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
+    FColor SpecialPentagramColor = FColor::Purple;
 
 protected:
     virtual void BeginPlay() override;
@@ -180,8 +188,8 @@ private:
 
     /** 소유자가 데미지를 받았을 때 콜백 → 피격 시 은신 해제 */
     UFUNCTION()
-    void HandleOwnerDamaged(float NewHealth, float FinalDamage, float RawDamage,
-        AActor* InstigatorActor, USkillBase* SourceSkill);
+    void HandleOwnerDamaged(float NewHealth, float RawDamage, float FinalDamage,
+        AActor* InstigatorActor, AActor* DamageCauser);
 
     // Guard용 헬퍼들
 
@@ -207,6 +215,9 @@ private:
 
     /** 속박 해제 */
     void EndSpecialRoot();
+
+    /** Orb 월드 위치들을 이용해, 바닥 위에 오망성(별) 라인을 그린다. */
+    void DrawPentagramOnGround(const TArray<FVector>& OrbWorldLocations);
 
     /** 구체가 파괴될 때 호출 (남은 구체 수 카운트용) */
     UFUNCTION()

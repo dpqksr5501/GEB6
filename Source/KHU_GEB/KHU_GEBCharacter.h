@@ -44,10 +44,6 @@ class AKHU_GEBCharacter : public ACharacter, public IMyAnimDataProvider //상속
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	/** Swift 폼으로 달릴 때 활성화될 나이아가라 이펙트입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	UNiagaraComponent* SwiftSprintVFX;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* MeshRoot;
 
@@ -164,8 +160,6 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State")
 	bool bPlayerWantsToJump; // 몬스터의 bJumpInput과 동일한 역할
-
-
 
 	//------------------Lock On 시 카메라 거리 변경해주는 함수들
 	//외부에서 카메라 목표 거리를 변경할 수 있게 해주는 함수
@@ -306,5 +300,10 @@ public:
 
 	/** 락온/Range 조준 상태에 따라 회전 모드를 갱신한다. */
 	void RefreshRotationMode();
+
+public:
+	// 상대가 적인지 판정하는 함수
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool IsEnemyFor(const AActor* Other) const;
 
 };

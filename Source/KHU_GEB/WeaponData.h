@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,10 +7,10 @@
 #include "WeaponData.generated.h"
 
 /**
- * 
+ *
  */
 
- // 1. FormDefinition.h¿¡¼­ EHitboxShape ENUMÀ» ÀÌ°÷À¸·Î ÀÌµ¿
+ // 1. FormDefinition.hì—ì„œ EHitboxShape ENUMì„ ì´ê³³ìœ¼ë¡œ ì´ë™
 UENUM(BlueprintType)
 enum class EHitboxShape : uint8
 {
@@ -18,39 +18,39 @@ enum class EHitboxShape : uint8
 	Sphere
 };
 
-// 2. FormDefinition.h¿¡¼­ FHitboxConfig ±¸Á¶Ã¼¸¦ ÀÌ°÷À¸·Î ÀÌµ¿
+// 2. FormDefinition.hì—ì„œ FHitboxConfig êµ¬ì¡°ì²´ë¥¼ ì´ê³³ìœ¼ë¡œ ì´ë™
 USTRUCT(BlueprintType)
 struct FHitboxConfig
 {
 	GENERATED_BODY()
 
-	/** ÀÌ È÷Æ®¹Ú½º¸¦ ºÎÂøÇÒ ½ºÄÌ·¹Å» ¸Ş½Ã ¼ÒÄÏ ÀÌ¸§ */
+	/** ì´ íˆíŠ¸ë°•ìŠ¤ë¥¼ ë¶€ì°©í•  ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ ì†Œì¼“ ì´ë¦„ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName SocketName = NAME_None;
 
-	/** È÷Æ®¹Ú½º ¸ğ¾ç (¹Ú½º ¶Ç´Â ±¸Ã¼) */
+	/** íˆíŠ¸ë°•ìŠ¤ ëª¨ì–‘ (ë°•ìŠ¤ ë˜ëŠ” êµ¬ì²´) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EHitboxShape Shape = EHitboxShape::Box;
 
 	/**
-	* ¸ğ¾ç¿¡ µû¸¥ Å©±â °ª:
+	* ëª¨ì–‘ì— ë”°ë¥¸ í¬ê¸° ê°’:
 	* - Box: BoxExtent (FVector(X, Y, Z))
 	* - Sphere: Radius (FVector(Radius, 0, 0))
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector Size = FVector(32.f);
 
-	/** ¼ÒÄÏ À§Ä¡¸¦ ±âÁØÀ¸·Î ÇÑ Ãß°¡ÀûÀÎ À§Ä¡ ¿ÀÇÁ¼ÂÀÔ´Ï´Ù. */
+	/** ì†Œì¼“ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•œ ì¶”ê°€ì ì¸ ìœ„ì¹˜ ì˜¤í”„ì…‹ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
 	FVector RelativeLocation = FVector::ZeroVector;
 
-	/** ¼ÒÄÏ È¸ÀüÀ» ±âÁØÀ¸·Î ÇÑ Ãß°¡ÀûÀÎ È¸Àü ¿ÀÇÁ¼ÂÀÔ´Ï´Ù. */
+	/** ì†Œì¼“ íšŒì „ì„ ê¸°ì¤€ìœ¼ë¡œ í•œ ì¶”ê°€ì ì¸ íšŒì „ ì˜¤í”„ì…‹ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transform")
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 };
 
 /**
- * ¹«±âÀÇ Äİ¸®Àü(È÷Æ®¹Ú½º) ±¸¼ºÀ» Á¤ÀÇÇÏ´Â µ¥ÀÌÅÍ ¿¡¼ÂÀÔ´Ï´Ù.
+ * ë¬´ê¸°ì˜ ì½œë¦¬ì „(íˆíŠ¸ë°•ìŠ¤) êµ¬ì„±ì„ ì •ì˜í•˜ëŠ” ë°ì´í„° ì—ì…‹ì…ë‹ˆë‹¤.
  */
 UCLASS(BlueprintType)
 class KHU_GEB_API UWeaponData : public UPrimaryDataAsset
@@ -58,8 +58,8 @@ class KHU_GEB_API UWeaponData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
-	// 3. UFormDefinitionÀÌ °¡Áö°í ÀÖ´ø Hitboxes ¹è¿­À» ÀÌ Å¬·¡½º°¡ ¼ÒÀ¯ÇÕ´Ï´Ù.
-	/** ÀÌ ¹«±â¸¦ ±¸¼ºÇÏ´Â È÷Æ®¹Ú½º ¸ñ·ÏÀÔ´Ï´Ù. */
+	// 3. UFormDefinitionì´ ê°€ì§€ê³  ìˆë˜ Hitboxes ë°°ì—´ì„ ì´ í´ë˜ìŠ¤ê°€ ì†Œìœ í•©ë‹ˆë‹¤.
+	/** ì´ ë¬´ê¸°ë¥¼ êµ¬ì„±í•˜ëŠ” íˆíŠ¸ë°•ìŠ¤ ëª©ë¡ì…ë‹ˆë‹¤. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TArray<FHitboxConfig> Hitboxes;
 };

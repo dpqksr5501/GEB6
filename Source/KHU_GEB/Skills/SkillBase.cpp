@@ -5,10 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
 #include "Enemy_Base.h"
-#include "HealthComponent.h"
 #include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "SkillManagerComponent.h"
@@ -124,50 +122,6 @@ void USkillBase::StopSkill()
     UE_LOG(LogTemp, Log, TEXT("[SkillBase] StopSkill on %s"), *GetNameSafe(this));
 }
 
-float USkillBase::DealSkillDamage(
-    AActor* Target,
-    float Amount,
-    bool bIgnoreDefense,
-    bool bPeriodic,
-    int32 HitCount)
-{
-    UE_LOG(LogTemp, Log,
-        TEXT("[SkillBase] DealSkillDamage: Target=%s, Amount=%.1f, IgnoreDefense=%d, Periodic=%d, HitCount=%d"),
-		*GetNameSafe(Target), Amount, bIgnoreDefense ? 1 : 0, bPeriodic ? 1 : 0, HitCount);
-    if (!Target || Amount <= 0.f)
-    {
-        return 0.f;
-    }
-
-    // 1) 우선 HealthComponent 경로 시도
-    if (UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>())
-    {
-        FDamageSpec Spec;
-        Spec.RawDamage = Amount;
-        Spec.bIgnoreDefense = bIgnoreDefense;
-        Spec.bPeriodic = bPeriodic;
-        Spec.HitCount = HitCount;
-        Spec.Instigator = GetOwner();
-        Spec.SourceSkill = this;
-
-        return Health->ApplyDamageSpec(Spec);
-    }
-
-    // 2) HealthComponent가 없다면, 기존 ApplyDamage로 대체
-    AActor* OwnerActor = GetOwner();
-    AController* InstigatorController =
-        OwnerActor ? OwnerActor->GetInstigatorController() : nullptr;
-
-    UGameplayStatics::ApplyDamage(
-        Target,
-        Amount,
-        InstigatorController,
-        OwnerActor,
-        nullptr);
-
-    return Amount;
-}
-
 //스킬 사용 시 몽타주 재생 헬퍼 함수
 void USkillBase::PlayFormSkillMontage()
 {
@@ -235,23 +189,4 @@ EFormType USkillBase::GetCurrentFormType() const
         return EnemyChar->DefaultFormDef ? EnemyChar->DefaultFormDef->FormType : EFormType::Base;
     }
 	else return EFormType::Base;
-}
-
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount)
-{
-    if (!Target || DamagePerTick <= 0.f || HitCount <= 0) return;
-
-    UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
-    if (!Health) return;
-
-    FDamageSpec Spec;
-    Spec.RawDamage = DamagePerTick;
-    Spec.bIgnoreDefense = true;     // 방어력 무시
-    Spec.bPeriodic = true;          // 주기적(DoT) 플래그
-    Spec.bFixedDot = true;          // 고정 도트 모드 ON
-    Spec.HitCount = HitCount;
-    Spec.Instigator = SourceSkill ? SourceSkill->GetOwner() : nullptr;
-    Spec.SourceSkill = SourceSkill;
-
-    Health->ApplyDamageSpec(Spec);
 }
