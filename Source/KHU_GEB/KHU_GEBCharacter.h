@@ -28,6 +28,8 @@ class USkillManagerComponent;
 class UStatManagerComponent;
 class UNiagaraComponent;
 class UWeaponComponent;
+class UPotionControlComp;
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -137,6 +139,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UJumpComponent* JumpManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPotionControlComp* PotionManagerComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<ULockOnComponent> LockOnComp;

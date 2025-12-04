@@ -26,6 +26,8 @@
 #include "Skills/Skill_Range.h"
 #include "Skills/Skill_Guard.h"
 #include "StatManagerComponent.h"
+#include "PotionControlComp.h"
+
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -78,6 +80,8 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	SkillManager = CreateDefaultSubobject<USkillManagerComponent>(TEXT("SkillManager"));
 	StatManager = CreateDefaultSubobject<UStatManagerComponent>(TEXT("StatManager"));
 	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
+
+	PotionManagerComp = CreateDefaultSubobject<UPotionControlComp>(TEXT("PotionManagerComp"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> LOCKON(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_LockOn.IA_LockOn'"));
 	if (LOCKON.Object) { LockOnAction = LOCKON.Object; }

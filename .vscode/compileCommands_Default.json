@@ -1,0 +1,1754 @@
+[
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioBlueprintDebuggerHelper\\Private\\VisualStudioBlueprintDebuggerHelperModule.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioBlueprintDebuggerHelper.60.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioBlueprintDebuggerHelper\\Private\\VisualStudioBlueprintDebuggerHelperModule.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioBlueprintDebuggerHelper.60.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioBlueprintDebuggerHelper\\VisualStudioBlueprintDebuggerHelper.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioBlueprintDebuggerHelper.60.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\BlueprintAssetHelper.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\BlueprintAssetHelpers.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\BlueprintReferencesCommandlet.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\BlueprintReferencesCommandlet.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\FSmartBSTR.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VSServerCommandlet.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VSServerCommandlet.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VSTestAdapterCommandlet.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VSTestAdapterCommandlet.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioTools.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsBlueprintBreakpointExtension.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsBlueprintBreakpointExtension.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsCommandlet.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsCommandlet.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsCommandletBase.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Private\\VisualStudioToolsCommandletBase.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\Public\\VisualStudioTools.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Plugins\\VisualStudioTools\\Source\\VisualStudioTools\\VisualStudioTools.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\VisualStudioTools.59.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\AttackComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\AttackComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Dragon.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Dragon.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Composite\\RandomSelector.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Composite\\RandomSelector.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\CheckCooldown.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\CheckCooldown.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\CheckEnemyState.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\CheckEnemyState.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\IsGreaterThan.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\IsGreaterThan.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\UpdateTargetDistance.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Decorator\\UpdateTargetDistance.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\EnemyAnimIntance.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\EnemyAnimIntance.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\EnemyState.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Base.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Base.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Dragon.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Dragon.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Minion.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Minion.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Special.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Special.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Tanker.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Tanker.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Thief.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Enemy_Thief.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemyPoolSubsystem.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemyPoolSubsystem.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemySpawnDirector.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemySpawnDirector.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemySpawner.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Pooling\\EnemySpawner.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Service\\FocusToTarget.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Service\\FocusToTarget.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TApproach.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TApproach.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TAttack.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TAttack.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TBlink.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TBlink.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TCombo_Attack.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TCombo_Attack.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TDamaged.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TDamaged.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TGlide.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TGlide.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TGroggy.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TGroggy.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TJump.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TJump.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TMoveTo.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TMoveTo.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TSkill.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TSkill.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TTaunt.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TTaunt.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TUltimate.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TUltimate.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TWait.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Enemy_AI\\Task\\TWait.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\FormDefinition.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\FormManagerComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\FormManagerComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\FormStatData.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\HealthComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\HealthComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\JumpComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\JumpComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEB.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEB.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEB.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBCharacter.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBCharacter.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBGameMode.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBGameMode.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBPlayerController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\KHU_GEBPlayerController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\LockOnComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\LockOnComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\ManaComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\ManaComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MonsterAnimInstanceBase.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MonsterAnimInstanceBase.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MonsterBase.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MonsterBase.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MyAnimDataProvider.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\MyAnimDataProvider.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\PotionControlComp.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\PotionControlComp.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\FireballProjectile.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\FireballProjectile.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SkillBase.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SkillBase.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SkillDefinition.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SkillManagerComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SkillManagerComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Base.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Base.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Guard.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Guard.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Range.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Range.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Special.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Special.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Swift.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Swift.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Ultimate.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\Skill_Ultimate.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SpecialOrb.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Skills\\SpecialOrb.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\StatManagerComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\StatManagerComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Tanker.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Tanker.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Thief.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Thief.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatAIController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatAIController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatEnemy.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatEnemy.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatEnemySpawner.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatEnemySpawner.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatStateTreeUtility.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\CombatStateTreeUtility.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\EnvQueryContext_Player.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\AI\\EnvQueryContext_Player.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_CheckChargedAttack.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_CheckChargedAttack.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_CheckCombo.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_CheckCombo.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_DoAttackTrace.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Animation\\AnimNotify_DoAttackTrace.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatCharacter.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatCharacter.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatGameMode.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatGameMode.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatPlayerController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\CombatPlayerController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatActivationVolume.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatActivationVolume.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatCheckpointVolume.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatCheckpointVolume.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatDamageableBox.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatDamageableBox.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatDummy.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatDummy.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatLavaFloor.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Gameplay\\CombatLavaFloor.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatActivatable.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatActivatable.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatAttacker.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatAttacker.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatDamageable.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\Interfaces\\CombatDamageable.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\UI\\CombatLifeBar.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Combat\\UI\\CombatLifeBar.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\Animation\\AnimNotify_EndDash.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\Animation\\AnimNotify_EndDash.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingCharacter.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingCharacter.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingGameMode.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingGameMode.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingPlayerController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_Platforming\\PlatformingPlayerController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingAIController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingAIController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingNPC.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingNPC.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingStateTreeUtility.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\AI\\SideScrollingStateTreeUtility.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingJumpPad.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingJumpPad.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingMovingPlatform.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingMovingPlatform.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingPickup.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingPickup.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingSoftPlatform.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Gameplay\\SideScrollingSoftPlatform.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Interfaces\\SideScrollingInteractable.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\Interfaces\\SideScrollingInteractable.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingCameraManager.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingCameraManager.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingCharacter.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingCharacter.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingGameMode.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingGameMode.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingPlayerController.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\SideScrollingPlayerController.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\UI\\SideScrollingUI.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Variant_SideScrolling\\UI\\SideScrollingUI.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\WeaponComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\WeaponComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\WeaponData.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Wizard.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	},
+	{
+		"file": "C:\\GEB\\GEB6\\Source\\KHU_GEB\\Wizard.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\GEB\\GEB6\\.vscode\\compileCommands_Default\\KHU_GEB.1.rsp"
+		],
+		"directory": "D:\\UE5.6\\UE_5.6\\Engine\\Source"
+	}
+]
