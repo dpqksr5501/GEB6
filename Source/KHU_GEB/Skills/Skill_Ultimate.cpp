@@ -678,6 +678,9 @@ void USkill_Ultimate::ActivateSpecialUltimate()
         return;
     }
 
+    // [추가] Special 궁극기 시작
+    bSpecialUltimateActive = true;
+
     SpecialOrbs.Empty();
 
     const FVector Center = Owner->GetActorLocation();
@@ -782,6 +785,9 @@ void USkill_Ultimate::OnSpecialDurationEnded()
     {
         UE_LOG(LogTemp, Log,
             TEXT("[Skill_Ultimate] Special: all orbs destroyed -> no penalty to player."));
+        
+        // [수정] 스킬 완료 처리
+        CompleteSpecialUltimate();
         return;
     }
 
@@ -803,6 +809,10 @@ void USkill_Ultimate::OnSpecialDurationEnded()
             SpecialSelfDotInterval,
             true);
     }
+    else {
+        // 도트 데미지가 0이면 바로 완료 처리
+		CompleteSpecialUltimate();
+    }
 }
 
 void USkill_Ultimate::OnSpecialSelfDotTick()
@@ -818,6 +828,7 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
     {
         World->GetTimerManager().ClearTimer(SpecialSelfDotTimerHandle);
         SpecialSelfDotTicksRemaining = 0;
+        CompleteSpecialUltimate(); // [추가] 완료 처리
         return;
     }
 
@@ -844,6 +855,8 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
     if (SpecialSelfDotTicksRemaining <= 0)
     {
         World->GetTimerManager().ClearTimer(SpecialSelfDotTimerHandle);
+        // [추가] 도트 완료 후 스킬 종료
+		CompleteSpecialUltimate();
     }
 }
 
@@ -967,4 +980,18 @@ void USkill_Ultimate::HandleSpecialOrbDestroyed(AActor* DestroyedActor)
     UE_LOG(LogTemp, Verbose,
         TEXT("[Skill_Ultimate] Special orb destroyed. Remaining: %d"),
         SpecialOrbs.Num());
+}
+
+// [추가] Special 궁극기 완료 처리 함수
+void USkill_Ultimate::CompleteSpecialUltimate()
+{
+    if (!bSpecialUltimateActive) return;
+
+    bSpecialUltimateActive = false;
+
+    UE_LOG(LogTemp, Log,
+        TEXT("[Skill_Ultimate] Special ultimate COMPLETED - Broadcasting delegate"));
+
+    // 델리게이트 브로드캐스트 (TUltimate가 구독 중)
+    OnSpecialUltimateCompleted.Broadcast();
 }

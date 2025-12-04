@@ -6,6 +6,9 @@
 #include "SkillBase.h"
 #include "Skill_Ultimate.generated.h"
 
+// Special 궁극기 완료 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpecialUltimateCompleted);
+
 class UNiagaraSystem;
 class UNiagaraComponent;
 class ACharacter;
@@ -141,6 +144,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
     FColor SpecialPentagramColor = FColor::Purple;
 
+    // Special 궁극기 완료 델리게이트
+    UPROPERTY(BlueprintAssignable, Category = "Ultimate|Special")
+    FOnSpecialUltimateCompleted OnSpecialUltimateCompleted;
+
+    // Special 궁극기가 현재 활성화되어 있는지 확인
+    UFUNCTION(BlueprintPure, Category = "Ultimate|Special")
+    bool IsSpecialUltimateActive() const { return bSpecialUltimateActive; }
+
 protected:
     virtual void BeginPlay() override;
 
@@ -223,6 +234,9 @@ private:
     UFUNCTION()
     void HandleSpecialOrbDestroyed(AActor* DestroyedActor);
 
+    /** [추가] Special 궁극기 완료 처리 */
+    void CompleteSpecialUltimate();
+
 private:
     // ---------------- Range 상태 ----------------
     /** 현재 Range 궁극기가 켜져 있는지 */
@@ -253,6 +267,9 @@ private:
     FTimerHandle SwiftDurationTimerHandle;
 
     // ---------------- Special 상태 ----------------
+
+    /** 구체가 활성화 되어있는지 ※ 추가 플래그 */
+    bool bSpecialUltimateActive = false;
 
     /** 소환된 구체들 */
     UPROPERTY(Transient)

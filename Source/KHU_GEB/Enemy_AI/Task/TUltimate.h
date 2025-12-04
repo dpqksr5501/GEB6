@@ -8,6 +8,8 @@
 #include "Skills/SkillDefinition.h"
 #include "TUltimate.generated.h"
 
+class USkill_Ultimate;
+
 /**
  * AI가 스킬 몽타주를 재생하고 스킬을 활성화하는 태스크입니다.
  * TAttack과 유사한 구조로, DefaultFormDef에서 SkillMontage를 가져와 재생합니다.
@@ -44,4 +46,12 @@ protected:
 	/** 현재 재생 중인 스킬 몽타주 */
 	UPROPERTY()
 	UAnimMontage* CurrentMontage;
+
+	// [추가] Special 궁극기 스킬 컴포넌트 캐시
+	UPROPERTY(Transient)
+	TWeakObjectPtr<USkill_Ultimate> CachedSpecialUltimate;
+
+	// [추가] Special 궁극기 완료 콜백
+	UFUNCTION()
+	void OnSpecialUltimateCompleted();
 };
