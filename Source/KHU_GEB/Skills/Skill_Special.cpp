@@ -7,11 +7,10 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
 #include "HealthComponent.h"
 #include "SkillManagerComponent.h"
-
-void ApplyFixedDotDamage(USkillBase* SourceSkill, ACharacter* Target, float DamagePerTick, int32 HitCount);
 
 void USkill_Special::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -314,8 +313,13 @@ void USkill_Special::OnEffectTick()
         }
     }
 
-    // 2) 흑안개 안 적들에게 방어무시 도트 데미지
+    // 2) 흑안개 안 적들에게 "일반 데미지 도트"
     if (FogRadius <= 0.f || DotDamagePerTick <= 0.f) return;
+
+    // 흑안개 중심 위치는 UpdateFogEffects와 동일한 기준 사용
+    FVector Center;
+    if (SpawnedNS) { Center = SpawnedNS->GetComponentLocation(); }
+    else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
 
     TArray<FOverlapResult> Overlaps;
     FCollisionObjectQueryParams ObjParams;
@@ -325,7 +329,7 @@ void USkill_Special::OnEffectTick()
 
     const bool bAnyHit = World->OverlapMultiByObjectType(
         Overlaps,
-        Owner->GetActorLocation(),
+        Center,
         FQuat::Identity,
         ObjParams,
         FCollisionShape::MakeSphere(FogRadius),
@@ -333,23 +337,35 @@ void USkill_Special::OnEffectTick()
 
     if (!bAnyHit) return;
 
-    // 이 틱에 이미 맞춘 캐릭터를 기록
-    TSet<ACharacter*> UniqueTargets;
+    TSet<AActor*> UniqueTargets;
+
+    AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner);
 
     for (const FOverlapResult& O : Overlaps)
     {
-        AActor* Other = O.GetActor();
-        ACharacter* OtherChar = Cast<ACharacter>(Other);
-        if (!OtherChar || OtherChar == Owner) continue;
+        AActor* OtherActor = O.GetActor();
+        if (!OtherActor || OtherActor == Owner) continue;
 
-        if (UniqueTargets.Contains(OtherChar)) continue;
-        UniqueTargets.Add(OtherChar);
+        // 한 틱에 중복 타격 방지
+        if (UniqueTargets.Contains(OtherActor)) continue;
+        UniqueTargets.Add(OtherActor);
 
-        // 도트용 고정 피해 모드 사용 (한 틱당 한 번)
-        ApplyFixedDotDamage(
-            this,
-            OtherChar,
-            DotDamagePerTick,  // 예: 5
-            1);
+        // 팀 체크 – 이제 AActor 기준
+        if (OwnerChar && !OwnerChar->IsEnemyFor(OtherActor)) continue;
+
+        // InstigatorController 계산
+        AController* InstigatorController = nullptr;
+        if (APawn* PawnOwner = Cast<APawn>(Owner))
+        {
+            InstigatorController = PawnOwner->GetController();
+        }
+
+        // === 핵심: AActor::ApplyDamage 파이프라인만 사용 ===
+        UGameplayStatics::ApplyDamage(
+            OtherActor,
+            DotDamagePerTick,             // "일반 데미지"를 틱마다 한 번씩
+            InstigatorController,
+            Owner,                        // DamageCauser
+            UDamageType::StaticClass());  // 기본 DamageType
     }
 }

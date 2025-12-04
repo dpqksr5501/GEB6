@@ -4,29 +4,28 @@
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "KHU_GEB.h"
 #include "HealthComponent.h"
 #include "ManaComponent.h"
+#include "FormDefinition.h"
 #include "FormManagerComponent.h"
 #include "JumpComponent.h"
 #include "LockOnComponent.h"
 #include "AttackComponent.h"
+#include "WeaponComponent.h"
+#include "WeaponData.h"
 #include "Skills/SkillManagerComponent.h"
 #include "Skills/Skill_Range.h"
 #include "Skills/Skill_Guard.h"
 #include "StatManagerComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "KHU_GEB.h"
-#include "FormDefinition.h"
-#include "NiagaraComponent.h"
-#include "WeaponComponent.h"
-#include "WeaponData.h"
-#include "Components/SceneComponent.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -117,11 +116,6 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	//인터페이스용 변수 2개를 초기화합니다.
 	CurrentPlayerState = ECharacterState::Idle;
 	bPlayerWantsToJump = false;
-
-	/*Swift Form일 때 대시 사용 시 사용할 나이아가라*/
-	SwiftSprintVFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwiftSprintVFX"));
-	SwiftSprintVFX->SetupAttachment(GetMesh()); // 캐릭터 메시에 부착
-	SwiftSprintVFX->bAutoActivate = false;
 
 	//Guard 스페이스바
 	bSpaceActionInput = false;
@@ -292,7 +286,7 @@ void AKHU_GEBCharacter::Heal(float Amount)
 
 void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// 1) Guard에게 먼저 기회 주기 (그대로 유지)
+	// 1) Guard 스킬이 데미지 흡수 시도
 	if (SkillManager)
 	{
 		if (USkillBase* ActiveSkill = SkillManager->Equipped.FindRef(ESkillSlot::Active))
@@ -308,26 +302,26 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, con
 		}
 	}
 
-	// 2) HealthComponent로 파이프라인 통일
-	if (HealthComp && Damage > 0.f)
+	if (!HealthComp || Damage <= 0.f) return;
+
+	// 2) 진짜 공격자를 알아낸다 (컨트롤러의 Pawn → 없으면 DamageCauser)
+	AActor* InstigatorActor = nullptr;
+	if (InstigatedBy) { InstigatorActor = InstigatedBy->GetPawn(); }
+	if (!InstigatorActor) { InstigatorActor = DamageCauser; }
+
+	// === 3) 팀 체크: 적이 아니면 데미지 무시 ===
+	if (!IsEnemyFor(InstigatorActor))
 	{
-		FDamageSpec Spec;
-		Spec.RawDamage = Damage;
-		Spec.bIgnoreDefense = false;   // 평범한 공격은 방어력 적용 대상
-		Spec.bPeriodic = false;
-		Spec.HitCount = 1;
-		Spec.Instigator = DamageCauser;
-		Spec.SourceSkill = nullptr; // 일반 공격/환경 데미지는 스킬 없음
-
-		const float Final = HealthComp->ApplyDamageSpec(Spec);
-
-		//피격 테스트
-		if (HealthComp->Health > 0.0f)
-		{
-			PlayHitReaction();
-		}
+		UE_LOG(LogTemp, Verbose, TEXT("[Character] Ignore damage from non-enemy: %s"),
+			*GetNameSafe(InstigatorActor));
+		return;
 	}
 
+	// 4) 여기까지 왔으면 '적'이 맞으므로 체력 감소
+	const float FinalDamage = HealthComp->ApplyDamage(Damage, InstigatorActor, DamageCauser);
+
+	// 5) 피격 리액션
+	if (HealthComp->Health > 0.f && FinalDamage > 0.f) { PlayHitReaction(); }
 }
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
@@ -582,26 +576,7 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 	// 2. 현재 상태(스프린트 중인지 여부)를 반영하여 속도를 즉시 업데이트합니다.
 	UpdateMovementSpeed();
 
-	if (NewForm == EFormType::Swift)
-	{
-		// [A] Swift 폼으로 변경됨
-		// 만약 '이미 달리고 있는 상태'에서 폼을 바꿨다면, 이펙트를 즉시 켭니다.
-		if (bIsSprinting && SwiftSprintVFX)
-		{
-			SwiftSprintVFX->Activate(true);
-		}
-	}
-	else
-	{
-		// [B] 다른 폼으로 변경됨
-		// 폼이 Swift가 아니게 되었으므로, 이펙트를 강제로 끕니다.
-		if (SwiftSprintVFX)
-		{
-			SwiftSprintVFX->Deactivate();
-		}
-	}
-
-	// 2. 폼 변경 시 달리기 중이었다면, 카메라/효과를 새 폼에 맞게 재설정합니다.
+	// 3. 폼 변경 시 달리기 중이었다면, 카메라/효과를 새 폼에 맞게 재설정합니다.
 	if (bIsSprinting)
 	{
 		if (NewForm == EFormType::Swift)
@@ -654,11 +629,6 @@ void AKHU_GEBCharacter::StartSprinting(const FInputActionValue& Value)
 
 		TargetFringeIntensity = 2.0f;
 		TargetVignetteIntensity = 0.8f;
-
-		if (SwiftSprintVFX)
-		{
-			SwiftSprintVFX->Activate(true);
-		}
 	}
 	else
 	{
@@ -689,12 +659,6 @@ void AKHU_GEBCharacter::StopSprinting(const FInputActionValue& Value)
 	TargetFOV = DefaultFOV;
 	TargetFringeIntensity = 0.f;
 	TargetVignetteIntensity = 0.f;
-
-	// 달리기를 멈췄으므로, 현재 폼이 무엇이든 상관없이 이펙트를 끕니다.
-	if (SwiftSprintVFX)
-	{
-		SwiftSprintVFX->Deactivate();
-	}
 }
 
 void AKHU_GEBCharacter::UpdateMovementSpeed()
@@ -807,4 +771,11 @@ void AKHU_GEBCharacter::RefreshRotationMode()
 
 	MoveComp->bOrientRotationToMovement = !bShouldUseControllerYaw;
 	bUseControllerRotationYaw = bShouldUseControllerYaw;
+}
+
+bool AKHU_GEBCharacter::IsEnemyFor(const AActor* Other) const
+{
+	const AKHU_GEBCharacter* OtherChar = Cast<AKHU_GEBCharacter>(Other);
+	if (OtherChar) return false;
+	else return true;
 }

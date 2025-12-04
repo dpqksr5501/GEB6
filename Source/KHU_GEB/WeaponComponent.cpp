@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "WeaponComponent.h"
@@ -7,10 +7,11 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h" // ApplyDamage¿ë
+#include "Kismet/GameplayStatics.h" // ApplyDamageìš©
 #include "FormDefinition.h"			// EFormType
-#include "KHU_GEBCharacter.h"		// GetMesh()¸¦ À§ÇØ ÇÊ¿ä½Ã
+#include "KHU_GEBCharacter.h"		// GetMesh()ë¥¼ ìœ„í•´ í•„ìš”ì‹œ
 #include "HealthComponent.h"
+#include "Enemy_AI/Enemy_Base.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -28,7 +29,7 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ¼ÒÀ¯ÀÚ(Ä³¸¯ÅÍ)ÀÇ ¸Ş½Ã¸¦ Ã£¾Æ Ä³½ÃÇÕ´Ï´Ù.
+	// ì†Œìœ ì(ìºë¦­í„°)ì˜ ë©”ì‹œë¥¼ ì°¾ì•„ ìºì‹œí•©ë‹ˆë‹¤.
 	if (AActor* Owner = GetOwner())
 	{
 		if (ACharacter* OwnerCharacter = Cast<ACharacter>(Owner))
@@ -37,21 +38,21 @@ void UWeaponComponent::BeginPlay()
 		}
 		else
 		{
-			// ACharacter°¡ ¾Æ´Ñ °æ¿ì ´ëºñ
+			// ACharacterê°€ ì•„ë‹Œ ê²½ìš° ëŒ€ë¹„
 			CachedMesh = Owner->FindComponentByClass<USkeletalMeshComponent>();
 		}
 	}
 
-	// Äİ¸®Àü Ç®À» ¹Ì¸® »ı¼ºÇÕ´Ï´Ù.
+	// ì½œë¦¬ì „ í’€ì„ ë¯¸ë¦¬ ìƒì„±í•©ë‹ˆë‹¤.
 	InitializeColliderPool(5);
 }
 
-// [ÇÙ½É] UAttackComponent::SetForm·ÎÁ÷À» ÀÌ°÷À¸·Î °¡Á®¿É´Ï´Ù.
+// [í•µì‹¬] UAttackComponent::SetFormë¡œì§ì„ ì´ê³³ìœ¼ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
 void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 {
 	CurrentWeaponDef = Def;
 
-	// ±âÁ¸ ÆûÀÇ Äİ¸®ÀüÀ» ºñÈ°¼ºÈ­ÇÏ°í Ç®·Î ¹İÈ¯ÇÕ´Ï´Ù.
+	// ê¸°ì¡´ í¼ì˜ ì½œë¦¬ì „ì„ ë¹„í™œì„±í™”í•˜ê³  í’€ë¡œ ë°˜í™˜í•©ë‹ˆë‹¤.
 	DeactivateAllColliders();
 
 	if (!CurrentWeaponDef) return;
@@ -59,17 +60,17 @@ void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 
 	USkeletalMeshComponent* Mesh = CachedMesh.Get();
 
-	// 1. »õ WeaponDataÀÇ Hitboxes ¹è¿­À» ¼øÈ¸
+	// 1. ìƒˆ WeaponDataì˜ Hitboxes ë°°ì—´ì„ ìˆœíšŒ
 	for (const FHitboxConfig& Config : CurrentWeaponDef->Hitboxes)
 	{
 		UShapeComponent* NewCollider = nullptr;
 
-		// 2. ¼³Á¤¿¡ µû¶ó Ç®¿¡¼­ Äİ¸®Àü °¡Á®¿À±â
+		// 2. ì„¤ì •ì— ë”°ë¼ í’€ì—ì„œ ì½œë¦¬ì „ ê°€ì ¸ì˜¤ê¸°
 		if (Config.Shape == EHitboxShape::Sphere)
 		{
 			if (USphereComponent* Sphere = GetPooledSphereCollider())
 			{
-				Sphere->SetSphereRadius(Config.Size.X); // Size.X¸¦ Radius·Î »ç¿ë
+				Sphere->SetSphereRadius(Config.Size.X); // Size.Xë¥¼ Radiusë¡œ ì‚¬ìš©
 				NewCollider = Sphere;
 			}
 		}
@@ -77,12 +78,12 @@ void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 		{
 			if (UBoxComponent* Box = GetPooledBoxCollider())
 			{
-				Box->SetBoxExtent(Config.Size); // Size¸¦ BoxExtent·Î »ç¿ë
+				Box->SetBoxExtent(Config.Size); // Sizeë¥¼ BoxExtentë¡œ ì‚¬ìš©
 				NewCollider = Box;
 			}
 		}
 
-		// 3. Äİ¸®ÀüÀ» ¼ÒÄÏ¿¡ ºÎÂøÇÏ°í È°¼º ¸ñ·Ï¿¡ Ãß°¡
+		// 3. ì½œë¦¬ì „ì„ ì†Œì¼“ì— ë¶€ì°©í•˜ê³  í™œì„± ëª©ë¡ì— ì¶”ê°€
 		if (NewCollider)
 		{
 			NewCollider->SetRelativeLocationAndRotation(Config.RelativeLocation, Config.RelativeRotation);
@@ -92,42 +93,42 @@ void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 	}
 }
 
-// [ÇÙ½É] UAttackComponent::OnNotifyBeginReceived("StartAttack")·ÎÁ÷
+// [í•µì‹¬] UAttackComponent::OnNotifyBeginReceived("StartAttack")ë¡œì§
 void UWeaponComponent::EnableCollision()
 {
 
-	//µğ¹ö±ë ¸Ş½ÃÁö Äİ¸®Àü È°¼ºÈ­ ·Î±×
+	//ë””ë²„ê¹… ë©”ì‹œì§€ ì½œë¦¬ì „ í™œì„±í™” ë¡œê·¸
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("[WeaponComponent] COLLISION ENABLED"));
 	}
-	// ÀÌ ½ºÀ®¿¡¼­ ¸ÂÀº ¾×ÅÍ ¸ñ·ÏÀ» ÃÊ±âÈ­
+	// ì´ ìŠ¤ìœ™ì—ì„œ ë§ì€ ì•¡í„° ëª©ë¡ì„ ì´ˆê¸°í™”
 	HitActorsThisSwing.Empty();
 
-	// ÇöÀç ÆûÀÌ °¡Áø ¸ğµç Äİ¸®Àü º¼·ı(È÷Æ®¹Ú½º)À» È°¼ºÈ­
+	// í˜„ì¬ í¼ì´ ê°€ì§„ ëª¨ë“  ì½œë¦¬ì „ ë³¼ë¥¨(íˆíŠ¸ë°•ìŠ¤)ì„ í™œì„±í™”
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
 		if (Collider)
 		{
 			Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			// µğ¹ö±ë ¸Ş½ÃÁö °¢ Äİ¸®Àü È°¼ºÈ­ ·Î±× UE_LOG·Î
+			// ë””ë²„ê¹… ë©”ì‹œì§€ ê° ì½œë¦¬ì „ í™œì„±í™” ë¡œê·¸ UE_LOGë¡œ
 			UE_LOG(LogTemp, Log, TEXT("[WeaponComponent] Enabled collision for %s"), *Collider->GetName());
 
 		}
 	}
 }
 
-// [ÇÙ½É] UAttackComponent::OnNotifyBeginReceived("EndAttack") ·ÎÁ÷
+// [í•µì‹¬] UAttackComponent::OnNotifyBeginReceived("EndAttack") ë¡œì§
 void UWeaponComponent::DisableCollision()
 {
 
-	//µğ¹ö±ë ¸Ş½ÃÁö Äİ¸®Àü ºñÈ°¼ºÈ­ ·Î±×
+	//ë””ë²„ê¹… ë©”ì‹œì§€ ì½œë¦¬ì „ ë¹„í™œì„±í™” ë¡œê·¸
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("[WeaponComponent] COLLISION DISABLED"));
 	}
-	// ¸ğµç Äİ¸®Àü º¼·ı(È÷Æ®¹Ú½º)À» ºñÈ°¼ºÈ­
+	// ëª¨ë“  ì½œë¦¬ì „ ë³¼ë¥¨(íˆíŠ¸ë°•ìŠ¤)ì„ ë¹„í™œì„±í™”
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
 		if (Collider)
@@ -137,7 +138,7 @@ void UWeaponComponent::DisableCollision()
 	}
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ */
 void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Log,
@@ -145,23 +146,50 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		*GetNameSafe(OtherActor));
 
 	AActor* Owner = GetOwner();
-	if (!Owner || OtherActor == Owner) return;
+	if (!Owner || !OtherActor || OtherActor == Owner) return;
 
-	// ÇÑ ½ºÀ® µ¿¾È ÀÌ¹Ì ¸ÂÀº ¾×ÅÍ´Â ¹«½Ã
+	// í•œ ìŠ¤ìœ™ ë™ì•ˆ ì´ë¯¸ ë§ì€ ì•¡í„°ëŠ” ë¬´ì‹œ
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
 
-	// 1) ÇÇ°İ ´ë»ó¿¡¼­ HealthComponent¸¦ Ã£´Â´Ù.
+	// 1) ìš°ì„  í”¼ê²© ëŒ€ìƒì´ 'ë°ë¯¸ì§€ë¥¼ ë°›ì„ ìˆ˜ ìˆëŠ”' ëŒ€ìƒì¸ì§€ í™•ì¸ (HealthComponent ì¡´ì¬ ì—¬ë¶€)
 	UHealthComponent* Health = OtherActor->FindComponentByClass<UHealthComponent>();
 	if (!Health)
 	{
-		// HealthComponent°¡ ¾ø´Â ´ë»óÀÌ¸é °ø°İ ÆÇÁ¤¸¸ ÀÖ°í ½ÇÁ¦ µ¥¹ÌÁö´Â ¾øÀ½
+		// HealthComponentê°€ ì—†ëŠ” ëŒ€ìƒì´ë©´ ì‹¤ì œ ì²´ë ¥ ê°ì†ŒëŠ” ì—†ìŒ
 		return;
 	}
 
-	// 2) µ¥¹ÌÁö ¾ç °áÁ¤ (¿ì¼±Àº ÀÓ½Ã °ª 10 À¯Áö)
+	// 2) íŒ€/íƒ€ì… í•„í„°
+	//    - í”Œë ˆì´ì–´ ë¬´ê¸°ë©´ Enemy_Baseë§Œ
+	//    - Enemy_Base ë¬´ê¸°ë©´ í”Œë ˆì´ì–´ë§Œ
+	if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
+	{
+		// í”Œë ˆì´ì–´ ì…ì¥ì—ì„œ ì ì´ ì•„ë‹ˆë©´ ë¬´ì‹œ
+		if (!OwnerChar->IsEnemyFor(OtherActor))
+		{
+			UE_LOG(LogTemp, Verbose,
+				TEXT("[WeaponComponent] Player weapon hit non-enemy: %s -> ignored"),
+				*GetNameSafe(OtherActor));
+			return;
+		}
+	}
+	else if (AEnemy_Base* OwnerEnemy = Cast<AEnemy_Base>(Owner))
+	{
+		// ì  ì…ì¥ì—ì„œ ì ì´ ì•„ë‹ˆë©´ ë¬´ì‹œ (ì¦‰, ì£¼ë¡œ í”Œë ˆì´ì–´ë§Œ íƒ€ê²©)
+		if (!OwnerEnemy->IsEnemyFor(OtherActor))
+		{
+			UE_LOG(LogTemp, Verbose,
+				TEXT("[WeaponComponent] Enemy weapon hit non-enemy: %s -> ignored"),
+				*GetNameSafe(OtherActor));
+			return;
+		}
+	}
+	// ê·¸ ì™¸(íŠ¸ë© ë“±) ì˜¤ë„ˆëŠ” ë³„ë„ íŒ€ ë¡œì§ ì—†ì´ HealthComp ì¡´ì¬ë§Œìœ¼ë¡œ ë°ë¯¸ì§€ í—ˆìš©
+
+	// 3) ë°ë¯¸ì§€ ì–‘ ê²°ì • (ìš°ì„ ì€ ì„ì‹œ ê°’ 10 ìœ ì§€)
 	float DamageToApply = 10.f;
 
-	// TODO: ³ªÁß¿¡ StatManager/WeaponData¿¡¼­ °ø°İ·ÂÀ» °¡Á®¿À°í ½ÍÀ¸¸é ¿©±â¼­ °è»ê
+	// TODO: ë‚˜ì¤‘ì— StatManager/WeaponDataì—ì„œ ê³µê²©ë ¥ì„ ê°€ì ¸ì˜¤ê³  ì‹¶ìœ¼ë©´ ì—¬ê¸°ì„œ ê³„ì‚°
 	// if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
 	// {
 	//     if (OwnerChar->StatManager)
@@ -174,36 +202,31 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 	//     }
 	// }
 
-	// 3) FDamageSpec ¸¦ Ã¤¿ö¼­ HealthComponent ÆÄÀÌÇÁ¶óÀÎÀ¸·Î º¸³½´Ù.
-	FDamageSpec Spec;
-	Spec.RawDamage = DamageToApply;
-	Spec.bIgnoreDefense = false;   // ÆòÅ¸´Â ¹æ¾î·Â Àû¿ë
-	Spec.bPeriodic = false;   // ÁÖ±â µ¥¹ÌÁö ¾Æ´Ô
-	Spec.bFixedDot = false;
-	Spec.HitCount = 1;
-	
-	// Instigator ¸¦ "°ø°İÇÑ Ä³¸¯ÅÍ(¹«±â ¼ÒÀ¯ÀÚ)"·Î ¼³Á¤ÇØ¾ß
-	// HealthComponent::ApplyDamageSpec ¾È¿¡¼­ Swift Àº½Å/¹è¼ö ·ÎÁ÷ÀÌ µ¿ÀÛÇÕ´Ï´Ù.
-	Spec.Instigator = Owner;
-	Spec.SourceSkill = nullptr;    // ÆòÅ¸¶ó¼­ ½ºÅ³Àº ¾øÀ½
+	if (DamageToApply <= 0.f) return;
 
-	const float FinalDamage = Health->ApplyDamageSpec(Spec);
-
+	// 4) AActor::ApplyDamage íŒŒì´í”„ë¼ì¸ì„ í†µí•´ ë°ë¯¸ì§€ë¥¼ ë„£ëŠ”ë‹¤.
 	APawn* OwnerPawn = Cast<APawn>(Owner);
-	UGameplayStatics::ApplyDamage(OtherActor, FinalDamage, (OwnerPawn ? OwnerPawn->GetController() : nullptr), Owner, nullptr);
+	AController* InstigatorController = OwnerPawn ? OwnerPawn->GetController() : nullptr;
+
+	UGameplayStatics::ApplyDamage(
+		OtherActor,
+		DamageToApply,
+		InstigatorController,
+		Owner,
+		UDamageType::StaticClass());
 
 	UE_LOG(LogTemp, Log,
-		TEXT("[WeaponComponent] %s hit %s for %.1f (final=%.1f)"),
+		TEXT("[WeaponComponent] %s hit %s for %.1f"),
 		*Owner->GetName(),
 		*OtherActor->GetName(),
-		DamageToApply,
-		FinalDamage);
+		DamageToApply);
 
-	// ÇÑ ¹ø ¸ÂÀº ¾×ÅÍ´Â ÀÌ ½ºÀ® µ¿¾È ´Ù½Ã ¾È ¸Âµµ·Ï ±â·Ï
+	// í•œ ë²ˆ ë§ì€ ì•¡í„°ëŠ” ì´ ìŠ¤ìœ™ ë™ì•ˆ ë‹¤ì‹œ ì•ˆ ë§ë„ë¡ ê¸°ë¡
 	HitActorsThisSwing.Add(OtherActor);
+
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ */
 void UWeaponComponent::InitializeColliderPool(int32 PoolSize)
 {
 	if (!GetOwner()) return;
@@ -220,7 +243,7 @@ void UWeaponComponent::InitializeColliderPool(int32 PoolSize)
 	}
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ */
 UBoxComponent* UWeaponComponent::GetPooledBoxCollider()
 {
 	for (UBoxComponent* Box : BoxColliderPool)
@@ -235,7 +258,7 @@ UBoxComponent* UWeaponComponent::GetPooledBoxCollider()
 	return NewBox;
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ */
 USphereComponent* UWeaponComponent::GetPooledSphereCollider()
 {
 	for (USphereComponent* Sphere : SphereColliderPool)
@@ -250,7 +273,7 @@ USphereComponent* UWeaponComponent::GetPooledSphereCollider()
 	return NewSphere;
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ */
 void UWeaponComponent::DeactivateAllColliders()
 {
 	for (UShapeComponent* Collider : ActiveColliders)
@@ -273,7 +296,7 @@ void UWeaponComponent::DeactivateAllColliders()
 	ActiveColliders.Empty();
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È (OnAttackOverlap ¹ÙÀÎµù È®ÀÎ) */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ (OnAttackOverlap ë°”ì¸ë”© í™•ì¸) */
 UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 {
 	AActor* Owner = GetOwner();
@@ -282,7 +305,7 @@ UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 	if (!NewBox) return nullptr;
 	NewBox->RegisterComponent();
 	NewBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// ¹ÙÀÎµù ÇÔ¼ö¸¦ ÀÌ Å¬·¡½º(UWeaponComponent)ÀÇ °ÍÀ¸·Î º¯°æ
+	// ë°”ì¸ë”© í•¨ìˆ˜ë¥¼ ì´ í´ë˜ìŠ¤(UWeaponComponent)ì˜ ê²ƒìœ¼ë¡œ ë³€ê²½
 	NewBox->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnAttackOverlap);
 	NewBox->SetCollisionObjectType(ECC_WorldDynamic);
 	NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -291,7 +314,7 @@ UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 	return NewBox;
 }
 
-/** [º¹»ç] AttackComponent.cpp¿¡¼­ °¡Á®¿È (OnAttackOverlap ¹ÙÀÎµù È®ÀÎ) */
+/** [ë³µì‚¬] AttackComponent.cppì—ì„œ ê°€ì ¸ì˜´ (OnAttackOverlap ë°”ì¸ë”© í™•ì¸) */
 USphereComponent* UWeaponComponent::CreateNewSphereCollider()
 {
 	AActor* Owner = GetOwner();
@@ -300,7 +323,7 @@ USphereComponent* UWeaponComponent::CreateNewSphereCollider()
 	if (!NewSphere) return nullptr;
 	NewSphere->RegisterComponent();
 	NewSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// ¹ÙÀÎµù ÇÔ¼ö¸¦ ÀÌ Å¬·¡½º(UWeaponComponent)ÀÇ °ÍÀ¸·Î º¯°æ
+	// ë°”ì¸ë”© í•¨ìˆ˜ë¥¼ ì´ í´ë˜ìŠ¤(UWeaponComponent)ì˜ ê²ƒìœ¼ë¡œ ë³€ê²½
 	NewSphere->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnAttackOverlap);
 	NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);

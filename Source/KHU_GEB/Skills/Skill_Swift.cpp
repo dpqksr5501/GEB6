@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
 #include "SkillManagerComponent.h"
 
@@ -90,6 +91,7 @@ void USkill_Swift::ActivateSkill()
             ObjParams,
             FCollisionShape::MakeBox(HalfExtent),
             QueryParams);
+
         if (bAnyHit)
         {
             for (const FOverlapResult& O : Overlaps)
@@ -97,10 +99,7 @@ void USkill_Swift::ActivateSkill()
                 AActor* Other = O.GetActor();
                 if (!Other || Other == Owner) continue;
 
-                if (ACharacter* OtherChar = Cast<ACharacter>(Other))
-                {
-                    SwiftTargets.AddUnique(OtherChar);
-                }
+                SwiftTargets.Add(Other);
             }
         }
 
@@ -190,7 +189,7 @@ void USkill_Swift::HandleSwiftDamageTick()
 
     ++CurrentHitIndex;
 
-    // Hit 인덱스가 DamageSamples를 넘으면 종료
+    // Hit 인덱스가 DamageSamples(=10)를 넘으면 종료
     if (CurrentHitIndex > DamageSamples)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
@@ -204,32 +203,44 @@ void USkill_Swift::HandleSwiftDamageTick()
         return;
     }
 
-    // 타겟 목록을 돌면서 한 번씩 데미지
+    // 타겟 목록을 돌면서 한 번씩 데미지 넣기
     for (int32 i = SwiftTargets.Num() - 1; i >= 0; --i)
     {
-        ACharacter* TargetChar = SwiftTargets[i].Get();
-        if (!TargetChar)
+        AActor* TargetActor = SwiftTargets[i].Get();
+        if (!TargetActor)
         {
             SwiftTargets.RemoveAtSwap(i);
             continue;
         }
 
-        // 고정 피해, 방어력 무시, 1타씩 직접 넣기
-        DealSkillDamage(
-            TargetChar,
-            DamagePerSample,
-            /*bIgnoreDefense=*/true,
-            /*bPeriodic=*/false,
-            /*HitCount=*/1); // 우리 쪽에서 10번 반복 호출하므로 HitCount는 1로
+        if (DamagePerSample <= 0.f)
+        {
+            continue;
+        }
 
-        // Hit 이펙트
+        // InstigatorController 계산
+        AController* InstigatorController = nullptr;
+        if (APawn* PawnOwner = Cast<APawn>(Owner))
+        {
+            InstigatorController = PawnOwner->GetController();
+        }
+
+        // ApplyDamage 파이프라인
+        UGameplayStatics::ApplyDamage(
+            TargetActor,
+            DamagePerSample,
+            InstigatorController,
+            Owner,
+            UDamageType::StaticClass());
+
+        // Actor 기준으로 이펙트
         if (HitNS)
         {
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                 World,
                 HitNS,
-                TargetChar->GetActorLocation(),
-                TargetChar->GetActorRotation());
+                TargetActor->GetActorLocation(),
+                TargetActor->GetActorRotation());
         }
     }
 
