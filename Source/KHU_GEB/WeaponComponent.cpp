@@ -11,6 +11,7 @@
 #include "FormDefinition.h"			// EFormType
 #include "KHU_GEBCharacter.h"		// GetMesh()를 위해 필요시
 #include "HealthComponent.h"
+#include "Enemy_AI/Enemy_Base.h"	// Enemy인지 확인용
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -146,6 +147,14 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 
 	AActor* Owner = GetOwner();
 	if (!Owner || OtherActor == Owner) return;
+
+	// Enemy끼리 공격 방지
+	if (Owner->IsA(AEnemy_Base::StaticClass()) &&
+		OtherActor->IsA(AEnemy_Base::StaticClass()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[WeaponComponent] Enemy hit Enemy, ignoring"));
+		return;
+	}
 
 	// 한 스윙 동안 이미 맞은 액터는 무시
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
