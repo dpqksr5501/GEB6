@@ -402,10 +402,7 @@ void USkill_Ultimate::ActivateSwiftUltimate()
 
 void USkill_Ultimate::EndSwiftUltimate()
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UWorld* World = GetWorld();
     if (World)
@@ -458,10 +455,7 @@ void USkill_Ultimate::OnSwiftDurationEnded()
 
 void USkill_Ultimate::OnAttackFromStealth()
 {
-    if (!bSwiftStealthActive)
-    {
-        return;
-    }
+    if (!bSwiftStealthActive) return;
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth broken by attacking."));
@@ -631,10 +625,7 @@ void USkill_Ultimate::ActivateGuardUltimate()
 
 void USkill_Ultimate::EndGuardStun(ACharacter* Target)
 {
-    if (!Target)
-    {
-        return;
-    }
+    if (!Target) return;
 
     if (UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement())
     {
@@ -653,10 +644,7 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 {
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
-    if (!World || !Owner)
-    {
-        return;
-    }
+    if (!World || !Owner) return;
 
     if (!SpecialOrbClass)
     {
@@ -671,8 +659,11 @@ void USkill_Ultimate::ActivateSpecialUltimate()
     const FVector Forward = Owner->GetActorForwardVector();
     const FVector Right = Owner->GetActorRightVector();
 
-    // 오브 높이 약간 띄우기
     const float HeightOffset = 50.f;
+
+    // 오브의 스폰 위치를 저장할 배열
+    TArray<FVector> OrbLocations;
+    OrbLocations.Reserve(5);
 
     // 5개의 구체를 오망성 모양(원 위 5점)으로 배치
     for (int32 i = 0; i < 5; ++i)
@@ -683,7 +674,6 @@ void USkill_Ultimate::ActivateSpecialUltimate()
         const float X = FMath::Cos(AngleRad);
         const float Y = FMath::Sin(AngleRad);
 
-        // Right / Forward 기준으로 원형 배치
         FVector Offset = Right * (X * SpecialRadius)
             + Forward * (Y * SpecialRadius)
             + FVector(0.f, 0.f, HeightOffset);
@@ -702,17 +692,25 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 
         if (Orb)
         {
-            // 시전자에 붙여서 같이 이동하도록
-            Orb->AttachToActor(Owner,
+            Orb->AttachToActor(
+                Owner,
                 FAttachmentTransformRules::KeepWorldTransform);
 
             SpecialOrbs.Add(Orb);
 
-            // 파괴될 때 콜백
             Orb->OnDestroyed.AddDynamic(
                 this,
                 &USkill_Ultimate::HandleSpecialOrbDestroyed);
+
+            // 스폰된 위치 저장
+            OrbLocations.Add(SpawnLocation);
         }
+    }
+
+    // Orb들이 모두 생성된 뒤, 바닥에 오망성 그리기
+    if (bDrawSpecialPentagram && OrbLocations.Num() == 5)
+    {
+        DrawPentagramOnGround(OrbLocations);
     }
 
     // Special 지속시간 타이머
@@ -734,19 +732,13 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 void USkill_Ultimate::OnSpecialDurationEnded()
 {
     UWorld* World = GetWorld();
-    if (World)
-    {
-        World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle);
-    }
+    if (World) { World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle); }
 
     // 아직 살아있는 구체 수 세기
     int32 AliveCount = 0;
     for (TWeakObjectPtr<AActor>& WeakOrb : SpecialOrbs)
     {
-        if (AActor* Orb = WeakOrb.Get())
-        {
-            ++AliveCount;
-        }
+        if (AActor* Orb = WeakOrb.Get()) { ++AliveCount; }
     }
 
     // 사용 끝났으니 구체들은 제거
@@ -832,24 +824,15 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
 
 void USkill_Ultimate::ApplyRootToPlayer(float Duration)
 {
-    if (Duration <= 0.f)
-    {
-        return;
-    }
+    if (Duration <= 0.f) return;
 
     UWorld* World = GetWorld();
-    if (!World)
-    {
-        return;
-    }
+    if (!World) return;
 
     ACharacter* PlayerChar = Cast<ACharacter>(
         UGameplayStatics::GetPlayerCharacter(World, 0));
 
-    if (!PlayerChar)
-    {
-        return;
-    }
+    if (!PlayerChar) return;
 
     SpecialRootedPlayer = PlayerChar;
 
@@ -874,10 +857,7 @@ void USkill_Ultimate::ApplyRootToPlayer(float Duration)
 void USkill_Ultimate::EndSpecialRoot()
 {
     UWorld* World = GetWorld();
-    if (World)
-    {
-        World->GetTimerManager().ClearTimer(SpecialRootTimerHandle);
-    }
+    if (World) { World->GetTimerManager().ClearTimer(SpecialRootTimerHandle); }
 
     if (ACharacter* PlayerChar = Cast<ACharacter>(SpecialRootedPlayer.Get()))
     {
@@ -892,6 +872,63 @@ void USkill_Ultimate::EndSpecialRoot()
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Special: player root ended."));
+}
+
+void USkill_Ultimate::DrawPentagramOnGround(const TArray<FVector>& OrbWorldLocations)
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+    if (OrbWorldLocations.Num() < 5) return;
+
+    // 1) 각 오브 위치를 바닥으로 투영 (라인트레이스)
+    TArray<FVector> GroundPoints;
+    GroundPoints.SetNum(5);
+
+    for (int32 i = 0; i < 5; ++i)
+    {
+        const FVector& P = OrbWorldLocations[i];
+
+        FVector Start = P + FVector(0.f, 0.f, 500.f);
+        FVector End = P - FVector(0.f, 0.f, 5000.f);
+
+        FHitResult Hit;
+        FCollisionQueryParams QueryParams(
+            SCENE_QUERY_STAT(SpecialPentagramTrace),
+            false,
+            nullptr);
+
+        if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, QueryParams))
+        {
+            GroundPoints[i] = Hit.ImpactPoint;      // 실제 바닥
+        }
+        else
+        {
+            // 바닥이 안 잡히면 그냥 위치의 Z를 약간 내린 값 사용
+            GroundPoints[i] = FVector(P.X, P.Y, P.Z - 50.f);
+        }
+    }
+
+    // 2) 오망성 연결 순서: 0 → 2 → 4 → 1 → 3 → 0
+    static const int32 StarOrder[6] = { 0, 2, 4, 1, 3, 0 };
+
+    const float LifeTime = SpecialDuration;  // Special 유지시간 동안 유지
+    const float Thickness = 6.f;
+
+    for (int32 i = 0; i < 5; ++i)
+    {
+        const FVector& A = GroundPoints[StarOrder[i]];
+        const FVector& B = GroundPoints[StarOrder[i + 1]];
+
+        DrawDebugLine(
+            World,
+            A,
+            B,
+            SpecialPentagramColor,
+            false,
+            LifeTime,
+            0,
+            Thickness);
+    }
 }
 
 void USkill_Ultimate::HandleSpecialOrbDestroyed(AActor* DestroyedActor)
