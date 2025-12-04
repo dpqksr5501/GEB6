@@ -59,7 +59,18 @@ void AEnemy_Special::ActivateUltimate()
 		}
 	}
 
-	// 여기서 호출되는 것은 USkill_Range::ActivateSkill()
+	// SpecialOrbClass 설정 (BP_Enemy_Special에서 설정한 값 사용)
+	if (SpecialOrbClass)
+	{
+		SpecialSkill->SpecialOrbClass = SpecialOrbClass;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Enemy_Special] SpecialOrbClass is not set in blueprint!"));
+		return;
+	}
+
+	// 여기서 호출되는 것은 USkill_Ultimate::ActivateSkill()
 	SpecialSkill->ActivateSkill();
 
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Special] Special Ultimate component activated!"));

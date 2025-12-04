@@ -10,6 +10,7 @@
 #include "Enemy_AI/Enemy_Base.h"
 #include "FormDefinition.h"
 #include "Skills/SkillBase.h"
+#include "Enemy_AI/Enemy_Special.h"
 
 UTUltimate::UTUltimate()
 {
@@ -129,16 +130,23 @@ void UTUltimate::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 		return;
 	}
 
-	// 몽타주가 재생 중인지 확인
-	if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
+	AEnemy_Special* EnemySpecial = Cast<AEnemy_Special>(Character);
+	if (!EnemySpecial)
 	{
-		// 몽타주 재생이 끝나면 상태를 Idle로 변경하고 태스크 성공
-		if (BlackboardComp)
+		// 몽타주가 재생 중인지 확인
+		if (!AnimInstance->Montage_IsPlaying(CurrentMontage))
 		{
-			BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
+			// 몽타주 재생이 끝나면 상태를 Idle로 변경하고 태스크 성공
+			if (BlackboardComp)
+			{
+				BlackboardComp->SetValueAsEnum("EnemyState", (uint8)EEnemyState::EES_Idle);
+			}
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			UE_LOG(LogTemp, Log, TEXT("TUltimate: SkillMontage finished, returning to Idle"));
 		}
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-		UE_LOG(LogTemp, Log, TEXT("TUltimate: SkillMontage finished, returning to Idle"));
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("TUltimate: Special is not done by montage"));
 	}
 }
 

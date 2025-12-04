@@ -30,14 +30,13 @@ void AEnemy_Tanker::Tick(float DeltaTime)
 	if (bIsGuardSkillActive && CachedGuardSkill)
 	{
 		// ConsumedShields가 RemainingShields보다 커지면 스킬 중단
-		if (CachedGuardSkill->ConsumedShields > CachedGuardSkill->RemainingShields)
+		if (CachedGuardSkill->ConsumedShields + 2 > CachedGuardSkill->RemainingShields)
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] ConsumedShields(%d) > RemainingShields(%d). Stopping Guard skill."),
 				CachedGuardSkill->ConsumedShields, CachedGuardSkill->RemainingShields);
 			
 			CachedGuardSkill->StopSkill();
 			bIsGuardSkillActive = false;
-			CachedGuardSkill = nullptr;
 		}
 	}
 }

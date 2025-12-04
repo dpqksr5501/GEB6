@@ -17,10 +17,11 @@ class KHU_GEB_API AEnemy_Special : public AEnemy_Base
 public:
 	AEnemy_Special();
 
+	virtual void BeginPlay() override;
 	virtual void ActivateSkill() override;
-
 	virtual void ActivateUltimate() override;
 
-protected:
-	virtual void BeginPlay() override;
+	// Special Ultimate에 사용할 Orb 클래스 (BP에서 설정)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill|Ultimate")
+	TSubclassOf<AActor> SpecialOrbClass;
 };
