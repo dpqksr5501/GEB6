@@ -133,6 +133,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     TSubclassOf<AActor> SpecialOrbClass;
 
+    /** 디버그: 오브 위치를 꼭짓점으로 하는 오망성을 바닥에 그릴지 여부 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
+    bool bDrawSpecialPentagram = true;
+
+    /** 오망성 라인 색상 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
+    FColor SpecialPentagramColor = FColor::Purple;
+
 protected:
     virtual void BeginPlay() override;
 
@@ -207,6 +215,9 @@ private:
 
     /** 속박 해제 */
     void EndSpecialRoot();
+
+    /** Orb 월드 위치들을 이용해, 바닥 위에 오망성(별) 라인을 그린다. */
+    void DrawPentagramOnGround(const TArray<FVector>& OrbWorldLocations);
 
     /** 구체가 파괴될 때 호출 (남은 구체 수 카운트용) */
     UFUNCTION()
