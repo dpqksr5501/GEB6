@@ -195,9 +195,6 @@ protected:
 	/** Called for lock on input */
 	void HandleLockOnToggle();
 
-	/** Called for Attack */
-	void OnAttackStarted(const FInputActionValue& Value);
-
 	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);
 	void SkillEnd(const FInputActionValue& Value);

@@ -352,7 +352,15 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 void UJumpComponent::HandleSpacePressed()
 {
 	if (!CachedCharacter) return;
-	// 여기에 CurrentForm 로그 출력. 정수 말고 이름으로 가능?
+	if (auto CachedPlayer = Cast<AKHU_GEBCharacter>(CachedCharacter))
+	{
+		if (CachedPlayer->CrowdControlComp && CachedPlayer->CrowdControlComp->IsActionBlocked()) return;
+	}
+	else if (auto CachedEnemy = Cast<AEnemy_Base>(CachedCharacter))
+	{
+		if (CachedEnemy->CrowdControlComp && CachedEnemy->CrowdControlComp->IsActionBlocked()) return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Current Form: %d"), static_cast<int32>(CurrentForm));
 	switch (CurrentForm)
 	{
@@ -527,19 +535,22 @@ void UJumpComponent::ApplyRangeLandingStun()
 
 	const FVector Center = CachedCharacter->GetActorLocation();
 
-	// 디버그 구체는 그대로 유지
+	// 디버그: XY 평면에 원만 그리기
 	if (bDrawRangeStompDebug)
 	{
-		DrawDebugSphere(
+		DrawDebugCircle(
 			World,
 			Center,
 			RangeStompRadius,
-			24,
+			32,                    // 세그먼트 수
 			RangeStompDebugColor,
 			false,
 			RangeStompStunDuration,
 			0,
-			2.0f
+			2.0f,
+			FVector(1.f, 0.f, 0.f),  // X축
+			FVector(0.f, 1.f, 0.f),  // Y축
+			false
 		);
 	}
 
@@ -566,6 +577,17 @@ void UJumpComponent::ApplyRangeLandingStun()
 	{
 		ACharacter* TargetChar = Cast<ACharacter>(Result.GetActor());
 		if (!TargetChar || TargetChar == CachedCharacter) continue;
+
+		// 2D 원 범위(XY) 체크: 높이(Z)는 무시
+		const FVector TargetLoc = TargetChar->GetActorLocation();
+		const float Dx = TargetLoc.X - Center.X;
+		const float Dy = TargetLoc.Y - Center.Y;
+		const float DistSq2D = Dx * Dx + Dy * Dy;
+		if (DistSq2D > FMath::Square(RangeStompRadius))
+		{
+			// 수평 거리만 기준으로 범위 밖이면 제외
+			continue;
+		}
 
 		// 아군/적 필터
 		if (PlayerOwner && !PlayerOwner->IsEnemyFor(TargetChar)) continue;

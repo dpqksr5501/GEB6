@@ -158,7 +158,7 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Attack
 		if (AttackManager)
 		{
-			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::OnAttackStarted);
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager.Get(), &UAttackComponent::AttackStarted);
 			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager.Get(), &UAttackComponent::AttackTriggered);
 			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager.Get(), &UAttackComponent::AttackCompleted);
 		}
@@ -382,17 +382,6 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
-void AKHU_GEBCharacter::OnAttackStarted(const FInputActionValue& Value)
-{
-	if (CrowdControlComp && CrowdControlComp->IsActionBlocked())
-		return;
-
-	if (AttackManager)
-	{
-		AttackManager->AttackStarted(Value);
-	}
-}
-
 void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 {
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
@@ -408,6 +397,7 @@ void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 {
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!SkillManager) return;
 	SkillManager->TryActivate(ESkillSlot::Ultimate);
 }

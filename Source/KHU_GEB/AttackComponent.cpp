@@ -16,6 +16,7 @@
 #include "FormManagerComponent.h"
 #include "GameFramework/Character.h"
 #include "Enemy_Base.h"
+#include "CrowdControlComponent.h"
 
 UAttackComponent::UAttackComponent() {}
 
@@ -107,6 +108,16 @@ void UAttackComponent::UnbindAnimDelegates()
 
 void UAttackComponent::AttackStarted(const FInputActionValue&)
 {
+    AActor* Owner = GetOwner();
+    if (auto CachedPlayer = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        if (CachedPlayer->CrowdControlComp && CachedPlayer->CrowdControlComp->IsActionBlocked()) return;
+    }
+    else if (auto CachedEnemy = Cast<AEnemy_Base>(Owner))
+    {
+        if (CachedEnemy->CrowdControlComp && CachedEnemy->CrowdControlComp->IsActionBlocked()) return;
+    }
+
     bAttackHeld = true;
     // 로직 순서 변경 
     //콤보 연계가 가능한지 확인합니다. 
@@ -120,10 +131,7 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
     }
 
     // 콤보 연계 상태가 아닐 때,
-    if (bIsAttacking)
-    {
-        return;
-    }
+    if (bIsAttacking) return;
 
     // bIsAttacking이 false일 때 (즉, 공격 중이 아닐 때) 1타 콤보를 새로 시작합니다.
     // *오직 콤보 인덱스가 0일 때만* 1타를 시작해야 합니다.
@@ -148,6 +156,16 @@ void UAttackComponent::AttackStarted(const FInputActionValue&)
 
 void UAttackComponent::AttackTriggered(const FInputActionValue&)
 {
+    AActor* Owner = GetOwner();
+    if (auto CachedPlayer = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        if (CachedPlayer->CrowdControlComp && CachedPlayer->CrowdControlComp->IsActionBlocked()) return;
+    }
+    else if (auto CachedEnemy = Cast<AEnemy_Base>(Owner))
+    {
+        if (CachedEnemy->CrowdControlComp && CachedEnemy->CrowdControlComp->IsActionBlocked()) return;
+    }
+
     bAttackHeld = true;
     if (bCanChain && !bAdvancedThisWindow) { AdvanceComboImmediately(); }
 }
