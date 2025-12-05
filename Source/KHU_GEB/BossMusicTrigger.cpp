@@ -41,47 +41,12 @@ void ABossMusicTrigger::Tick(float DeltaTime)
 
 void ABossMusicTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// 1. 닿은 액터가 플레이어 캐릭터인지 확인
+	AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OtherActor);
 
-	////ACharacter가 아니라, 내 게임의 플레이어 클래스(AKHU_GEBCharacter)인지 확인
-	//AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OtherActor);
-
-	//if (PlayerChar && MusicManagerRef && LevelBGM)
-	//{
-	//	// 플레이어가 맞고, 매니저와 음악이 있다면 재생 요청
-	//	MusicManagerRef->PlayMusic(LevelBGM);
-	//}
-
-    // 1. 함수가 실행되는지 확인
-    UE_LOG(LogTemp, Warning, TEXT("Trigger Touched!"));
-
-    AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OtherActor);
-
-    // 2. 닿은 게 플레이어가 맞는지 확인
-    if (PlayerChar)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("It is Player!"));
-
-        if (MusicManagerRef)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Manager Found, Trying to Play..."));
-            if (LevelBGM)
-            {
-                MusicManagerRef->PlayMusic(LevelBGM);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("LevelBGM is NULL!")); // 음악 파일 안 넣음
-            }
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("MusicManagerRef is NULL!")); // 매니저 배치 안 함
-        }
-    }
-    else
-    {
-        // 플레이어가 아니라 다른 게 닿았음 (예: 바닥, 적, 투사체 등)
-        if (OtherActor)
-            UE_LOG(LogTemp, Warning, TEXT("Touched by something else: %s"), *OtherActor->GetName());
-    }
+	// 2. 플레이어가 맞고 + 매니저가 존재하며 + 재생할 음악이 설정되어 있을 때만 실행
+	if (PlayerChar && MusicManagerRef && LevelBGM)
+	{
+		MusicManagerRef->PlayMusic(LevelBGM);
+	}
 }
