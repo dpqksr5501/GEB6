@@ -8,6 +8,8 @@
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "KHU_GEBCharacter.h"
 #include "Enemy_AI/EnemyAnimIntance.h"
 #include "Enemy_AI/Enemy_Dragon.h"
@@ -554,6 +556,24 @@ void UJumpComponent::ApplyRangeLandingStun()
 		);
 	}
 
+	// --- Range 급강하 착지 FX: 착지 지점 + 반경 스케일 ---
+	if (RangeStompNS)
+	{
+		float Scale = 1.f;
+		if (RangeStompReferenceRadius > 0.f)
+		{
+			Scale = RangeStompRadius / RangeStompReferenceRadius;
+		}
+
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			World,
+			RangeStompNS,
+			Center + RangeStompOffset,
+			FRotator::ZeroRotator,
+			FVector(Scale, Scale, 1.f)   // XY만 반경에 맞게 스케일, Z는 1 유지
+		);
+	}
+
 	TArray<FOverlapResult> Overlaps;
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(RangeStomp), false, CachedCharacter);
 	FCollisionObjectQueryParams ObjectParams;
@@ -654,6 +674,20 @@ void UJumpComponent::HandleSwiftPressed()
 		CachedCharacter->Jump();
 		bIsJumping = true;
 
+		// --- Swift 2단 점프 FX: 시전자 발밑 ---
+		if (SwiftSecondJumpNS && CachedCharacter)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAttached(
+				SwiftSecondJumpNS,
+				CachedCharacter->GetRootComponent(),
+				NAME_None,
+				SwiftSecondJumpOffset,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				true                        // bAutoDestroy
+			);
+		}
+
 		// 회전 시작 세팅
 		bSwiftSpinning = true;
 		SwiftSpinElapsed = 0.f;
@@ -696,18 +730,35 @@ void UJumpComponent::HandleGuardPressed()
 	else
 	{
 		// 플레이어나 다른 액터는 기존 쿨타임 체크 유지
-		if (!bCanGuardPull || bGuardPullActive)
-		{
-			return;
-		}
+		if (!bCanGuardPull || bGuardPullActive) return;
 	}
-
 
 	UE_LOG(LogTemp, Log, TEXT("[JumpComponent] HandleGuardPressed: Attempting to start Guard Pull"));
 	UWorld* World = GetWorld();
 	if (!World) return;
 
 	const FVector Center = CachedCharacter->GetActorLocation();
+
+	// Guard 끌어당기기 범위 디버그 (XY 평면 원)
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (bDrawGuardPullDebug)
+	{
+		DrawDebugCircle(
+			World,
+			Center,
+			GuardPullRadius,
+			32,                      // 세그먼트 수
+			GuardPullDebugColor,
+			false,                   // 영구 여부
+			1.5f,                    // Duration (초)
+			0,                       // Depth Priority
+			2.0f,                    // 선 두께
+			FVector(1.f, 0.f, 0.f),  // X축
+			FVector(0.f, 1.f, 0.f),  // Y축
+			false                    // Z-test 사용
+		);
+	}
+#endif
 
 	TArray<FOverlapResult> Overlaps;
 
@@ -748,6 +799,25 @@ void UJumpComponent::HandleGuardPressed()
 	{
 		// 끌어당길 대상이 없으면 쿨타임도 돌리지 않음
 		return;
+	}
+
+	// --- Guard 끌어당기기 범위 나이아가라 ---
+	if (GuardPullAreaNS && CachedCharacter)
+	{
+		const float Scale = GuardPullRadius / GuardPullReferenceRadius;
+
+		if (UNiagaraComponent* PullAreaComp =
+			UNiagaraFunctionLibrary::SpawnSystemAttached(
+				GuardPullAreaNS,
+				CachedCharacter->GetRootComponent(),
+				NAME_None,
+				GuardPullOffset,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				true))     // bAutoDestroy
+		{
+			PullAreaComp->SetWorldScale3D(FVector(Scale, Scale, 1.f));
+		}
 	}
 
 	// === ABP 플래그 설정 (Player와 Enemy 모두 지원) ===
@@ -895,6 +965,20 @@ void UJumpComponent::HandleSpecialPressed()
 
 	if (bTeleported)
 	{
+		// --- Special 블링크 FX: 텔레포트된 시전자에게 붙이기 ---
+		if (SpecialBlinkNS && CachedCharacter)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAttached(
+				SpecialBlinkNS,
+				CachedCharacter->GetRootComponent(),
+				NAME_None,
+				SpecialBlinkOffset,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				true                       // bAutoDestroy
+			);
+		}
+
 		// 블링크 성공 → 쿨타임 진입
 		bCanSpecialBlink = false;
 

@@ -38,10 +38,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|FX")
     TObjectPtr<UNiagaraSystem> ProjectileNS;
 
-    /** 조준 중에 바닥에 보여줄 범위 표시 나이아가라(원형 영역 같은 이펙트) */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
-    TObjectPtr<UNiagaraSystem> TargetAreaNS;
-
     /** 조준 원(빨간 서클)의 실제 반경 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Range|Target")
     float TargetRadius = 0.f;
@@ -85,8 +81,6 @@ private:
     float GetCurrentTargetRadius() const;
     float GetMaxAimDistance() const;
 
-    void SpawnOrUpdateIndicator();
-    void CleanupIndicator();
     void SpawnProjectileTowards(const FVector& TargetLocation);
     void SpawnDefaultProjectile();
 };

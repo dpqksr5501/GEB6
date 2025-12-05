@@ -2,12 +2,15 @@
 
 
 #include "Skills/Skill_Base.h"
+#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/OverlapResult.h"
-#include "DrawDebugHelpers.h"
-#include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "DrawDebugHelpers.h"
 
 USkill_Base::USkill_Base()
 {
@@ -26,6 +29,32 @@ void USkill_Base::ActivateSkill()
 
     // 2) 현재 폼의 스킬 몽타주 재생
     PlayFormSkillMontage();
+
+    // 2-1) 검 트레일 나이아가라 스폰
+    if (SwordTrailSystem)
+    {
+        // 시전자가 캐릭터라면 메시에 붙인다 (무기 메시는 보통 캐릭터 메시에 소켓으로 붙어 있음)
+        if (ACharacter* CharOwner = Cast<ACharacter>(Owner))
+        {
+            USkeletalMeshComponent* MeshComp = CharOwner->GetMesh();
+            if (MeshComp)
+            {
+                UNiagaraComponent* TrailComp =
+                    UNiagaraFunctionLibrary::SpawnSystemAttached(
+                        SwordTrailSystem,
+                        MeshComp,
+                        SwordTrailSocketName,    // 이 소켓을 검 끝에 두면 검 경로를 따라감
+                        FVector::ZeroVector,
+                        FRotator::ZeroRotator,
+                        EAttachLocation::SnapToTarget,
+                        true      // bAutoDestroy : 나이아가라 시스템 수명 끝나면 자동 파괴
+                    );
+
+                // 필요하면 여기서 TrailComp에 파라미터 세팅 가능
+                // if (TrailComp) { ... }
+            }
+        }
+    }
 
     // 3) 반경이 0 이하면 할 게 없음
     const float Radius = Params.Range;
@@ -59,7 +88,7 @@ void USkill_Base::ActivateSkill()
         Center,
         Radius,
         32,
-        FColor::White,
+        FColor::Purple,
         false,                  // 영구 아님
         1.5f,                   // Duration
         0,                      // Depth Priority
