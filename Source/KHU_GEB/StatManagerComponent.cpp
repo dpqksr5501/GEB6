@@ -270,3 +270,9 @@ float UStatManagerComponent::GetMinionKillProgress01(EFormType FormType) const
 	}
 	return 0.0f;
 }
+
+void UStatManagerComponent::RegisterKill(EFormType FormType /*, EEnemyKind Kind*/)
+{
+	// 현재는 몹 종류 구분 없이 "미니언 킬" 규칙만 적용
+	AddMinionKill(FormType);
+}
