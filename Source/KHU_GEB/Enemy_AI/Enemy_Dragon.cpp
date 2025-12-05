@@ -20,6 +20,8 @@ void AEnemy_Dragon::BeginPlay()
 
 void AEnemy_Dragon::ActivateSkill()
 {
+	Super::ActivateSkill();
+
 	// 1. 스킬 컴포넌트 가져오기
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) return;
@@ -56,6 +58,7 @@ void AEnemy_Dragon::ActivateSkill()
 
 void AEnemy_Dragon::ActivateUltimate()
 {	
+	Super::ActivateUltimate();
 
 	// 1. 스킬 컴포넌트 가져오기
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Ultimate);

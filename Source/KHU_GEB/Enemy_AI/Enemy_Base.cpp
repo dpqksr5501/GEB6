@@ -7,6 +7,7 @@
 #include "FormDefinition.h"
 #include "Skills/SkillBase.h"
 #include "JumpComponent.h"
+#include "CrowdControlComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/GameInstance.h"
 #include "Pooling/EnemyPoolSubsystem.h"
@@ -51,6 +52,13 @@ AEnemy_Base::AEnemy_Base()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - JumpComp creation failed"));
 	}
+
+	CrowdControlComp = CreateDefaultSubobject<UCrowdControlComponent>(TEXT("CrowdControlComp"));
+	if (!CrowdControlComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::BeginPlay - CrowdControlComp creation failed"));
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -119,20 +127,14 @@ void AEnemy_Base::InitializeSkills()
 	}
 }
 
-// 기본 구현 (하위 클래스가 오버라이드하지 않으면 이게 호출됨)
 void AEnemy_Base::ActivateSkill()
 {
-	UE_LOG(LogTemp, Warning, 
-		TEXT("[Enemy_Base] ActivateSkill called but not overridden! Class: %s"), 
-		*GetClass()->GetName());
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 }
 
-// 기본 구현 (하위 클래스가 오버라이드하지 않으면 이게 호출됨)
 void AEnemy_Base::ActivateUltimate()
 {
-	UE_LOG(LogTemp, Warning,
-		TEXT("[Enemy_Base] ActivateUltimate called but not overridden! Class: %s"),
-		*GetClass()->GetName());
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 }
 
 // 다른 Actor의 ApplyDamage에 의해 호출됨

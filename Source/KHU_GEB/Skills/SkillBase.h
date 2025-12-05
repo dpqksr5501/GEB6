@@ -39,8 +39,11 @@ protected:
     mutable TWeakObjectPtr<UManaComponent> CachedManaComp;
     UManaComponent* GetManaComponent() const;
 
-    //현재 폼의 스킬 몽타주를 재생하는 헬퍼 함수
+    // 현재 폼의 스킬 몽타주를 재생하는 헬퍼 함수
     void PlayFormSkillMontage();
+
+    // 현재 폼의 궁극기 몽타주를 재생하는 헬퍼 함수
+    void PlayFormUltimateMontage();
 
     EFormType GetCurrentFormType() const;
 

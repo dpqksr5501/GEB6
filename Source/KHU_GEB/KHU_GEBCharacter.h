@@ -29,7 +29,7 @@ class UStatManagerComponent;
 class UNiagaraComponent;
 class UWeaponComponent;
 class UPotionControlComp;
-
+class UCrowdControlComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -158,6 +158,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWeaponComponent> WeaponManager;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCrowdControlComponent* CrowdControlComp;
+
 	//추가 코드 부분입니다.
 	//애님 인스턴스에 데이터를 제공할 플레이어 전용 변수 2개를 추가합니다.
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State")
@@ -191,6 +194,9 @@ protected:
 
 	/** Called for lock on input */
 	void HandleLockOnToggle();
+
+	/** Called for Attack */
+	void OnAttackStarted(const FInputActionValue& Value);
 
 	/** Called for Skill */
 	void SkillStart(const FInputActionValue& Value);

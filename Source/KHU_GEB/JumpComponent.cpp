@@ -7,9 +7,12 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
 #include "Enemy_AI/EnemyAnimIntance.h"
 #include "Enemy_AI/Enemy_Dragon.h"
+#include "CrowdControlComponent.h"
+#include "DrawDebugHelpers.h"
 
 UJumpComponent::UJumpComponent()
 {
@@ -329,6 +332,13 @@ void UJumpComponent::OnCharacterLanded(const FHitResult& Hit)
 	// Range 락온 거리 조정 중이면 종료
 	bRangeLockOnAdjusting = false;
 
+	// Range 급강하 착지 스턴 처리
+	if (bRangeStompPending)
+	{
+		bRangeStompPending = false;
+		ApplyRangeLandingStun();
+	}
+
 	// Swift 회전 중이었다면 종료 + 각도 복원
 	if (bSwiftSpinning) { StopSwiftSpin(/*bResetRotation=*/true); }
 
@@ -479,6 +489,9 @@ void UJumpComponent::HandleRangePressed()
 
 		MoveComp->Velocity = Velocity;
 		MoveComp->GravityScale = RangeFastFallGravityScale;
+
+		// 이 순간 이후 착지하면 스턴이 나가도록 플래그 설정
+		bRangeStompPending = true;
 	}
 }
 
@@ -504,6 +517,95 @@ AActor* UJumpComponent::GetCurrentTargetForOwner() const
 	}
 
 	return nullptr;
+}
+
+void UJumpComponent::ApplyRangeLandingStun()
+{
+	if (!CachedCharacter) return;
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	const FVector Center = CachedCharacter->GetActorLocation();
+
+	// 디버그 구체는 그대로 유지
+	if (bDrawRangeStompDebug)
+	{
+		DrawDebugSphere(
+			World,
+			Center,
+			RangeStompRadius,
+			24,
+			RangeStompDebugColor,
+			false,
+			RangeStompStunDuration,
+			0,
+			2.0f
+		);
+	}
+
+	TArray<FOverlapResult> Overlaps;
+	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(RangeStomp), false, CachedCharacter);
+	FCollisionObjectQueryParams ObjectParams;
+	ObjectParams.AddObjectTypesToQuery(ECC_Pawn);
+
+	const bool bHitAny = World->OverlapMultiByObjectType(
+		Overlaps,
+		Center,
+		FQuat::Identity,
+		ObjectParams,
+		FCollisionShape::MakeSphere(RangeStompRadius),
+		QueryParams
+	);
+
+	if (!bHitAny) return;
+
+	AKHU_GEBCharacter* PlayerOwner = Cast<AKHU_GEBCharacter>(CachedCharacter);
+	AEnemy_Base* EnemyOwner = Cast<AEnemy_Base>(CachedCharacter);
+
+	for (const FOverlapResult& Result : Overlaps)
+	{
+		ACharacter* TargetChar = Cast<ACharacter>(Result.GetActor());
+		if (!TargetChar || TargetChar == CachedCharacter) continue;
+
+		// 아군/적 필터
+		if (PlayerOwner && !PlayerOwner->IsEnemyFor(TargetChar)) continue;
+		if (EnemyOwner && !EnemyOwner->IsEnemyFor(TargetChar))  continue;
+
+		if (UCrowdControlComponent* CC =
+			TargetChar->FindComponentByClass<UCrowdControlComponent>())
+		{
+			CC->ApplyStun(RangeStompStunDuration);
+		}
+	}
+
+	UE_LOG(LogTemp, Log,
+		TEXT("[JumpComponent] Range landing stomp applied (Radius=%.1f, Duration=%.2f)"),
+		RangeStompRadius, RangeStompStunDuration);
+}
+
+void UJumpComponent::EndRangeLandingStun(ACharacter* Target)
+{
+	if (!Target) return;
+
+	if (UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement())
+	{
+		float* FoundSpeed = RangeStunOriginalSpeeds.Find(Target);
+
+		// 저장해 둔 속도가 있으면 그걸로, 없으면 현재 MaxWalkSpeed 유지
+		const float RestoreSpeed = (FoundSpeed != nullptr)
+			? *FoundSpeed
+			: MoveComp->MaxWalkSpeed;
+
+		MoveComp->MaxWalkSpeed = RestoreSpeed;
+		MoveComp->StopMovementImmediately(); // 이상한 잔류 속도 제거
+
+		UE_LOG(LogTemp, Log,
+			TEXT("[JumpComponent] Range landing stun ended for %s (RestoreSpeed=%.1f)"),
+			*GetNameSafe(Target),
+			RestoreSpeed);
+	}
+
+	RangeStunOriginalSpeeds.Remove(Target);
 }
 
 /* =============== Swift: 더블 점프 =============== */
