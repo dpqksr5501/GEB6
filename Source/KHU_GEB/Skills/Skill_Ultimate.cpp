@@ -19,6 +19,7 @@
 #include "Enemy_AI/EnemyState.h"
 #include "Enemy_AI/Enemy_Base.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "CrowdControlComponent.h"
 
 void USkill_Ultimate::BeginPlay()
 {
@@ -73,8 +74,8 @@ void USkill_Ultimate::ActivateSkill()
         return;
     }
 
-    // 궁극기 애니메이션 재생 (FormDefinition에 궁극기 몽타주가 연결되어 있다는 가정)
-    PlayFormSkillMontage();
+    // 궁극기 애니메이션 재생
+    PlayFormUltimateMontage();
 
     // 공통 비용 처리 (쿨타임 + 마나)
     Super::ActivateSkill();
@@ -130,35 +131,90 @@ void USkill_Ultimate::ActivateRangeUltimate()
 
     bIsActive = true;
 
-    // 1) 브레스 FX 스폰
-    if (BreathNS)
-    {
-        if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
-        {
-            if (USkeletalMeshComponent* Mesh = OwnerChar->GetMesh())
-            {
-                SpawnedBreathNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-                    BreathNS,
-                    Mesh,
-                    MuzzleSocketName,
-                    FVector::ZeroVector,
-                    FRotator::ZeroRotator,
-                    EAttachLocation::SnapToTarget,
-                    true);
+    // === 0) 소유 캐릭터 / 소켓 트랜스폼 ===
+    ACharacter* OwnerChar = Cast<ACharacter>(Owner);
+    USkeletalMeshComponent* Mesh = OwnerChar ? OwnerChar->GetMesh() : nullptr;
 
-                // 간단히: 길이/두께 비율에 맞춰 스케일
-                if (SpawnedBreathNS)
-                {
-                    const float LengthScale = BreathLength / 100.f;
-                    const float RadiusScale = BreathRadius / 100.f;
-                    SpawnedBreathNS->SetWorldScale3D(
-                        FVector(LengthScale, RadiusScale, RadiusScale));
-                }
-            }
+    FTransform SocketTM;
+    if (Mesh)
+    {
+        if (Mesh->DoesSocketExist(MuzzleSocketName))
+        {
+            SocketTM = Mesh->GetSocketTransform(MuzzleSocketName);
+        }
+        else
+        {
+            SocketTM = OwnerChar->GetActorTransform();
+        }
+    }
+    else
+    {
+        SocketTM = Owner->GetActorTransform();
+    }
+
+    const FVector StartLoc = SocketTM.GetLocation();
+    FVector Forward = SocketTM.GetUnitAxis(EAxis::X);   // 기본 전방
+    const FVector Up = SocketTM.GetUnitAxis(EAxis::Z);
+
+    // === 1) '주시 중인 타겟' 좌표 구하기 ===
+    bool bHasFocus = false;
+    FVector FocusLocation = FVector::ZeroVector;
+
+    // 플레이어면 LockOn 타겟 우선
+    if (AKHU_GEBCharacter* PlayerOwner = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        if (AActor* LockTarget = PlayerOwner->GetLockOnTarget())
+        {
+            FocusLocation = LockTarget->GetActorLocation();
+            bHasFocus = true;
+        }
+    }
+    // (옵션) Enemy면 0번 플레이어를 기본 타겟으로 본다
+    else if (AEnemy_Base* EnemyOwner = Cast<AEnemy_Base>(Owner))
+    {
+        if (ACharacter* PlayerChar = Cast<ACharacter>(
+            UGameplayStatics::GetPlayerCharacter(World, 0)))
+        {
+            FocusLocation = PlayerChar->GetActorLocation();
+            bHasFocus = true;
         }
     }
 
-    // 2) 지속시간 타이머
+    // 타겟을 알고 있으면, 그 방향으로 Forward 갱신
+    if (bHasFocus)
+    {
+        FVector DirToTarget = FocusLocation - StartLoc;
+        if (!DirToTarget.IsNearlyZero())
+        {
+            Forward = DirToTarget.GetSafeNormal();
+        }
+    }
+
+    // === 3) 브레스 FX 소환 (입 소켓에 붙여서 위치/회전 따라가게) ===
+    if (BreathNS && OwnerChar && Mesh)
+    {
+        const float LengthScale = BreathLength / 100.f;
+        const float RadiusScale = BreathRadius / 100.f;
+
+        SpawnedBreathNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
+            BreathNS,
+            Mesh,
+            MuzzleSocketName,                               // 입 소켓 이름
+            FVector::ZeroVector,                            // 소켓 기준 오프셋
+            FRotator::ZeroRotator,                          // 소켓 회전 그대로 사용
+            EAttachLocation::SnapToTargetIncludingScale,    // 위치/회전/스케일 스냅
+            true,                                           // bAutoDestroy
+            true                                            // bAutoActivate
+        );
+
+        if (SpawnedBreathNS)
+        {
+            SpawnedBreathNS->SetWorldScale3D(
+                FVector(LengthScale, RadiusScale, RadiusScale));
+        }
+    }
+
+    // === 4) 지속시간 타이머 ===
     if (BreathDuration > 0.f)
     {
         World->GetTimerManager().SetTimer(
@@ -169,7 +225,7 @@ void USkill_Ultimate::ActivateRangeUltimate()
             false);
     }
 
-    // 3) 데미지 틱 타이머
+    // === 5) 데미지 틱 타이머 ===
     if (TickInterval > 0.f)
     {
         World->GetTimerManager().SetTimer(
@@ -203,6 +259,12 @@ void USkill_Ultimate::OnBreathDurationEnded()
         SpawnedBreathNS = nullptr;
     }
 
+    // Range 브레스 박스 캐시 초기화
+    bHasBreathBoxCache = false;
+    CachedBreathCenter = FVector::ZeroVector;
+    CachedBreathRotation = FQuat::Identity;
+    CachedBreathHalfExtent = FVector::ZeroVector;
+
     UE_LOG(LogTemp, Log, TEXT("[Skill_Ultimate] Range Breath finished."));
 
     // 공통 Stop 로그 등
@@ -220,6 +282,7 @@ bool USkill_Ultimate::GetBreathBox(
     FQuat& OutRotation,
     FVector& OutHalfExtent) const
 {
+    // 항상 현재 입 소켓 기준으로 계산
     AActor* Owner = GetOwner();
     ACharacter* OwnerChar = Cast<ACharacter>(Owner);
     if (!OwnerChar) return false;
@@ -228,26 +291,83 @@ bool USkill_Ultimate::GetBreathBox(
     if (!Mesh) return false;
 
     FTransform SocketTM;
-
-    if (Mesh->DoesSocketExist(MuzzleSocketName))
-    {
-        SocketTM = Mesh->GetSocketTransform(MuzzleSocketName);
-    }
-    else
-    {
-        SocketTM = OwnerChar->GetActorTransform();
-    }
+    if (Mesh->DoesSocketExist(MuzzleSocketName)) { SocketTM = Mesh->GetSocketTransform(MuzzleSocketName); }
+    else { SocketTM = OwnerChar->GetActorTransform(); }
 
     const FVector StartLoc = SocketTM.GetLocation();
 
-    // 소켓의 X축을 "브레스가 나가는 방향"으로 사용
-    const FVector Forward = SocketTM.GetUnitAxis(EAxis::X);
+    // 소켓 X축 = 브레스 방향, Z축 = 위
+    const FVector SocketForward = SocketTM.GetUnitAxis(EAxis::X);
     const FVector Up = SocketTM.GetUnitAxis(EAxis::Z);
 
-    const float HalfLength = BreathLength * 0.5f;
+    // 1) 주시 중인 타겟 위치 구하기
+    bool bHasFocus = false;
+    FVector FocusLocation = StartLoc;
 
-    OutCenter = StartLoc + Forward * HalfLength;
-    OutRotation = FRotationMatrix::MakeFromXZ(Forward, Up).ToQuat();
+    if (AKHU_GEBCharacter* PlayerOwner = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        if (AActor* LockTarget = PlayerOwner->GetLockOnTarget())
+        {
+            FocusLocation = LockTarget->GetActorLocation();
+            bHasFocus = true;
+        }
+    }
+    else if (AEnemy_Base* EnemyOwner = Cast<AEnemy_Base>(Owner))
+    {
+        if (ACharacter* PlayerChar = Cast<ACharacter>(
+            UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+        {
+            FocusLocation = PlayerChar->GetActorLocation();
+            bHasFocus = true;
+        }
+    }
+
+    // 2) 끝점 Z가 타겟 Z를 따라가도록, "시작점 → 끝점" 구간 벡터 계산
+    FVector Segment;
+
+    if (bHasFocus)
+    {
+        // 가로 방향은 입의 전방(Yaw) 기준
+        FVector ForwardXY = SocketForward;
+        ForwardXY.Z = 0.f;
+
+        if (ForwardXY.IsNearlyZero())
+        {
+            // 정면이 너무 위/아래면 그냥 소켓 전방 사용
+            ForwardXY = SocketForward;
+        }
+        ForwardXY = ForwardXY.GetSafeNormal();
+
+        // 브레스 기본 끝점 (가로 방향으로 BreathLength 만큼)
+        const FVector BaseEnd = StartLoc + ForwardXY * BreathLength;
+
+        // 끝점 Z를 타겟 Z로 덮어쓰기
+        FVector EndLoc = BaseEnd;
+        EndLoc.Z = FocusLocation.Z;
+
+        Segment = EndLoc - StartLoc;
+    }
+    else
+    {
+        // 타겟이 없으면 기존처럼 소켓 전방으로 고정
+        Segment = SocketForward * BreathLength;
+    }
+
+    if (Segment.IsNearlyZero())
+    {
+        Segment = SocketForward * BreathLength;
+    }
+
+    const float HalfLength = Segment.Size() * 0.5f;
+
+    // 중심 = 시작점과 끝점의 중간
+    OutCenter = StartLoc + Segment * 0.5f;
+
+    // 박스의 X축(길이 방향)은 시작→끝 방향
+    const FVector ForwardDir = Segment.GetSafeNormal();
+    OutRotation = FRotationMatrix::MakeFromXZ(ForwardDir, Up).ToQuat();
+
+    // 두께는 그대로, 길이는 세그먼트 길이 기준
     OutHalfExtent = FVector(HalfLength, BreathRadius, BreathRadius);
 
     return true;
@@ -472,37 +592,14 @@ void USkill_Ultimate::OnAttackFromStealth(AActor* HitActor)
 {
     if (!bSwiftStealthActive) return;
 
-    // 1) 스턴 적용 (공격이 실제로 적중한 경우에만)
     if (SwiftStunDuration > 0.f && HitActor)
     {
-        // ACharacter 기준으로 스턴 (플레이어만 스턴하고 싶으면 AKHU_GEBCharacter* 로 캐스팅을 좁히면 됩니다)
         if (ACharacter* HitChar = Cast<ACharacter>(HitActor))
         {
-            if (UCharacterMovementComponent* MoveComp = HitChar->GetCharacterMovement())
+            if (UCrowdControlComponent* CC =
+                HitChar->FindComponentByClass<UCrowdControlComponent>())
             {
-                // 이동 불가
-                MoveComp->DisableMovement();
-
-                // SwiftStunDuration 후에 다시 걷기 모드로 되돌리는 타이머
-                if (UWorld* World = GetWorld())
-                {
-                    FTimerHandle StunTimerHandle;
-                    FTimerDelegate StunEndDelegate;
-                    StunEndDelegate.BindLambda([HitChar]()
-                        {
-                            if (UCharacterMovementComponent* MoveCompInner = HitChar->GetCharacterMovement())
-                            {
-                                // 필요시 원래 모드 저장/복원 로직 추가 가능
-                                MoveCompInner->SetMovementMode(MOVE_Walking);
-                            }
-                        });
-
-                    World->GetTimerManager().SetTimer(
-                        StunTimerHandle,
-                        StunEndDelegate,
-                        SwiftStunDuration,
-                        false);
-                }
+                CC->ApplyStun(SwiftStunDuration);
             }
         }
     }
@@ -511,7 +608,6 @@ void USkill_Ultimate::OnAttackFromStealth(AActor* HitActor)
         TEXT("[Skill_Ultimate] Swift stealth broken by attacking. Hit: %s"),
         *GetNameSafe(HitActor));
 
-    // 2) 은신 종료
     EndSwiftUltimate();
 }
 
@@ -541,12 +637,15 @@ void USkill_Ultimate::ActivateGuardUltimate()
     const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
 
     AController* InstigatorController = nullptr;
-    if (APawn* PawnOwner = Cast<APawn>(Owner)) { InstigatorController = PawnOwner->GetController(); }
+    if (APawn* PawnOwner = Cast<APawn>(Owner))
+    {
+        InstigatorController = PawnOwner->GetController();
+    }
 
     const FVector Origin = Owner->GetActorLocation();
     const FVector Forward = Owner->GetActorForwardVector();
 
-    // 1) 사정거리 내 Pawn들 Overlap (구체)
+    // 1) 구체 오버랩
     FCollisionObjectQueryParams ObjParams;
     ObjParams.AddObjectTypesToQuery(GuardCollisionChannel);
 
@@ -561,30 +660,63 @@ void USkill_Ultimate::ActivateGuardUltimate()
         FCollisionShape::MakeSphere(GuardRange),
         QueryParams);
 
-    // 디버그: 부채꼴 표시 (원 + 경계선 2개 정도)
+    // 디버그 선/원 그리기
     if (bDrawDebugGuard)
     {
-        // 범위 원
-        DrawDebugCircle(
+        const float LifeTime = 1.5f;   // 얼마 동안 보일지 (원하는 값으로)
+        const float Thickness = 2.0f;
+
+        // Z축 기준 회전 (Yaw만 사용)
+        const FVector UpVector = FVector::UpVector;
+
+        // 왼/오른쪽 경계 벡터
+        const FVector LeftDir = Forward.RotateAngleAxis(-GuardConeHalfAngleDeg, UpVector);
+        const FVector RightDir = Forward.RotateAngleAxis(+GuardConeHalfAngleDeg, UpVector);
+
+        // 부채꼴 경계선 2개
+        DrawDebugLine(
             World,
             Origin,
-            GuardRange,
-            32,
+            Origin + LeftDir * GuardRange,
             GuardDebugColor,
             false,
-            1.f,
+            LifeTime,
             0,
-            2.f,
-            FVector(1.f, 0.f, 0.f),
-            FVector(0.f, 1.f, 0.f),
-            false);
+            Thickness);
 
-        const float HalfRad = FMath::DegreesToRadians(GuardConeHalfAngleDeg);
-        const FVector RightDir = Forward.RotateAngleAxis(+GuardConeHalfAngleDeg, FVector::UpVector);
-        const FVector LeftDir = Forward.RotateAngleAxis(-GuardConeHalfAngleDeg, FVector::UpVector);
+        DrawDebugLine(
+            World,
+            Origin,
+            Origin + RightDir * GuardRange,
+            GuardDebugColor,
+            false,
+            LifeTime,
+            0,
+            Thickness);
 
-        DrawDebugLine(World, Origin, Origin + RightDir * GuardRange, GuardDebugColor, false, 1.f, 0, 2.f);
-        DrawDebugLine(World, Origin, Origin + LeftDir * GuardRange, GuardDebugColor, false, 1.f, 0, 2.f);
+        // 반지름 원(위에서 내려다본) 대략적인 표시
+        const int32 NumSegments = 24;
+        const float StepAngle = (GuardConeHalfAngleDeg * 2.f) / NumSegments;
+
+        FVector PrevPoint = Origin + Forward * GuardRange;
+        for (int32 i = 1; i <= NumSegments; ++i)
+        {
+            const float Angle = -GuardConeHalfAngleDeg + StepAngle * i;
+            const FVector Dir = Forward.RotateAngleAxis(Angle, UpVector);
+            const FVector CurPoint = Origin + Dir * GuardRange;
+
+            DrawDebugLine(
+                World,
+                PrevPoint,
+                CurPoint,
+                GuardDebugColor,
+                false,
+                LifeTime,
+                0,
+                1.0f);
+
+            PrevPoint = CurPoint;
+        }
     }
 
     if (!bAnyHit)
@@ -598,43 +730,39 @@ void USkill_Ultimate::ActivateGuardUltimate()
     const float CosThreshold = FMath::Cos(ConeHalfRad);
     const float RangeSq = GuardRange * GuardRange;
 
+    // 한 궁극기 발동당 한 번만 처리할 대상들
+    TSet<ACharacter*> UniqueTargets;
+
     for (const FOverlapResult& O : Overlaps)
     {
         AActor* Other = O.GetActor();
         ACharacter* TargetChar = Cast<ACharacter>(Other);
-        if (!TargetChar || TargetChar == Owner)
-        {
-            continue;
-        }
+        if (!TargetChar || TargetChar == Owner) continue;
+
+        // 이미 처리한 캐릭터면 스킵
+        if (UniqueTargets.Contains(TargetChar)) continue;
 
         // 거리 체크
         const FVector ToTarget = TargetChar->GetActorLocation() - Origin;
-        const float DistSq = ToTarget.SizeSquared();
-        if (DistSq > RangeSq || DistSq <= KINDA_SMALL_NUMBER)
-        {
-            continue;
-        }
+        const float   DistSq = ToTarget.SizeSquared();
+        if (DistSq > RangeSq || DistSq <= KINDA_SMALL_NUMBER) continue;
 
-        // 각도 체크 (부채꼴 안에 있는지)
+        // 각도 체크 (부채꼴)
         const FVector DirToTarget = ToTarget.GetSafeNormal();
         const float   CosValue = FVector::DotProduct(Forward, DirToTarget);
-        if (CosValue < CosThreshold)
-        {
-            continue; // 부채꼴 밖
-        }
+        if (CosValue < CosThreshold) continue;
 
-        // === 여기까지 온 것은: 사정거리 + 부채꼴 안의 "적" ===
+        // 여기까지 온 대상만 "이번 궁극기의 타깃"으로 확정
+        UniqueTargets.Add(TargetChar);
 
-        // Enemy가 공격중이더라도 끊어버리기 위해 추가했습니다. - 김관희
+        // Enemy 상태 강제 Damaged (기존 코드 그대로)
         if (AEnemy_Base* EnemyTarget = Cast<AEnemy_Base>(TargetChar))
-        {   
+        {
             if (UBlackboardComponent* BB = EnemyTarget->BlackboardComp)
             {
-                // 현재 상태 확인 (로그용)
                 const EEnemyState CurrentState = static_cast<EEnemyState>(
                     BB->GetValueAsEnum("EnemyState"));
 
-                // 강제로 Damaged 상태로 변경
                 BB->SetValueAsEnum("EnemyState",
                     static_cast<uint8>(EEnemyState::EES_Damaged));
 
@@ -644,12 +772,10 @@ void USkill_Ultimate::ActivateGuardUltimate()
                     static_cast<int32>(CurrentState));
             }
         }
-        // 여기까지
-        
-        // 2) 데미지 부여
+
+        // 2) 데미지
         if (GuardDamage > 0.f)
         {
-            // 팀 필터도 여기서 한 번 더 할 수 있음 (선택 사항)
             if (bOwnerIsPlayer && !TargetChar->IsA<AEnemy_Base>()) { /*continue;*/ }
             if (bOwnerIsEnemy && !TargetChar->IsA<AKHU_GEBCharacter>()) { /*continue;*/ }
 
@@ -661,33 +787,24 @@ void USkill_Ultimate::ActivateGuardUltimate()
                 UDamageType::StaticClass());
         }
 
-        // 3) 추락 + 기절(속박)
+        // 3) 추락 + 스턴
         if (UCharacterMovementComponent* MoveComp = TargetChar->GetCharacterMovement())
         {
-            // 추락: 아래 방향으로 강하게 날려서 땅으로 떨어뜨림
+            // 1) 기존 속도는 모두 정지 (수평 미끄러짐 방지)
+            MoveComp->StopMovementImmediately();
+
+            // 2) "떨어지는 상태"로 전환
+            MoveComp->SetMovementMode(MOVE_Falling);
+
+            // 3) 아래로 강하게 밀어주는 임펄스 (낙하 연출)
             const FVector DownImpulse(0.f, 0.f, -GuardFallStrength);
             TargetChar->LaunchCharacter(DownImpulse, true, true);
 
-            // 바로 움직임 금지
-            MoveComp->DisableMovement();
-
-            // GuardStunDuration 후 기절 해제
-            if (GuardStunDuration > 0.f)
+            // 4) 스턴
+            if (UCrowdControlComponent* CC =
+                TargetChar->FindComponentByClass<UCrowdControlComponent>())
             {
-                FTimerDelegate StunEndDelegate;
-                StunEndDelegate.BindUObject(this, &USkill_Ultimate::EndGuardStun, TargetChar);
-
-                FTimerHandle TmpHandle;
-                World->GetTimerManager().SetTimer(
-                    TmpHandle,
-                    StunEndDelegate,
-                    GuardStunDuration,
-                    false);
-            }
-            else
-            {
-                // 지속시간 0 이하라면 바로 해제
-                EndGuardStun(TargetChar);
+                CC->ApplyStun(GuardStunDuration);
             }
         }
     }
@@ -695,21 +812,6 @@ void USkill_Ultimate::ActivateGuardUltimate()
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Guard ultimate executed (Range=%.1f, Damage=%.1f, Stun=%.2f)"),
         GuardRange, GuardDamage, GuardStunDuration);
-}
-
-void USkill_Ultimate::EndGuardStun(ACharacter* Target)
-{
-    if (!Target) return;
-
-    if (UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement())
-    {
-        // 다시 걷기 모드로
-        MoveComp->SetMovementMode(MOVE_Walking);
-    }
-
-    UE_LOG(LogTemp, Verbose,
-        TEXT("[Skill_Ultimate] Guard stun ended for %s"),
-        *Target->GetName());
 }
 
 /*============================= Special =============================*/
@@ -918,17 +1020,17 @@ void USkill_Ultimate::ApplyRootToPlayer(float Duration)
 
     ACharacter* PlayerChar = Cast<ACharacter>(
         UGameplayStatics::GetPlayerCharacter(World, 0));
-
     if (!PlayerChar) return;
 
     SpecialRootedPlayer = PlayerChar;
 
-    if (UCharacterMovementComponent* MoveComp = PlayerChar->GetCharacterMovement())
+    if (UCrowdControlComponent* CC =
+        PlayerChar->FindComponentByClass<UCrowdControlComponent>())
     {
-        // 완전 고정
-        MoveComp->DisableMovement();
+        CC->ApplyStun(Duration); // 또는 ApplyRoot(Duration) 만 쓰고 싶으면 Root
     }
 
+    // 굳이 MovementMode를 직접 건드릴 필요 없음
     World->GetTimerManager().SetTimer(
         SpecialRootTimerHandle,
         this,
@@ -948,10 +1050,12 @@ void USkill_Ultimate::EndSpecialRoot()
 
     if (ACharacter* PlayerChar = Cast<ACharacter>(SpecialRootedPlayer.Get()))
     {
-        if (UCharacterMovementComponent* MoveComp = PlayerChar->GetCharacterMovement())
+        if (UCrowdControlComponent* CC =
+            PlayerChar->FindComponentByClass<UCrowdControlComponent>())
         {
-            // 다시 걷기 모드로
-            MoveComp->SetMovementMode(MOVE_Walking);
+            // 여기서 ClearCC()를 직접 호출할 수도 있지만,
+            // 어차피 타이머로 Duration이 끝나면 자동 해제되므로
+            // 별도 처리 안 해도 됨 (원한다면 명시적으로 ClearCC 호출)
         }
     }
 

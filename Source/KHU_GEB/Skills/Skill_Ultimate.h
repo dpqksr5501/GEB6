@@ -256,6 +256,13 @@ private:
     /** 데미지 틱 타이머 */
     FTimerHandle TickTimerHandle;
 
+    /** Range 브레스 데미지 박스 월드 캐시 */
+    bool   bHasBreathBoxCache = false;
+    FVector CachedBreathCenter = FVector::ZeroVector;
+    FQuat   CachedBreathRotation = FQuat::Identity;
+    FVector CachedBreathHalfExtent = FVector::ZeroVector;
+
+
     // ---------------- Swift 상태 ----------------
     /** 현재 Swift 은신이 켜져 있는지 */
     bool bSwiftStealthActive = false;

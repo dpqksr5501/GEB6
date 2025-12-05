@@ -16,6 +16,7 @@ class UWeaponData;
 class UFormDefinition;
 class UJumpComponent;
 class USkillBase;
+class UCrowdControlComponent;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -92,5 +93,8 @@ public:
 	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BlackboardComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CC")
+	UCrowdControlComponent* CrowdControlComp;
 
 };
