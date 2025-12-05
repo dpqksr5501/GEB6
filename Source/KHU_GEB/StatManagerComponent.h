@@ -11,6 +11,13 @@
 class UFormStatData;
 class UFormSet;
 
+UENUM(BlueprintType)
+enum class EEnemyKind : uint8
+{
+	Minion UMETA(DisplayName = "Minion"),
+	Elite  UMETA(DisplayName = "Elite"),
+	Boss   UMETA(DisplayName = "Boss")
+};
 
 USTRUCT(BlueprintType)
 struct FFormRuntimeStats
@@ -134,5 +141,5 @@ public:
 	////
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
-	void RegisterKill(EFormType FormType /*, EEnemyKind Kind*/);
+	void RegisterKill(EFormType FormType, EEnemyKind Kind);
 };

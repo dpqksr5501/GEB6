@@ -390,6 +390,28 @@ void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 {
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!SkillManager) return;
+
+	// 추가: Elite 처치 전에는 스킬 잠금 (폼별로)
+	if (FormManager && StatManager)
+	{
+		const EFormType CurrentForm = FormManager->CurrentForm;
+
+		// Base 폼은 항상 허용하고, 나머지 폼은 Elite를 잡아야 스킬 해제
+		if (CurrentForm != EFormType::Base)
+		{
+			if (const FFormRuntimeStats* Stats = StatManager->GetStats(CurrentForm))
+			{
+				if (!Stats->bKilledElite)
+				{
+					UE_LOG(LogTemp, Log,
+						TEXT("[Character] Skill locked: Elite not killed yet for form %d"),
+						static_cast<int32>(CurrentForm));
+					return;
+				}
+			}
+		}
+	}
+
 	SkillManager->TryActivate(ESkillSlot::Active);
 }
 

@@ -271,8 +271,28 @@ float UStatManagerComponent::GetMinionKillProgress01(EFormType FormType) const
 	return 0.0f;
 }
 
-void UStatManagerComponent::RegisterKill(EFormType FormType /*, EEnemyKind Kind*/)
+void UStatManagerComponent::RegisterKill(EFormType FormType, EEnemyKind Kind)
 {
-	// 현재는 몹 종류 구분 없이 "미니언 킬" 규칙만 적용
-	AddMinionKill(FormType);
+	switch (Kind)
+	{
+	case EEnemyKind::Minion:
+		// 기존 로직 그대로: 미니언은 경험치/레벨업 처리
+		AddMinionKill(FormType);
+		break;
+
+	case EEnemyKind::Elite:
+		// Elite 처치: 해당 폼의 bKilledElite = true
+		MarkEliteKilled(FormType);
+		break;
+
+	case EEnemyKind::Boss:
+		// Boss 처치: 해당 폼의 bKilledBoss = true
+		MarkBossKilled(FormType);
+		break;
+
+	default:
+		// 혹시 모르는 값은 Minion처럼 처리
+		AddMinionKill(FormType);
+		break;
+	}
 }
