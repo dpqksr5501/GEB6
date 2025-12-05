@@ -296,7 +296,7 @@ void AEnemy_Base::HandleKilledBy(AActor* Killer)
 		FormTypeForExp = DefaultFormDef->FormType;
 	}
 
-	Player->StatManager->RegisterKill(FormTypeForExp);
+	Player->StatManager->RegisterKill(FormTypeForExp, EnemyKind);
 
 	UE_LOG(LogTemp, Log,
 		TEXT("[Enemy_Base] Killed by %s, registered kill for form %d"),

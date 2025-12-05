@@ -111,6 +111,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Form")
 	EFormType EnemyFormType = EFormType::Base;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	EEnemyKind EnemyKind = EEnemyKind::Minion;
+
 	// 런타임 Attack/Defense를 손쉽게 가져다 쓰기 위한 헬퍼
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	float GetAttackStat() const { return EnemyStats.Attack; }
