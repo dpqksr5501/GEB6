@@ -101,7 +101,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass);
 
-    /** 모든 적이 처치되었을 때 브로드캐스트되는 델리게이트 (BP에서 바인딩 가능) */
+    /**
+     * 모든 카운터를 초기화합니다. 레벨 전환 시 호출하여 이전 레벨의 카운트를 정리합니다.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
+    void ResetAllCounters();
+
+    /** 모든 적이 처치되었을 때 발생하는 델리게이트 */
     UPROPERTY(BlueprintAssignable, Category = "Enemy Spawn Director")
     FOnAllEnemiesDefeated OnAllEnemiesDefeated;
 
