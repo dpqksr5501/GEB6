@@ -584,7 +584,15 @@ void USkill_Ultimate::EndSwiftUltimate()
 void USkill_Ultimate::OnSwiftDurationEnded()
 {
     UE_LOG(LogTemp, Log,
-        TEXT("[Skill_Ultimate] Swift stealth duration ended."));
+        TEXT("[Skill_Ultimate] Swift stealth duration ended. Triggering end explosion."));
+
+    // 혹시 도중에 이미 깨져서 비활성화된 경우 방어
+    if (!bSwiftStealthActive) return;
+
+    // 1) 은신 시간 만료로 인한 폭발 적용
+    ApplySwiftEndExplosion();
+
+    // 2) 공통 종료 처리 (투명/이속 복구)
     EndSwiftUltimate();
 }
 
@@ -623,6 +631,114 @@ void USkill_Ultimate::HandleOwnerDamaged(
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth broken by taking damage."));
     EndSwiftUltimate();
+}
+
+void USkill_Ultimate::ApplySwiftEndExplosion()
+{
+    UWorld* World = GetWorld();
+    AActor* Owner = GetOwner();
+    if (!World || !Owner) return;
+
+    if (SwiftEndRadius <= 0.f)
+    {
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Ultimate] SwiftEndExplosion skipped: radius <= 0"));
+        return;
+    }
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
+
+    // InstigatorController 설정 (데미지 가해자용)
+    AController* InstigatorController = nullptr;
+    if (APawn* PawnOwner = Cast<APawn>(Owner))
+    {
+        InstigatorController = PawnOwner->GetController();
+    }
+
+    const FVector Origin = Owner->GetActorLocation();
+
+    // Overlap 설정
+    FCollisionObjectQueryParams ObjParams;
+    ObjParams.AddObjectTypesToQuery(SwiftEndCollisionChannel);
+
+    FCollisionQueryParams QueryParams(
+        SCENE_QUERY_STAT(SkillUltimateSwiftEnd),
+        false,
+        Owner);
+
+    TArray<FOverlapResult> Overlaps;
+
+    const bool bAnyHit = World->OverlapMultiByObjectType(
+        Overlaps,
+        Origin,
+        FQuat::Identity,
+        ObjParams,
+        FCollisionShape::MakeSphere(SwiftEndRadius),
+        QueryParams);
+
+    // 디버그용 구체
+    if (bDrawDebugSwiftEnd)
+    {
+        DrawDebugSphere(
+            World,
+            Origin,
+            SwiftEndRadius,
+            24,
+            SwiftEndDebugColor,
+            false,
+            1.5f,
+            0,
+            2.0f);
+    }
+
+    if (!bAnyHit)
+    {
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Ultimate] SwiftEndExplosion: no targets in range."));
+        return;
+    }
+
+    TSet<ACharacter*> UniqueTargets;
+
+    for (const FOverlapResult& O : Overlaps)
+    {
+        AActor* Other = O.GetActor();
+        ACharacter* Target = Cast<ACharacter>(Other);
+        if (!Target || Target == Owner) continue;
+
+        if (UniqueTargets.Contains(Target)) continue;
+        UniqueTargets.Add(Target);
+
+        // 팀 필터: 플레이어면 Enemy만, Enemy면 Player만
+        if (bOwnerIsPlayer && !Target->IsA<AEnemy_Base>()) continue;
+        if (bOwnerIsEnemy && !Target->IsA<AKHU_GEBCharacter>()) continue;
+
+        // 1) 대미지
+        if (SwiftEndDamage > 0.f)
+        {
+            UGameplayStatics::ApplyDamage(
+                Target,
+                SwiftEndDamage,
+                InstigatorController,
+                Owner,
+                UDamageType::StaticClass());
+        }
+
+        // 2) 스턴
+        if (SwiftEndStunDuration > 0.f)
+        {
+            if (UCrowdControlComponent* CC =
+                Target->FindComponentByClass<UCrowdControlComponent>())
+            {
+                CC->ApplyStun(SwiftEndStunDuration);
+            }
+        }
+    }
+
+    UE_LOG(LogTemp, Log,
+        TEXT("[Skill_Ultimate] SwiftEndExplosion executed (Radius=%.1f, Damage=%.1f, Stun=%.2f)"),
+        SwiftEndRadius, SwiftEndDamage, SwiftEndStunDuration);
 }
 
 /*============================= Guard =============================*/

@@ -81,6 +81,31 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
     float SwiftStunDuration = 1.5f;
 
+    /** 은신이 '시간 만료'로 해제될 때 적용할 범위 (구체 반경) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
+    float SwiftEndRadius = 600.f;
+
+    /** 은신이 '시간 만료'로 해제될 때 들어가는 대미지 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
+    float SwiftEndDamage = 50.f;
+
+    /** 은신이 '시간 만료'로 해제될 때 거는 스턴 시간 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
+    float SwiftEndStunDuration = 1.5f;
+
+    /** 폭발 범위 Overlap에 사용할 채널 (기본 Pawn) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
+    TEnumAsByte<ECollisionChannel> SwiftEndCollisionChannel = ECC_Pawn;
+
+    /** 디버그: 폭발 구체를 그릴지 여부 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|Debug")
+    bool bDrawDebugSwiftEnd = false;
+
+    /** 디버그용 구체 색상 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|Debug")
+    FColor SwiftEndDebugColor = FColor::Cyan;
+
+
     // ---------------- Guard 설정 값 ----------------
 
     /** 지진 사정거리 (부채꼴의 반지름) */
@@ -205,6 +230,9 @@ private:
     UFUNCTION()
     void HandleOwnerDamaged(float NewHealth, float RawDamage, float FinalDamage,
         AActor* InstigatorActor, AActor* DamageCauser);
+
+    /** 은신이 '시간 만료'로 끝날 때 광역 대미지 + 스턴 처리 */
+    void ApplySwiftEndExplosion();
 
     // Guard용 헬퍼들
 
