@@ -183,8 +183,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HandleDeath();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UAnimMontage* DeathMontage;
+	// 폼별 데스 몽타주 (BP에서 각각 세팅)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Death|Montage")
+	UAnimMontage* BaseDeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Death|Montage")
+	UAnimMontage* RangeDeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Death|Montage")
+	UAnimMontage* SwiftDeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Death|Montage")
+	UAnimMontage* GuardDeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Death|Montage")
+	UAnimMontage* SpecialDeathMontage;
+
+
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsDead = false;

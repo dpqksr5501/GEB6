@@ -856,7 +856,7 @@ void AKHU_GEBCharacter::ClearLockOnIfTarget(AActor* Target)
 }
 
 
-void AKHU_GEBCharacter::HandleDeath() 
+void AKHU_GEBCharacter::HandleDeath()
 {
 	if (bIsDead)
 	{
@@ -885,16 +885,58 @@ void AKHU_GEBCharacter::HandleDeath()
 		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
-	// 데스 몽타주 재생
-	if (DeathMontage && GetMesh())
+	// 1) 현재 폼 가져오기 (FormManager->CurrentForm 사용)
+	EFormType CurrentForm = EFormType::Base;
+	if (FormManager)
 	{
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-		{
-			AnimInstance->Montage_Play(DeathMontage, 1.0f);
-		}
+		CurrentForm = FormManager->CurrentForm;
+	}
+
+	// 2) 폼에 따라 재생할 몽타주 선택
+	UAnimMontage* MontageToPlay = nullptr;
+
+	switch (CurrentForm)
+	{
+	case EFormType::Base:
+		MontageToPlay = BaseDeathMontage;
+		break;
+
+	case EFormType::Range:
+		MontageToPlay = RangeDeathMontage;
+		break;
+
+	case EFormType::Swift:
+		MontageToPlay = SwiftDeathMontage;
+		break;
+
+	case EFormType::Guard:
+		MontageToPlay = GuardDeathMontage;
+		break;
+
+	case EFormType::Special:
+		MontageToPlay = SpecialDeathMontage;
+		break;
+
+	default:
+		MontageToPlay = BaseDeathMontage;
+		break;
+	}
+
+	// 폼에 해당하는 게 비어 있으면 Base 폼 몽타주라도 사용
+	if (!MontageToPlay)
+	{
+		MontageToPlay = BaseDeathMontage;
 	}
 
 
+	// 3) 최종 선택된 몽타주 재생
+	if (MontageToPlay && GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			AnimInstance->Montage_Play(MontageToPlay, 1.0f);
+		}
+	}
 }
 
 
