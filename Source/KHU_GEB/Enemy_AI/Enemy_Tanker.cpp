@@ -4,6 +4,7 @@
 #include "Skills/Skill_Guard.h"
 #include "FormDefinition.h"
 #include "Skills/Skill_Ultimate.h"
+#include "TimerManager.h"
 
 AEnemy_Tanker::AEnemy_Tanker()
 {
@@ -26,19 +27,45 @@ void AEnemy_Tanker::BeginPlay()
 void AEnemy_Tanker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
 	// Guard 스킬이 활성화되어 있고, 캐시된 참조가 유효한 경우에만 검사
-	if (bIsGuardSkillActive && CachedGuardSkill)
+	if (bIsGuardSkillActive && CachedGuardSkill && !bIsWaitingToStopSkill)
 	{
-		// ConsumedShields가 RemainingShields보다 커지면 스킬 중단
+		// ConsumedShields가 RemainingShields보다 커지면 스킬 중단 대기
 		if (CachedGuardSkill->ConsumedShields + 2 > CachedGuardSkill->RemainingShields)
 		{
-			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] ConsumedShields(%d) > RemainingShields(%d). Stopping Guard skill."),
+			UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] ConsumedShields(%d) > RemainingShields(%d). Waiting 1 second before stopping Guard skill."),
 				CachedGuardSkill->ConsumedShields, CachedGuardSkill->RemainingShields);
 			
-			CachedGuardSkill->StopSkill();
-			bIsGuardSkillActive = false;
+			// 1초 후 StopSkill 실행하도록 타이머 설정
+			bIsWaitingToStopSkill = true;
+			
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				World->GetTimerManager().SetTimer(
+					StopSkillTimerHandle,
+					this,
+					&AEnemy_Tanker::ExecuteDelayedStopSkill,
+					1.0f,  // 1초 딜레이
+					false  // 한 번만 실행
+				);
+			}
 		}
 	}
+}
+
+void AEnemy_Tanker::ExecuteDelayedStopSkill()
+{
+	if (CachedGuardSkill && bIsGuardSkillActive)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Executing delayed StopSkill after 1 second."));
+		
+		CachedGuardSkill->StopSkill();
+		bIsGuardSkillActive = false;
+	}
+	
+	bIsWaitingToStopSkill = false;
 }
 
 float AEnemy_Tanker::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
@@ -103,6 +130,7 @@ void AEnemy_Tanker::ActivateSkill()
 	
 	// Guard 스킬 활성화 상태 추적
 	bIsGuardSkillActive = true;
+	bIsWaitingToStopSkill = false; // 스킬 활성화 시 대기 플래그 초기화
 	CachedGuardSkill = GuardSkill;
 	
 	UE_LOG(LogTemp, Log, TEXT("[Enemy_Tanker] Guard skill component activated!"));

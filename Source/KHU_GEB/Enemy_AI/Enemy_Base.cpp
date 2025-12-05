@@ -172,7 +172,7 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		const EEnemyState CurrentState = static_cast<EEnemyState>(
 			BlackboardComp->GetValueAsEnum("EnemyState"));
 
-		if (CurrentState != EEnemyState::EES_Attacking)
+		if (CurrentState != EEnemyState::EES_Attacking && CurrentState != EEnemyState::EES_Groggy)
 		{
 			BlackboardComp->SetValueAsEnum("EnemyState",
 				static_cast<uint8>(EEnemyState::EES_Damaged));
