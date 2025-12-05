@@ -55,6 +55,9 @@ void UStatManagerComponent::InitializeFromFormSet(const UFormSet* FormSet)
 
 		RuntimeStats.Add(FormType, NewStats);
 	}
+
+	// 초기화 이후, Base 폼 레벨을 다른 폼들 최고 레벨에 맞춰 한 번 정리
+	SyncBaseLevelToHighest(false);
 }
 
 const FFormRuntimeStats* UStatManagerComponent::GetStats(EFormType FormType) const
@@ -101,6 +104,8 @@ void UStatManagerComponent::AddMinionKill(EFormType FormType)
 			////
 		}
 	}
+
+	SyncBaseLevelToHighest(true);
 }
 
 void UStatManagerComponent::MarkEliteKilled(EFormType FormType)
@@ -131,6 +136,9 @@ void UStatManagerComponent::AddLevel(EFormType FormType, int32 Amount)
 		OnFormLevelUp.Broadcast(FormType, Stats->Level);
 		////
 	}
+
+	// 퀘스트 보상 등으로 레벨을 직접 올려도 Base가 최고 레벨을 따라가도록 유지
+	SyncBaseLevelToHighest(true);
 }
 
 
@@ -294,5 +302,42 @@ void UStatManagerComponent::RegisterKill(EFormType FormType, EEnemyKind Kind)
 		// 혹시 모르는 값은 Minion처럼 처리
 		AddMinionKill(FormType);
 		break;
+	}
+}
+
+void UStatManagerComponent::SyncBaseLevelToHighest(bool bBroadcastEvent)
+{
+	// Base 폼이 없으면 아무 것도 하지 않음
+	FFormRuntimeStats* BaseStats = RuntimeStats.Find(EFormType::Base);
+	if (!BaseStats) return;
+
+	int32 MaxOtherLevel = 0;
+
+	// 다른 폼들 중 최대 레벨을 찾는다.
+	for (const auto& Pair : RuntimeStats)
+	{
+		const EFormType FormType = Pair.Key;
+		const FFormRuntimeStats& Stats = Pair.Value;
+
+		if (FormType == EFormType::Base) continue;
+
+		if (Stats.Level > MaxOtherLevel)
+		{
+			MaxOtherLevel = Stats.Level;
+		}
+	}
+
+	// Base는 항상 최소 1레벨 유지
+	const int32 DesiredLevel = FMath::Max(1, MaxOtherLevel);
+
+	// 이미 원하는 레벨이면 건드리지 않는다.
+	if (BaseStats->Level == DesiredLevel) return;
+
+	BaseStats->Level = DesiredLevel;
+	BaseStats->RecalculateDerivedStats();
+
+	if (bBroadcastEvent)
+	{
+		OnFormLevelUp.Broadcast(EFormType::Base, BaseStats->Level);
 	}
 }

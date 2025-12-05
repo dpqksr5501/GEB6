@@ -47,14 +47,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
     float SlowTickInterval = 0.2f;
 
-    /** 2초마다 플레이어가 회복할 양 */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
-    float SelfHealPerTick = 0.f;
-
-    /** 2초마다 흑안개 안의 적에게 들어갈 데미지 */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
-    float DotDamagePerTick = 0.f;
-
     /** 힐/도트 틱 간격(초). 기본 2초 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
     float EffectTickInterval = 2.f;

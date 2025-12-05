@@ -10,6 +10,7 @@
 #include "ManaComponent.h"
 #include "FormManagerComponent.h"
 #include "SkillManagerComponent.h"
+#include "StatManagerComponent.h"
 
 USkillBase::USkillBase() {}
 
@@ -55,10 +56,7 @@ void USkillBase::InitializeFromDefinition(const USkillDefinition* Def)
 bool USkillBase::CanActivate() const
 {
     UWorld* World = GetWorld();
-    if (!World)
-    {
-        return false;
-    }
+    if (!World) return false;
 
     const float Now = World->GetTimeSeconds();
 
@@ -73,7 +71,7 @@ bool USkillBase::CanActivate() const
     // 2) 마나 체크
     if (UManaComponent* Mana = GetManaComponent())
     {
-        const float Cost = Params.ManaCost;
+        const float Cost = GetManaCostForCurrentLevel();
         if (Cost > 0.f && !Mana->HasEnoughMana(Cost))
         {
             UE_LOG(LogTemp, Warning, TEXT("[SkillBase] Not enough mana. Need=%.1f, Current=%.1f"),
@@ -103,12 +101,21 @@ void USkillBase::ActivateSkill()
     }
 
     // 2) 마나 소모
+    const float ManaCost = GetManaCostForCurrentLevel();
     if (UManaComponent* Mana = GetManaComponent())
     {
-        const float Cost = Params.ManaCost;
-        if (Cost > 0.f)
+        if (ManaCost > 0.f)
         {
-            Mana->ConsumeMana(Cost);
+            const float Current = Mana->GetCurrentMana();
+            if (Current < ManaCost)
+            {
+                UE_LOG(LogTemp, Warning,
+                    TEXT("[SkillBase] Not enough mana. Need=%.1f, Current=%.1f"),
+                    ManaCost, Current);
+                return;
+            }
+
+            Mana->ConsumeMana(ManaCost);
         }
     }
 
@@ -234,4 +241,40 @@ EFormType USkillBase::GetCurrentFormType() const
         return EnemyChar->DefaultFormDef ? EnemyChar->DefaultFormDef->FormType : EFormType::Base;
     }
 	else return EFormType::Base;
+}
+
+float USkillBase::GetCurrentOwnerLevel() const
+{
+    int32 Level = 1;
+
+    if (const AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(GetOwner()))
+    {
+        if (Player->FormManager && Player->StatManager)
+        {
+            const EFormType CurrentForm = Player->FormManager->CurrentForm;
+            if (const FFormRuntimeStats* Stats = Player->StatManager->GetStats(CurrentForm))
+            {
+                Level = FMath::Max(1, Stats->Level);
+            }
+        }
+    }
+    else if (const AEnemy_Base* Enemy = Cast<AEnemy_Base>(GetOwner()))
+    {
+        // Enemy 쪽은 이미 EnemyStats.Level 을 운용 중입니다.
+        Level = FMath::Max(1, Enemy->EnemyStats.Level);
+    }
+
+    return static_cast<float>(Level);
+}
+
+float USkillBase::GetDamageForCurrentLevel() const
+{
+    // Params.Damage 를 "레벨당 스킬 대미지"로 해석
+    return Params.Damage * GetCurrentOwnerLevel();
+}
+
+float USkillBase::GetManaCostForCurrentLevel() const
+{
+    // Params.ManaCost 를 "레벨당 마나 소모"로 해석
+    return Params.ManaCost - (10 * (GetCurrentOwnerLevel() - 1));
 }
