@@ -11,8 +11,33 @@ void UEnemyPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UEnemyPoolSubsystem::Deinitialize()
 {
     // 모든 풀 정리 (필요시)
-    EnemyPools.Empty();
+    ResetAllPools();
     Super::Deinitialize();
+}
+
+void UEnemyPoolSubsystem::ResetAllPools()
+{
+    UWorld* World = GetWorld();
+    
+    // 모든 풀의 Enemy Actor들을 명시적으로 파괴
+    for (auto& Pair : EnemyPools)
+    {
+        FEnemyPool& PoolStruct = Pair.Value;
+        
+        for (AEnemy_Base* Enemy : PoolStruct.Pool)
+        {
+            if (Enemy && IsValid(Enemy))
+            {
+                Enemy->Destroy();
+            }
+        }
+        
+        PoolStruct.Pool.Empty(); // 배열 비우기
+    }
+    
+    EnemyPools.Empty(); // 전체 맵 비우기
+    
+    UE_LOG(LogTemp, Log, TEXT("EnemyPoolSubsystem: All pools have been reset. Previous enemies destroyed."));
 }
 
 void UEnemyPoolSubsystem::InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, int32 PoolSize)
@@ -25,6 +50,22 @@ void UEnemyPoolSubsystem::InitializePool(TSubclassOf<AEnemy_Base> EnemyClass, in
 
 	// EnemyPools에 EnemyClass로 생성된 풀이 없으면 새로운 풀 생성
     FEnemyPool& EnemyPoolStruct = EnemyPools.FindOrAdd(EnemyClass);
+
+    // ⚠️ 중요: 기존 풀이 있다면 먼저 정리
+    if (EnemyPoolStruct.Pool.Num() > 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("EnemyPoolSubsystem: Pool for %s already exists. Clearing old pool first."), 
+               *EnemyClass->GetName());
+        
+        for (AEnemy_Base* OldEnemy : EnemyPoolStruct.Pool)
+        {
+            if (OldEnemy && IsValid(OldEnemy))
+            {
+                OldEnemy->Destroy();
+            }
+        }
+        EnemyPoolStruct.Pool.Empty();
+    }
 
     // 풀용 안전한 위치 (맵 밖 또는 숨겨진 위치)
     FVector PoolStorageLocation = FVector(0, 0, -10000.0f);
