@@ -143,23 +143,19 @@ public:
 
     /** 구체가 유지되는 시간(초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialDuration = 5.f;
+    float SpecialDuration = 6.f;
 
     /** 구체들이 배치될 반경(범위) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialRadius = 600.f;
 
-    /** 플레이어에게 들어가는 도트 데미지 (틱당) */
+    /** Special 종료 후 도트/속박이 들어갈 범위 배수 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialSelfDotDamage = 30.f;
+    float SpecialRadiusMultiplier = 2.f;
 
-    /** 도트 데미지 간격 (초) – 총 3번 들어감 */
+    /** 초당 들어가는 도트 데미지 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialSelfDotInterval = 0.5f;
-
-    /** 플레이어 속박 시간 (초) */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialRootDuration = 2.0f;
+    float SpecialDotDamage = 30.f;
 
     /** 소환할 오브(구체) 클래스 (BP에서 Health = 1 로 설정해두면 좋음) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
@@ -176,6 +172,10 @@ public:
     // Special 궁극기 완료 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "Ultimate|Special")
     FOnSpecialUltimateCompleted OnSpecialUltimateCompleted;
+
+    // Special 종료 후 도트/속박이 들어갈 대상들(적) 목록
+    UPROPERTY(Transient)
+    TArray<TWeakObjectPtr<ACharacter>> SpecialAffectedEnemies;
 
 protected:
     virtual void BeginPlay() override;
@@ -266,8 +266,11 @@ private:
     UFUNCTION()
     void HandleSpecialOrbDestroyed(AActor* DestroyedActor);
 
-    /** [추가] Special 궁극기 완료 처리 */
+    /** Special 궁극기 완료 처리 */
     void CompleteSpecialUltimate();
+
+    // Special 궁극기 동안 대미지/CC 면역 토글
+    void SetSpecialUltimateImmunity(bool bEnable);
 
 private:
     // ---------------- Range 상태 ----------------

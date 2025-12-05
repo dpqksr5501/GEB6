@@ -7,9 +7,10 @@
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
+#include "Enemy_Base.h"
 #include "ManaComponent.h"
 #include "SkillManagerComponent.h"
-#include "Enemy_Base.h"
+#include "CrowdControlComponent.h"
 
 void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -75,6 +76,13 @@ void USkill_Guard::ActivateSkill()
 
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
 
+    // Guard 스킬 켜지는 동안 CC 면역
+    if (UCrowdControlComponent* CC =
+        Owner->FindComponentByClass<UCrowdControlComponent>())
+    {
+        CC->SetCCImmune(true);
+    }
+
     if (USkillManagerComponent* Manager = GetSkillManager())
     {
         Manager->OnGuardSkillStarted(this);
@@ -125,6 +133,25 @@ bool USkill_Guard::HandleIncomingDamage(
         bEndedByDepletion = true;
         UE_LOG(LogTemp, Log,
             TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
+
+        // 쉴드가 모두 소진되는 순간, 시전자에게 스턴 적용
+        if (AActor* OwnerActor = GetOwner())
+        {
+            if (UCrowdControlComponent* CC =
+                OwnerActor->FindComponentByClass<UCrowdControlComponent>())
+            {
+                if (DepletionStunDuration > 0.f)
+                {
+                    CC->ApplyStun(DepletionStunDuration);
+                }
+            }
+        }
+
+        // 동시에 스킬 강제 종료
+        StopSkill();
+
+        // 이 히트는 보호막이 막았으므로 체력 데미지는 들어가지 않게 true 반환
+        return true;
     }
 
     if (UManaComponent* Mana = GetManaComponent())
@@ -155,6 +182,16 @@ void USkill_Guard::StopSkill()
 
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
+
+    // Guard 스킬 종료 시 CC 면역 해제
+    if (Owner)
+    {
+        if (UCrowdControlComponent* CC =
+            Owner->FindComponentByClass<UCrowdControlComponent>())
+        {
+            CC->SetCCImmune(false);
+        }
+    }
 
     if (USkillManagerComponent* Manager = GetSkillManager())
     {

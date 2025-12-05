@@ -27,6 +27,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 0.f;
 
+    /** 쉴드가 모두 소진되었을 때 시전자에게 적용할 스턴 시간 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float DepletionStunDuration = 5.f;
+
     /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;

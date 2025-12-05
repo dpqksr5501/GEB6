@@ -167,17 +167,21 @@ void USkill_Special::UpdateFogEffects()
     else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-    // 흑안개 범위 디버그 표시
-    DrawDebugSphere(
+    // 흑안개 범위 디버그 표시 (구 → 원)
+    // XY 평면에 반지름 FogRadius인 보라색 원을 그림
+    DrawDebugCircle(
         World,
         Center,
         FogRadius,
-        32,
+        32,                // 세그먼트 수
         FColor::Purple,
         false,
-        SlowTickInterval, // 다음 틱 전에 사라지게 해서 계속 갱신되는 느낌
+        SlowTickInterval,  // 다음 틱 전에 사라지도록
         0,
-        2.f
+        2.f,
+        FVector(1, 0, 0),  // X축 방향
+        FVector(0, 1, 0),  // Y축 방향
+        false              // 두께 있는 라인 (필요하면 true 로 변경)
     );
 #endif
 
