@@ -134,3 +134,16 @@ void UEnemySpawnDirector::ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> Enem
         *AliveCount = 0;
     }
 }
+
+void UEnemySpawnDirector::ResetAllCounters()
+{
+    TotalSpawnedCount = 0;
+    CurrentAliveCount = 0;
+    bAllEnemiesDefeated = false;
+    
+    SpawnedCounts.Empty();
+    AliveCounts.Empty();
+    MaxSpawnsPerType.Empty();
+    
+    UE_LOG(LogTemp, Log, TEXT("EnemySpawnDirector: All counters have been reset."));
+}

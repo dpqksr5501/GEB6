@@ -171,6 +171,51 @@ void USkillBase::PlayFormSkillMontage()
     UE_LOG(LogTemp, Warning, TEXT("[SkillBase] Owner is neither Player nor Enemy!"));
 }
 
+// 궁극기 사용 시 몽타주 재생 헬퍼 함수
+void USkillBase::PlayFormUltimateMontage()
+{
+    AActor* Owner = GetOwner();
+    if (!Owner) return;
+
+    // 1. 플레이어
+    if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
+    {
+        if (!OwnerChar->FormManager) return;
+
+        const UFormDefinition* Def = OwnerChar->FormManager->FindDef(OwnerChar->FormManager->CurrentForm);
+
+        if (Def && Def->UltimateMontage)
+        {
+            if (UAnimInstance* Anim = OwnerChar->GetMesh()->GetAnimInstance())
+            {
+                Anim->Montage_Play(Def->UltimateMontage);
+                UE_LOG(LogTemp, Log, TEXT("[SkillBase] Playing Player UltimateMontage"));
+            }
+        }
+        return;
+    }
+
+    // 2. Enemy
+    if (AEnemy_Base* EnemyChar = Cast<AEnemy_Base>(Owner))
+    {
+        if (!EnemyChar->DefaultFormDef) return;
+
+        const UFormDefinition* Def = EnemyChar->DefaultFormDef;
+
+        if (Def && Def->UltimateMontage)
+        {
+            if (UAnimInstance* Anim = EnemyChar->GetMesh()->GetAnimInstance())
+            {
+                Anim->Montage_Play(Def->UltimateMontage);
+                UE_LOG(LogTemp, Log, TEXT("[SkillBase] Playing Enemy UltimateMontage"));
+            }
+        }
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[SkillBase] Owner is neither Player nor Enemy! (Ultimate)"));
+}
+
 EFormType USkillBase::GetCurrentFormType() const
 {
     // 소유자가 KHU_GEBCharacter 이고 FormManager가 있다면, 그 값을 그대로 사용

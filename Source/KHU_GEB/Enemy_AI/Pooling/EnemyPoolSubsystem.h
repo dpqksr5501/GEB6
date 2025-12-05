@@ -53,6 +53,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Enemy Pool")
     void ReturnEnemyToPool(AEnemy_Base* Enemy);
 
+    /**
+     * 모든 풀을 초기화합니다. 레벨 전환 시 호출하여 이전 레벨의 적들을 정리합니다.
+     * 모든 Enemy Actor를 명시적으로 파괴하고 풀 배열을 비웁니다.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Enemy Pool")
+    void ResetAllPools();
+
     // GameInstanceSubsystem 오버라이드
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;

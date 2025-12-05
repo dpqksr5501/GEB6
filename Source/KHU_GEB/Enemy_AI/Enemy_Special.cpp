@@ -19,6 +19,8 @@ void AEnemy_Special::BeginPlay()
 
 void AEnemy_Special::ActivateSkill()
 {
+	Super::ActivateSkill();
+
 	// 1. 스킬 컴포넌트 가져오기
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Active);
 	if (!Skill) return;
@@ -43,6 +45,8 @@ void AEnemy_Special::ActivateSkill()
 
 void AEnemy_Special::ActivateUltimate()
 {
+	Super::ActivateUltimate();
+
 	// 1. 스킬 컴포넌트 가져오기
 	USkillBase* Skill = Equipped.FindRef(ESkillSlot::Ultimate);
 	if (!Skill) return;
