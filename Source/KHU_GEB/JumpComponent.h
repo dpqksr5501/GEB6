@@ -67,6 +67,28 @@ protected:
 	/** Range 락온 거리(1200)로 보정 중인지 여부 */
 	bool bRangeLockOnAdjusting = false;
 
+	/** Range 급강하 후 착지 스턴 여부 플래그 */
+	bool bRangeStompPending = false;
+
+	/** Range 착지 스턴 반경 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp")
+	float RangeStompRadius = 400.f;
+
+	/** Range 착지 스턴 지속 시간(초) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp")
+	float RangeStompStunDuration = 2.0f;
+
+	/** Range 착지 스턴 디버그 표시 여부 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp|Debug")
+	bool bDrawRangeStompDebug = false;
+
+	/** Range 착지 스턴 디버그 색상 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp|Debug")
+	FColor RangeStompDebugColor = FColor::Red;
+
+	// 스턴 전에 MaxWalkSpeed 저장해 둘 맵
+	TMap<TWeakObjectPtr<ACharacter>, float> RangeStunOriginalSpeeds;
+
 	// === Swift ===
 
 	/** 회전의 축이 되는 루트 (캐릭터 중심에 있는 MeshRoot) */
@@ -173,6 +195,12 @@ protected:
 	void HandleSpecialReleased();
 
 	AActor* GetCurrentTargetForOwner() const;
+	/** 
+	Range 급강하 착지 시 주변 적 스턴 처리 */
+	void ApplyRangeLandingStun();
+
+	/** Range 착지 스턴 해제 콜백 */
+	UFUNCTION()	void EndRangeLandingStun(ACharacter* Target);
 
 	// Swift 회전 종료 처리(필요시 각도 복원)
 	void StopSwiftSpin(bool bResetRotation);

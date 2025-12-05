@@ -27,7 +27,7 @@
 #include "Skills/Skill_Guard.h"
 #include "StatManagerComponent.h"
 #include "PotionControlComp.h"
-
+#include "CrowdControlComponent.h"
 
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
@@ -82,6 +82,7 @@ AKHU_GEBCharacter::AKHU_GEBCharacter()
 	WeaponManager = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponManager"));
 
 	PotionManagerComp = CreateDefaultSubobject<UPotionControlComp>(TEXT("PotionManagerComp"));
+	CrowdControlComp = CreateDefaultSubobject<UCrowdControlComponent>(TEXT("CrowdControlComp"));
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> LOCKON(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_LockOn.IA_LockOn'"));
 	if (LOCKON.Object) { LockOnAction = LOCKON.Object; }
@@ -157,7 +158,7 @@ void AKHU_GEBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Attack
 		if (AttackManager)
 		{
-			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, AttackManager.Get(), &UAttackComponent::AttackStarted);
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AKHU_GEBCharacter::OnAttackStarted);
 			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, AttackManager.Get(), &UAttackComponent::AttackTriggered);
 			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, AttackManager.Get(), &UAttackComponent::AttackCompleted);
 		}
@@ -330,6 +331,8 @@ void  AKHU_GEBCharacter::HandleAnyDamage(AActor* DamagedActor, float Damage, con
 
 void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 {
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
+
 	//Guard 끌어당기기 멈추기
 	if (bIsMovementInputBlocked) return;
 
@@ -362,10 +365,10 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 {
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
 
 	//LockOn 상황일 때 마우스가 움질일 시 애니메이션이 깨지는 현상이 있음
 	//해결하기 위해 LockOn시 마우스를 움직여서 바라보는 동작 제한.
@@ -379,8 +382,20 @@ void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
+void AKHU_GEBCharacter::OnAttackStarted(const FInputActionValue& Value)
+{
+	if (CrowdControlComp && CrowdControlComp->IsActionBlocked())
+		return;
+
+	if (AttackManager)
+	{
+		AttackManager->AttackStarted(Value);
+	}
+}
+
 void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 {
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!SkillManager) return;
 	SkillManager->TryActivate(ESkillSlot::Active);
 }
@@ -406,6 +421,7 @@ void AKHU_GEBCharacter::UltimateEnd(const FInputActionValue& Value)
 void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 {
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Base);
 }
@@ -413,6 +429,7 @@ void AKHU_GEBCharacter::SwitchToBase(const FInputActionValue& Value)
 void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 {
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Range);
 }
@@ -420,6 +437,7 @@ void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 {
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Swift);
 }
@@ -427,6 +445,7 @@ void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 {
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Guard);
 }
@@ -434,6 +453,7 @@ void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 {
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
 	FormManager->SwitchTo(EFormType::Special);
 }
@@ -604,10 +624,6 @@ void AKHU_GEBCharacter::OnFormChanged(EFormType NewForm, const UFormDefinition* 
 			TargetVignetteIntensity = 0.4f; // 일반 폼은 약하게
 		}
 	}
-
-	//점프 횟수 설정(기본값 1)
-	JumpMaxCount = Def->MaxJumpCount;
-
 }
 
 /** 스프린트 시작 (Shift 누름) */
