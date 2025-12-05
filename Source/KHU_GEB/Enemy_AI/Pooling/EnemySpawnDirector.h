@@ -7,6 +7,9 @@
 
 class AEnemy_Base;
 
+// 모든 적이 처치되었을 때 호출되는 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllEnemiesDefeated);
+
 /**
  * 게임 레벨 전체의 적 스폰 수를 관리하는 서브시스템
  * 개별 스포너가 스폰을 요청할 시 스폰 수를 확인 후 허가/거부
@@ -89,7 +92,7 @@ public:
 
     /** 모든 카운터를 0으로 리셋합니다. */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
-    void ResetCounter() { TotalSpawnedCount = 0; CurrentAliveCount = 0; SpawnedCounts.Reset(); AliveCounts.Reset(); }
+    void ResetCounter() { TotalSpawnedCount = 0; CurrentAliveCount = 0; SpawnedCounts.Reset(); AliveCounts.Reset(); bAllEnemiesDefeated = false; }
 
     /**
      * 특정 Enemy 타입의 카운터를 0으로 리셋합니다.
@@ -97,6 +100,10 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = "Enemy Spawn Director")
     void ResetCounterForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass);
+
+    /** 모든 적이 처치되었을 때 브로드캐스트되는 델리게이트 (BP에서 바인딩 가능) */
+    UPROPERTY(BlueprintAssignable, Category = "Enemy Spawn Director")
+    FOnAllEnemiesDefeated OnAllEnemiesDefeated;
 
 private:
     /** 현재까지 총 누적 스폰된 횟수 (감소하지 않음) */
@@ -110,6 +117,9 @@ private:
 
     /** 총 누적 소환 한도 */
     int32 MaxTotalSpawns = 100;
+
+    /** 모든 적이 처치되었는지 여부 (이벤트 중복 방지) */
+    bool bAllEnemiesDefeated = false;
 
     /** Enemy 타입별 현재 살아있는 수 */
     UPROPERTY()
