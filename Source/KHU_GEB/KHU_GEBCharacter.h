@@ -177,6 +177,19 @@ public:
 	float GetDefaultCameraBoomLength() const { return DefaultCameraBoomLength; }
 	//--------------------------------------------------------
 
+
+	////
+	/// 
+	UFUNCTION(BlueprintCallable)
+	void HandleDeath();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UAnimMontage* DeathMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsDead = false;
+///
+
 protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

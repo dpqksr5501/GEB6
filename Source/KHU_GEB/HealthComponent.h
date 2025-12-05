@@ -72,6 +72,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsDead() const;
 
+
+
 private:
 	void ApplyHealth(float NewHealth, float Delta);
 	void HandleDeathIfNeeded();

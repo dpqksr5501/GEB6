@@ -5,6 +5,9 @@
 #include "Skills/SkillBase.h" 
 #include "Skills/Skill_Ultimate.h" 
 
+#include "Animation/AnimInstance.h"
+
+
 UHealthComponent::UHealthComponent()
 {
     PrimaryComponentTick.bCanEverTick = false; // 틱 안 쓰면 false 권장
@@ -126,3 +129,4 @@ void UHealthComponent::HandleDeathIfNeeded()
 }
 
 bool UHealthComponent::IsDead() const { return Health <= 0.f; }
+
