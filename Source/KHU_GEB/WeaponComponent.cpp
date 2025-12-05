@@ -228,6 +228,46 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		Owner,
 		UDamageType::StaticClass());
 
+	// ---------------- [사운드 로직 시작] ----------------
+
+	USoundBase* SoundToPlay = nullptr;
+
+	// 1. 때린 주체가 '플레이어'인지 확인
+	AKHU_GEBCharacter* PlayerOwner = Cast<AKHU_GEBCharacter>(GetOwner());
+
+	// 2. 맞은 대상이 '적(Enemy)'인지 확인
+	AEnemy_Base* HitEnemy = Cast<AEnemy_Base>(OtherActor);
+
+	// [조건] 플레이어가 때렸고 && 적이 맞았을 때만 실행
+	if (PlayerOwner && HitEnemy && PlayerOwner->FormManager)
+	{
+		EFormType CurrentForm = PlayerOwner->FormManager->GetCurrentFormType();
+
+		switch (CurrentForm)
+		{
+			// [그룹 1] 근접 타격감
+		case EFormType::Base:
+		case EFormType::Guard:
+		case EFormType::Swift:
+			SoundToPlay = MeleeHitSound;
+			break;
+
+			// [그룹 2] 원거리/마법 타격감
+		case EFormType::Range:
+		case EFormType::Special:
+			SoundToPlay = HeavyHitSound; // 혹은 MagicHitSound
+			break;
+		}
+
+		// 소리 재생 (위 조건이 맞을 때만 SoundToPlay가 설정됨)
+		if (SoundToPlay)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, SoundToPlay, HitEnemy->GetActorLocation());
+		}
+	}
+	// ---------------- [사운드 로직 끝] ----------------
+
+
 	// === Swift 궁극기 은신 공격 처리 ===
 	if (APawn* InstigatorPawn = Cast<APawn>(Owner))
 	{

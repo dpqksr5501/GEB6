@@ -41,4 +41,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Form")
 	void SwitchTo(EFormType NewForm);
+
+	// 현재 폼 타입을 반환하는 헬퍼 함수 (타격 효과음을 위한 헬퍼 함수)
+	UFUNCTION(BlueprintPure, Category = "Form")
+	EFormType GetCurrentFormType() const { return CurrentForm; }
 };
