@@ -29,6 +29,8 @@
 #include "PotionControlComp.h"
 #include "CrowdControlComponent.h"
 
+#include "Animation/AnimInstance.h"
+
 AKHU_GEBCharacter::AKHU_GEBCharacter()
 {
 	// Set size for collision capsule
@@ -852,6 +854,50 @@ void AKHU_GEBCharacter::ClearLockOnIfTarget(AActor* Target)
 		LockOnComp->ClearLockOn();
 	}
 }
+
+
+void AKHU_GEBCharacter::HandleDeath() 
+{
+	if (bIsDead)
+	{
+		return;
+	}
+
+	bIsDead = true;
+
+	// 이동 막기
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		MoveComp->StopMovementImmediately();
+		MoveComp->DisableMovement();
+	}
+
+	// 컨트롤러 정지 및 해제
+	if (AController* MyController = GetController())
+	{
+		MyController->StopMovement();
+		MyController->UnPossess();
+	}
+
+	// 캡슐 충돌 비활성화
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	// 데스 몽타주 재생
+	if (DeathMontage && GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			AnimInstance->Montage_Play(DeathMontage, 1.0f);
+		}
+	}
+
+
+}
+
+
 
 bool AKHU_GEBCharacter::CanSwitchToForm(EFormType Form) const
 {
