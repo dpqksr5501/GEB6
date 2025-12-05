@@ -133,7 +133,6 @@ public:
 
 	////
 
-
-
-
+	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
+	void RegisterKill(EFormType FormType /*, EEnemyKind Kind*/);
 };

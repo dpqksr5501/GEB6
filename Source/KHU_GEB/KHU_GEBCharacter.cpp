@@ -212,17 +212,21 @@ void AKHU_GEBCharacter::BeginPlay()
 		TargetVignetteIntensity = 0.f; // (기본값 0)
 	}
 
-	// 2. 델리게이트 바인딩
-	if (FormManager)
-	{
-		FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged);
-		FormManager->InitializeForms();
+	// 2. 폼/스탯 초기화 순서 정리
+    if (FormManager)
+    {
+        // 먼저 StatManager를 초기화
+        if (StatManager && FormManager->FormSet)
+        {
+            StatManager->InitializeFromFormSet(FormManager->FormSet);
+        }
 
-		if (StatManager && FormManager->FormSet)
-		{
-			StatManager->InitializeFromFormSet(FormManager->FormSet);
-		}
-	}
+        // 그 다음 폼 변경 델리게이트 바인딩
+        FormManager->OnFormChanged.AddDynamic(this, &AKHU_GEBCharacter::OnFormChanged);
+
+        // 마지막으로 폼 초기화 (여기서 OnFormChanged가 호출되며, 이미 스탯이 준비된 상태)
+        FormManager->InitializeForms();
+    }
 }
 
 void AKHU_GEBCharacter::Tick(float DeltaTime)
@@ -421,6 +425,13 @@ void AKHU_GEBCharacter::SwitchToRange(const FInputActionValue& Value)
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
+
+	if (!CanSwitchToForm(EFormType::Range))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Character] Cannot switch to Range form: Level is 0"));
+		return;
+	}
+
 	FormManager->SwitchTo(EFormType::Range);
 }
 
@@ -429,6 +440,13 @@ void AKHU_GEBCharacter::SwitchToSwift(const FInputActionValue& Value)
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
+
+	if (!CanSwitchToForm(EFormType::Swift))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Character] Cannot switch to Swift form: Level is 0"));
+		return;
+	}
+
 	FormManager->SwitchTo(EFormType::Swift);
 }
 
@@ -437,6 +455,12 @@ void AKHU_GEBCharacter::SwitchToGuard(const FInputActionValue& Value)
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
+
+	if (!CanSwitchToForm(EFormType::Guard))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Character] Cannot switch to Guard form: Level is 0"));
+		return;
+	}
 	FormManager->SwitchTo(EFormType::Guard);
 }
 
@@ -445,6 +469,13 @@ void AKHU_GEBCharacter::SwitchToSpecial(const FInputActionValue& Value)
 	if (SkillManager && SkillManager->IsFormChangeLocked()) return;
 	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 	if (!FormManager) return;
+
+	if (!CanSwitchToForm(EFormType::Special))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Character] Cannot switch to Special form: Level is 0"));
+		return;
+	}
+
 	FormManager->SwitchTo(EFormType::Special);
 }
 
@@ -798,4 +829,21 @@ void AKHU_GEBCharacter::ClearLockOnIfTarget(AActor* Target)
 	{
 		LockOnComp->ClearLockOn();
 	}
+}
+
+bool AKHU_GEBCharacter::CanSwitchToForm(EFormType Form) const
+{
+	// StatManager가 없으면 일단 막지 않음 (안전장치)
+	if (!StatManager) return true;
+
+	// Base 폼은 항상 가능하게 두고 싶다면 여기서 패스
+	if (Form == EFormType::Base) return true;
+
+	if (const FFormRuntimeStats* Stats = StatManager->GetStats(Form))
+	{
+		return (Stats->Level > 0);
+	}
+
+	// 해당 폼 정보가 없으면 일단 막는 쪽으로
+	return false;
 }

@@ -12,7 +12,8 @@
 #include "Engine/GameInstance.h"
 #include "Pooling/EnemyPoolSubsystem.h"
 #include "Pooling/EnemySpawnDirector.h"
-#include "Enemy_Minion.h"
+#include "KHU_GEBCharacter.h"
+#include "StatManagerComponent.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -65,6 +66,11 @@ AEnemy_Base::AEnemy_Base()
 void AEnemy_Base::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (DefaultFormDef)
+	{
+		EnemyFormType = DefaultFormDef->FormType;
+	}
 	
 	if(WeaponComp && DefaultWeaponData)
 	{
@@ -103,6 +109,37 @@ void AEnemy_Base::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] DefaultFormDef is null! Class: %s"), 
 				*GetClass()->GetName());
 		}
+	}
+
+	// 스탯 초기화
+	if (DefaultFormDef && DefaultFormDef->StatData)
+	{
+		// FormStatData 기반으로 기본값 세팅
+		EnemyStats.InitializeFromData(DefaultFormDef->StatData);
+
+		// BP에서 지정한 EnemyLevel로 덮어쓰기
+		if (EnemyLevel > 0)
+		{
+			EnemyStats.Level = EnemyLevel;
+			EnemyStats.RecalculateDerivedStats();
+		}
+
+		// 이동 관련 스탯 적용
+		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+		{
+			MoveComp->MaxWalkSpeed = EnemyStats.WalkSpeed;
+			MoveComp->MaxAcceleration = EnemyStats.Acceleration;
+			// 필요하면 스프린트/추격 속도 등도 여기서 활용
+		}
+
+		UE_LOG(LogTemp, Log,
+			TEXT("[Enemy_Base] Stats initialized. Level=%d, Atk=%.1f, Def=%.1f, WalkSpeed=%.1f"),
+			EnemyStats.Level, EnemyStats.Attack, EnemyStats.Defense, EnemyStats.WalkSpeed);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Enemy_Base] DefaultFormDef or StatData is null. Stats not initialized."));
 	}
 }
 
@@ -166,44 +203,53 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	// 3) 여기까지 왔으면 '적'이 맞으므로 체력 감소
 	const float FinalDamage = HealthComp->ApplyDamage(ActualDamage, InstigatorActor, DamageCauser);
 
-	// 4) Blackboard 상태 갱신 및 사망 체크
+	// 4) 사망 여부 플래그
+	const bool bJustDied = HealthComp->IsDead();
+
+	// 5) Blackboard 상태 갱신
 	if (BlackboardComp)
 	{
 		const EEnemyState CurrentState = static_cast<EEnemyState>(
 			BlackboardComp->GetValueAsEnum("EnemyState"));
 
-		if (CurrentState != EEnemyState::EES_Attacking)
+		if (!bJustDied)
 		{
-			BlackboardComp->SetValueAsEnum("EnemyState",
-				static_cast<uint8>(EEnemyState::EES_Damaged));
-
-			if (HealthComp->IsDead())
+			// 아직 살아있으면 Damaged 상태로 전환(공격 중이 아닐 때만)
+			if (CurrentState != EEnemyState::EES_Attacking)
 			{
 				BlackboardComp->SetValueAsEnum("EnemyState",
-					static_cast<uint8>(EEnemyState::EES_Dead));
-				UE_LOG(LogTemp, Warning,
-					TEXT("AEnemy_Base::TakeDamage - Enemy health is zero or below, state set to Dead."));
+					static_cast<uint8>(EEnemyState::EES_Damaged));
 
-				OnDeath(); // 사망 처리 호출
+				UE_LOG(LogTemp, Warning,
+					TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"),
+					HealthComp->Health);
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning,
-					TEXT("AEnemy_Base::TakeDamage - Health after damage: %f"),
+					TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed. Health after damage: %f"),
 					HealthComp->Health);
 			}
 		}
 		else
 		{
+			BlackboardComp->SetValueAsEnum("EnemyState",
+				static_cast<uint8>(EEnemyState::EES_Dead));
 			UE_LOG(LogTemp, Warning,
-				TEXT("AEnemy_Base::TakeDamage - Currently attacking, state not changed. Health after damage: %f"),
-				HealthComp->Health);
+				TEXT("AEnemy_Base::TakeDamage - Enemy health is zero or below, state set to Dead."));
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning,
 			TEXT("AEnemy_Base::TakeDamage - BlackboardComp is null"));
+	}
+
+	// 6) 실제 사망 처리 + 폼 레벨업
+	if (bJustDied)
+	{
+		if (InstigatorActor) { HandleKilledBy(InstigatorActor); }
+		OnDeath();
 	}
 
 	return FinalDamage;
@@ -230,4 +276,30 @@ AActor* AEnemy_Base::GetCurrentTarget() const
 
 	UObject* Value = BlackboardComp->GetValueAsObject(TargetKeyName);
 	return Cast<AActor>(Value);
+}
+
+void AEnemy_Base::HandleKilledBy(AActor* Killer)
+{
+	if (!Killer) return;
+
+	AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(Killer);
+	if (!Player) return;
+
+	if (!Player->StatManager) return;
+
+	// 이 적이 어떤 FormType에 속하는지 결정
+	EFormType FormTypeForExp = EnemyFormType;
+
+	// 혹시 EnemyFormType이 기본값인 경우, DefaultFormDef에서 한 번 더 가져오기
+	if (FormTypeForExp == EFormType::Base && DefaultFormDef)
+	{
+		FormTypeForExp = DefaultFormDef->FormType;
+	}
+
+	Player->StatManager->RegisterKill(FormTypeForExp);
+
+	UE_LOG(LogTemp, Log,
+		TEXT("[Enemy_Base] Killed by %s, registered kill for form %d"),
+		*GetNameSafe(Player),
+		static_cast<int32>(FormTypeForExp));
 }

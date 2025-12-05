@@ -30,8 +30,8 @@ public:
 	float Acceleration = 2048.f;
 
 	// 시작 레벨
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats", meta=(ClampMin="1"))
-	int32 StartLevel = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stats", meta=(ClampMin="0"))
+	int32 StartLevel = 0;
 
 	// ---- 경험치 / 레벨업 규칙 ----
 
