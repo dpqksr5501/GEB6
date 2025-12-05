@@ -16,6 +16,22 @@
 #include "KHU_GEBCharacter.h"
 #include "HealthComponent.h"
 #include "Skills/SkillManagerComponent.h"
+#include "Skills/Skill_Ultimate.h"
+
+namespace
+{
+	// 액터에 Swift 궁극기(은신)가 붙어 있고 활성화되어 있는지 확인
+	bool IsActorSwiftStealthed(AActor* Actor)
+	{
+		if (!Actor) return false;
+
+		if (USkill_Ultimate* Ultimate = Actor->FindComponentByClass<USkill_Ultimate>())
+		{
+			return Ultimate->IsSwiftStealthActive();
+		}
+		return false;
+	}
+}
 
 ULockOnComponent::ULockOnComponent()
 {
@@ -141,6 +157,9 @@ void ULockOnComponent::CollectCandidates(TArray<AActor*>& OutCandidates) const
 		AActor* OverlappedActor = Result.GetActor();
 		if (!OverlappedActor || OverlappedActor == Owner) continue;
 
+		// Swift 은신 중인 대상은 락온 후보에서 제외
+		if (IsActorSwiftStealthed(OverlappedActor)) continue;
+
 		// 체력 컴포넌트가 있고, 살아있는 대상만
 		if (UHealthComponent* HealthComp = OverlappedActor->FindComponentByClass<UHealthComponent>())
 		{
@@ -188,10 +207,7 @@ bool ULockOnComponent::IsTargetValid(AActor* Target) const
 	// HealthComponent로 사망 체크
 	if (UHealthComponent* HealthComp = Target->FindComponentByClass<UHealthComponent>())
 	{
-		if (HealthComp->IsDead())
-		{
-			return false;
-		}
+		if (HealthComp->IsDead()) return false;
 	}
 
 	const float DistSq = FVector::DistSquared(Target->GetActorLocation(), GetOwner()->GetActorLocation());

@@ -783,3 +783,13 @@ bool AKHU_GEBCharacter::IsEnemyFor(const AActor* Other) const
 	if (OtherChar) return false;
 	else return true;
 }
+
+void AKHU_GEBCharacter::ClearLockOnIfTarget(AActor* Target)
+{
+	if (!LockOnComp || !Target) return;
+
+	if (LockOnComp->GetCurrentTarget() == Target)
+	{
+		LockOnComp->ClearLockOn();
+	}
+}

@@ -311,4 +311,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	bool IsEnemyFor(const AActor* Other) const;
 
+	UFUNCTION(BlueprintCallable, Category = "LockOn")
+	void ClearLockOnIfTarget(AActor* Target);
+
 };

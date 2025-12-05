@@ -93,27 +93,27 @@ protected:
 
 	/** Guard 끌어당기기 반경 */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardPullRadius = 800.f;
+	float GuardPullRadius = 1500.f;
 
 	/** 플레이어로부터 이 거리까지 가까워지면 멈춤 */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardEndDistance = 300.f;
+	float GuardEndDistance = 100.f;
 
 	/** 끌려오는 동안 플레이어 위치보다 얼마나 띄울지 (Z 오프셋) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardLiftHeight = 80.f;
+	float GuardLiftHeight = 0.f;
 
 	/** 끌려오는 동안의 보간 속도 (InterpTo 속도) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardPullInterpSpeed = 0.1f;
+	float GuardPullInterpSpeed = 1.f;
 
 	/** 끌어당기기 지속 시간(초) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardPullDuration = 2.0f;
+	float GuardPullDuration = 3.f;
 
 	/** Guard 사용 쿨타임(초) */
 	UPROPERTY(EditAnywhere, Category = "Jump|Guard")
-	float GuardCooldownTime = 10.0f;
+	float GuardCooldownTime = 10.f;
 
 	/** 현재 Guard를 사용할 수 있는지 */
 	bool bCanGuardPull = true;
@@ -160,15 +160,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-
-	// Swift 회전 종료 처리(필요시 각도 복원)
-	void StopSwiftSpin(bool bResetRotation);
-
-	void ResetGuardCooldown();
-
-	// 쿨타임 종료 콜백
-	void ResetSpecialBlinkCooldown();
-
 	// 폼별 처리
 	void HandleBasePressed();
 	void HandleBaseReleased();
@@ -180,6 +171,16 @@ protected:
 	void HandleGuardReleased();
 	void HandleSpecialPressed();
 	void HandleSpecialReleased();
+
+	AActor* GetCurrentTargetForOwner() const;
+
+	// Swift 회전 종료 처리(필요시 각도 복원)
+	void StopSwiftSpin(bool bResetRotation);
+
+	void ResetGuardCooldown();
+
+	// 쿨타임 종료 콜백
+	void ResetSpecialBlinkCooldown();
 
 public:
 	// Spacebar 입력 핸들러

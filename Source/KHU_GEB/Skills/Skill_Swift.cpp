@@ -55,25 +55,22 @@ void USkill_Swift::ActivateSkill()
     if (!Forward.Normalize()) { Forward = FVector::ForwardVector; }
 
     const FVector EndLocation = StartLocation + Forward * DashDistance;
-    // 여기서 DashDistance가 0이네?
 
     // ----- 큰 직육면체(Oriented Box) 안의 적에게 데미지 -----
-   // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
     const FVector Segment = EndLocation - StartLocation;
     const float Distance = Segment.Size();
 
     SwiftTargets.Reset();
     CurrentHitIndex = 0;
-    // 여기서 Distance가 0이라.. 이유가 뭘까?
 
+    // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
     if (Distance > KINDA_SMALL_NUMBER)
     {
         const FVector Direction = Segment / Distance;
         const FVector BoxCenter = StartLocation + 0.5f * Segment;
         const FQuat   BoxRotation = FRotationMatrix::MakeFromX(Direction).ToQuat();
 
-        // X: 진행 방향, Y: 좌우, Z: 상하
-        const float ExtraForwardPadding = 50.f; // 살짝 여유
+        const float ExtraForwardPadding = 50.f;
         const FVector HalfExtent(
             Distance * 0.5f + ExtraForwardPadding,
             BoxHalfWidth,
@@ -82,7 +79,7 @@ void USkill_Swift::ActivateSkill()
         TArray<FOverlapResult> Overlaps;
         FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSwift), false, Owner);
         FCollisionObjectQueryParams ObjParams;
-        ObjParams.AddObjectTypesToQuery(ECC_Pawn); // Pawn (적들)만 확인
+        ObjParams.AddObjectTypesToQuery(ECC_Pawn);
 
         const bool bAnyHit = World->OverlapMultiByObjectType(
             Overlaps,
@@ -98,6 +95,9 @@ void USkill_Swift::ActivateSkill()
             {
                 AActor* Other = O.GetActor();
                 if (!Other || Other == Owner) continue;
+
+                // 이미 추가된 타겟이면 스킵 (중복 제거)
+                if (SwiftTargets.Contains(Other)) continue;
 
                 SwiftTargets.Add(Other);
             }
@@ -155,18 +155,9 @@ void USkill_Swift::ActivateSkill()
 
 void USkill_Swift::StopSkill()
 {
-    UWorld* World = GetWorld();
-    AActor* Owner = GetOwner();
-
-    if (World)
-    {
-        World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
-    }
-
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnSwiftStrikeEnded(this);
-    }
+    // Swift는 입력 해제와 상관없이 남은 타수를 다 소진하도록
+    // 여기서는 타이머를 건드리지 않습니다.
+    // (타이머 종료와 OnSwiftStrikeEnded 호출은 HandleSwiftDamageTick에서만 처리)
 
     Super::StopSkill();
 }
@@ -213,10 +204,7 @@ void USkill_Swift::HandleSwiftDamageTick()
             continue;
         }
 
-        if (DamagePerSample <= 0.f)
-        {
-            continue;
-        }
+        if (DamagePerSample <= 0.f) continue;
 
         // InstigatorController 계산
         AController* InstigatorController = nullptr;
@@ -232,6 +220,12 @@ void USkill_Swift::HandleSwiftDamageTick()
             InstigatorController,
             Owner,
             UDamageType::StaticClass());
+
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Swift] Tick %d -> Hit %s for %.1f"),
+            CurrentHitIndex,
+            *GetNameSafe(TargetActor),
+            DamagePerSample);
 
         // Actor 기준으로 이펙트
         if (HitNS)

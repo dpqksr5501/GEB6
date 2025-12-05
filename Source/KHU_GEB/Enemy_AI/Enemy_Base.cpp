@@ -218,3 +218,14 @@ bool AEnemy_Base::IsEnemyFor(const AActor* Other) const
 	if (OtherChar) return false;
 	else return true;
 }
+
+AActor* AEnemy_Base::GetCurrentTarget() const
+{
+	if (!BlackboardComp) return nullptr;
+
+	// 여기 키 이름은 실제 BT/BB에서 쓰는 이름에 맞춰 주세요.
+	static const FName TargetKeyName(TEXT("TargetActor"));
+
+	UObject* Value = BlackboardComp->GetValueAsObject(TargetKeyName);
+	return Cast<AActor>(Value);
+}

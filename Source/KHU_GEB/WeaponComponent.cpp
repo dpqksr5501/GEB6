@@ -12,6 +12,7 @@
 #include "KHU_GEBCharacter.h"		// GetMesh()를 위해 필요시
 #include "HealthComponent.h"
 #include "Enemy_AI/Enemy_Base.h"
+#include "Skills/Skill_Ultimate.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -148,7 +149,6 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 	AActor* Owner = GetOwner();
 	if (!Owner || !OtherActor || OtherActor == Owner) return;
 
-	// Enemy���� ���� ����
 	if (Owner->IsA(AEnemy_Base::StaticClass()) &&
 		OtherActor->IsA(AEnemy_Base::StaticClass()))
 	{
@@ -156,7 +156,6 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		return;
 	}
 
-	// �� ���� ���� �̹� ���� ���ʹ� ����
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
 
 	// 1) 우선 피격 대상이 '데미지를 받을 수 있는' 대상인지 확인 (HealthComponent 존재 여부)
@@ -222,6 +221,20 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		InstigatorController,
 		Owner,
 		UDamageType::StaticClass());
+
+	// === Swift 궁극기 은신 공격 처리 ===
+	if (APawn* InstigatorPawn = Cast<APawn>(Owner))
+	{
+		// 소유 Actor에 붙어있는 Swift 궁극기 컴포넌트 찾기
+		if (USkill_Ultimate* UltimateSkill = InstigatorPawn->FindComponentByClass<USkill_Ultimate>())
+		{
+			if (UltimateSkill->IsSwiftStealthActive())
+			{
+				// "은신 중 성공적으로 공격이 적중한 순간" → 스턴 + 은신 해제
+				UltimateSkill->OnAttackFromStealth(OtherActor);
+			}
+		}
+	}
 
 	UE_LOG(LogTemp, Log,
 		TEXT("[WeaponComponent] %s hit %s for %.1f"),
