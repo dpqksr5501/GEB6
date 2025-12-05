@@ -257,7 +257,11 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 void AEnemy_Base::OnDeath()
 {
-	
+	// 델리게이트 방송 (나 죽음..)
+	if (OnEnemyDied.IsBound())
+	{
+		OnEnemyDied.Broadcast();
+	}
 }
 
 bool AEnemy_Base::IsEnemyFor(const AActor* Other) const
