@@ -31,10 +31,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
     int32 DamageSamples = 10;
 
-    /** 1타당 들어갈 일반 데미지 */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift")
-    float DamagePerSample = 0.f;
-
     /** 범위 내의 적 위치에 생성될 나이아가라 (타격 이펙트) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Swift|FX")
     TObjectPtr<UNiagaraSystem> HitNS;

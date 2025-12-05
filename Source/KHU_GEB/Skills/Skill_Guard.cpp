@@ -16,7 +16,6 @@ void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
     Super::InitializeFromDefinition(Def);
 
     if (Params.ManaCost > 0.f) { ManaPerShield = Params.ManaCost; }
-    if (Params.Damage > 0.f) { DamagePerShield = Params.Damage; }
     if (Params.Range > 0.f) { ExplosionRadius = Params.Range; }
 }
 
@@ -180,7 +179,6 @@ void USkill_Guard::StopSkill()
         }
     }
 
-
     // 이펙트 끄기
     if (SpawnedNS)
     {
@@ -204,9 +202,10 @@ void USkill_Guard::StopSkill()
     }
 
     // --- 3-2. 배리어가 소모된 만큼 광역 대미지 ---
-    if (World && Owner && ConsumedShields > 0 && DamagePerShield > 0.f && !bEndedByDepletion)
+    if (World && Owner && ConsumedShields > 0 && !bEndedByDepletion)
     {
-        const float TotalDamage = DamagePerShield * ConsumedShields;
+        const float BaseDamagePerShield = GetDamageForCurrentLevel();
+        const float TotalDamage = BaseDamagePerShield * ConsumedShields;
 
         TArray<AActor*> IgnoreActors;
         IgnoreActors.Add(Owner);

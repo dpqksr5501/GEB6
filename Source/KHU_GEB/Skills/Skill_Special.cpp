@@ -16,7 +16,6 @@ void USkill_Special::InitializeFromDefinition(const USkillDefinition* Def)
 {
     Super::InitializeFromDefinition(Def);
 
-    if (Params.Damage > 0.f) { SelfHealPerTick = Params.Damage * 2.f; DotDamagePerTick = Params.Damage; }
     if (Params.Range > 0.f) { FogRadius = Params.Range; }
 }
 
@@ -304,17 +303,21 @@ void USkill_Special::OnEffectTick()
     AActor* Owner = GetOwner();
     if (!World || !Owner || !bIsActive) return;
 
+    // 힐은 BaseDamage의 2배, 도트는 1배라고 가정 (지금 데이터와 동일한 비율)
+    const float HealAmount = GetDamageForCurrentLevel();
+    const float DotAmount = GetDamageForCurrentLevel() * 2;
+
     // 1) 플레이어 힐
-    if (SelfHealPerTick > 0.f)
+    if (HealAmount > 0.f)
     {
         if (UHealthComponent* Health = Owner->FindComponentByClass<UHealthComponent>())
         {
-            Health->AddHealth(SelfHealPerTick);
+            Health->AddHealth(HealAmount);
         }
     }
 
-    // 2) 흑안개 안 적들에게 "일반 데미지 도트"
-    if (FogRadius <= 0.f || DotDamagePerTick <= 0.f) return;
+    // 2) 흑안개 안 적들에게 도트 대미지
+    if (FogRadius <= 0.f || DotAmount <= 0.f) return;
 
     // 흑안개 중심 위치는 UpdateFogEffects와 동일한 기준 사용
     FVector Center;
@@ -360,12 +363,11 @@ void USkill_Special::OnEffectTick()
             InstigatorController = PawnOwner->GetController();
         }
 
-        // === 핵심: AActor::ApplyDamage 파이프라인만 사용 ===
         UGameplayStatics::ApplyDamage(
             OtherActor,
-            DotDamagePerTick,             // "일반 데미지"를 틱마다 한 번씩
+            DotAmount,
             InstigatorController,
-            Owner,                        // DamageCauser
-            UDamageType::StaticClass());  // 기본 DamageType
+            Owner,
+            UDamageType::StaticClass());
     }
 }

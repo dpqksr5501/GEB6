@@ -89,7 +89,7 @@ void USkill_Base::ActivateSkill()
     APawn* PawnOwner = Cast<APawn>(Owner);
     AController* InstigatorController = PawnOwner ? PawnOwner->GetController() : nullptr;
 
-    const float DamageAmount = Params.Damage;
+    const float DamageAmount = GetDamageForCurrentLevel();
 
     for (const FOverlapResult& O : Overlaps)
     {

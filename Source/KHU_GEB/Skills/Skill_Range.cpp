@@ -396,15 +396,12 @@ void USkill_Range::SpawnProjectileTowards(const FVector& TargetLocation)
         SpawnRotation,
         SpawnParams);
 
-    if (!Fireball)
-    {
-        return;
-    }
+    if (!Fireball) return;
 
     UE_LOG(LogTemp, Log, TEXT("[Skill_Range] Fireball spawned toward target."));
 
     // 데미지/범위 세팅
-    const float BaseDamage = Params.Damage;
+    const float BaseDamage = GetDamageForCurrentLevel();
     Fireball->DirectDamage = BaseDamage * 1.0f;
     Fireball->ExplosionDamage = BaseDamage * 0.5f;
     if (Params.Range > 0.f) { Fireball->ExplosionRadius = Params.Range; }

@@ -142,4 +142,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
 	void RegisterKill(EFormType FormType, EEnemyKind Kind);
+
+protected:
+	/** Base 폼 레벨을 다른 폼들 중 최대 레벨을 기준으로 동기화한다. */
+	void SyncBaseLevelToHighest(bool bBroadcastEvent);
+
 };
