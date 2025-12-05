@@ -677,19 +677,40 @@ void USkill_Ultimate::ApplySwiftEndExplosion()
         FCollisionShape::MakeSphere(SwiftEndRadius),
         QueryParams);
 
-    // 디버그용 구체
+    // 디버그용 원형 판 (XY 평면 원)
     if (bDrawDebugSwiftEnd)
     {
-        DrawDebugSphere(
+        DrawDebugCircle(
             World,
-            Origin,
-            SwiftEndRadius,
-            24,
-            SwiftEndDebugColor,
-            false,
-            1.5f,
-            0,
-            2.0f);
+            Origin,                  // 중심
+            SwiftEndRadius,          // 반경
+            24,                      // 세그먼트 수
+            SwiftEndDebugColor,      // 색
+            false,                   // 영구 여부
+            1.5f,                    // Duration (초)
+            0,                       // Depth Priority
+            2.0f,                    // 선 두께
+            FVector(1.f, 0.f, 0.f),  // X축
+            FVector(0.f, 1.f, 0.f),  // Y축
+            false                    // Z-test 사용
+        );
+    }
+
+    // Swift 은신 종료 폭발 FX (나이아가라)
+    if (SwiftEndExplosionNS)
+    {
+        float Scale = 1.f;
+        if (SwiftEndReferenceRadius > 0.f)
+        {
+            Scale = SwiftEndRadius / SwiftEndReferenceRadius;
+        }
+
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            World,
+            SwiftEndExplosionNS,
+            Origin + SwiftEndOffset,
+            FRotator::ZeroRotator,
+            FVector(Scale, Scale, 1.f));  // XY만 반경에 맞게
     }
 
     if (!bAnyHit)
@@ -760,6 +781,25 @@ void USkill_Ultimate::ActivateGuardUltimate()
 
     const FVector Origin = Owner->GetActorLocation();
     const FVector Forward = Owner->GetActorForwardVector();
+
+    // --- Guard 궁극 범위 나이아가라 ---
+    if (GuardAreaNS && GuardRange > 0.f)
+    {
+        const float ScaleX = GuardRange / GuardAreaReferenceDistanceX;
+        const float ScaleY = GuardRange / GuardAreaReferenceDistanceY;
+
+        if (UNiagaraComponent* GuardAreaComp =
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                World,
+                GuardAreaNS,
+                Origin - FVector(0.f, 0.f, 80.f),
+                Owner->GetActorRotation(),  // 부채꼴 방향을 나이아가라에서 쓰고 싶으면 사용
+                FVector(ScaleX, ScaleY, 1.f)))
+        {
+            // 필요하면 파라미터 설정
+            // GuardAreaComp->SetVariableFloat(TEXT("Range"), GuardRange);
+        }
+    }
 
     // 1) 구체 오버랩
     FCollisionObjectQueryParams ObjParams;
@@ -1208,6 +1248,29 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
                 InstigatorController,
                 Owner,
                 UDamageType::StaticClass());
+
+
+            // Special 속박 대상 발밑 마법진 FX (나이아가라)
+            if (SpecialRootedTargetNS)
+            {
+                float Scale = 1.f;
+                if (SpecialRootedReferenceRadius > 0.f)
+                {
+                    Scale = SpecialRootedFXRadius / SpecialRootedReferenceRadius;
+                }
+
+                if (UNiagaraComponent* RootFX = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                    SpecialRootedTargetNS,
+                    TargetChar->GetRootComponent(),
+                    NAME_None,
+                    SpecialRootedOffset,   // 발보다 약간 아래쪽
+                    FRotator::ZeroRotator,
+                    EAttachLocation::KeepRelativeOffset,
+                    true))
+                {
+                    RootFX->SetWorldScale3D(FVector(Scale, Scale, 1.f));
+                }
+            }
 
             ++HitCount;
         }

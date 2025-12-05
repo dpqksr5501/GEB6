@@ -408,7 +408,7 @@ void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 					UE_LOG(LogTemp, Log,
 						TEXT("[Character] Skill locked: Elite not killed yet for form %d"),
 						static_cast<int32>(CurrentForm));
-					return;
+					//return;
 				}
 			}
 		}
@@ -440,7 +440,7 @@ void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 					UE_LOG(LogTemp, Log,
 						TEXT("[Character] Skill locked: Boss not killed yet for form %d"),
 						static_cast<int32>(CurrentForm));
-					return;
+					//return;
 				}
 			}
 		}

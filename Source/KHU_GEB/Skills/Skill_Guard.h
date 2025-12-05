@@ -35,8 +35,18 @@ public:
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
-    UPROPERTY()
-    TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    float SkillReferenceRadius = 100.f;
+
+    /** 폭발 범위를 표시할 나이아가라 (원형/구형) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard|FX")
+    TObjectPtr<UNiagaraSystem> ExplosionNS;
+
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    float ExplosionReferenceRadius = 100.f;
+
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    FVector GuardBlockOffset = FVector(0.f, 0.f, -80.f);
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
 

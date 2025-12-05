@@ -10,6 +10,7 @@
 
 class ACharacter;
 class USceneComponent;
+class UNiagaraSystem;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class KHU_GEB_API UJumpComponent : public UActorComponent
@@ -89,6 +90,18 @@ protected:
 	// 스턴 전에 MaxWalkSpeed 저장해 둘 맵
 	TMap<TWeakObjectPtr<ACharacter>, float> RangeStunOriginalSpeeds;
 
+	/** Range 급강하 착지 시 범위에 재생할 나이아가라 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp|FX")
+	TObjectPtr<UNiagaraSystem> RangeStompNS;
+
+	/** RangeStompNS를 1.0 스케일로 둘 때의 기준 반경(cm) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp|FX")
+	float RangeStompReferenceRadius = 300.f;
+
+	/** Range 착지 FX 오프셋 (발밑/허리 등 위치 조정용) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Range|Stomp|FX")
+	FVector RangeStompOffset = FVector(0.f, 0.f, -80.f);
+
 	// === Swift ===
 
 	/** 회전의 축이 되는 루트 (캐릭터 중심에 있는 MeshRoot) */
@@ -110,6 +123,14 @@ protected:
 
 	/** 회전 시작 전에 Movement의 bOrientRotationToMovement 값 기억 */
 	bool bSwiftSavedOrientRotationToMovement = false;
+
+	/** Swift 2단 점프 시 발밑에서 재생할 나이아가라 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Swift|FX")
+	TObjectPtr<UNiagaraSystem> SwiftSecondJumpNS;
+
+	/** Swift 2단 점프 FX 오프셋 (발밑으로 살짝 내려주고 싶을 때) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Swift|FX")
+	FVector SwiftSecondJumpOffset = FVector(0.f, 0.f, -80.f);
 
 	// === Guard ===
 
@@ -149,8 +170,27 @@ protected:
 	/** 끌어당기는 타겟들 */
 	TArray<TWeakObjectPtr<ACharacter>> GuardPullTargets;
 
+	/** Guard 끌어당기기 범위 디버그 표시 여부 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Guard|Debug")
+	bool bDrawGuardPullDebug = false;
+
+	/** Guard 끌어당기기 범위 디버그 색상 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Guard|Debug")
+	FColor GuardPullDebugColor = FColor::Yellow;
+
 	/** Guard 쿨타임 타이머 */
 	FTimerHandle GuardCooldownTimerHandle;
+
+	/** Guard 끌어당기기 범위를 표시할 나이아가라 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Guard|FX")
+	TObjectPtr<UNiagaraSystem> GuardPullAreaNS;
+
+	UPROPERTY(EditAnywhere, Category = "Jump|Guard|FX")
+	float GuardPullReferenceRadius = 300.f;
+
+	/** Guard 끌어당기기 FX 오프셋 (발밑/허리 등 위치 조정용) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Guard|FX")
+	FVector GuardPullOffset = FVector(0.f, 0.f, -80.f);
 
 	// === Special ===
 
@@ -171,6 +211,14 @@ protected:
 
 	/** 쿨타임용 타이머 핸들 */
 	FTimerHandle SpecialBlinkCooldownHandle;
+
+	/** Special 블링크 시 시전자에게 붙일 나이아가라 */
+	UPROPERTY(EditAnywhere, Category = "Jump|Special|FX")
+	TObjectPtr<UNiagaraSystem> SpecialBlinkNS;
+
+	/** Special 블링크 FX 오프셋 (발밑/허리 등 위치 조정용) */
+	UPROPERTY(EditAnywhere, Category = "Jump|Special|FX")
+	FVector SpecialBlinkOffset = FVector(0.f, 0.f, -80.f);
 
 public:
 	UJumpComponent();
