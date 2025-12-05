@@ -322,6 +322,9 @@ public:
 	/** 락온/Range 조준 상태에 따라 회전 모드를 갱신한다. */
 	void RefreshRotationMode();
 
+protected:
+	bool CanSwitchToForm(EFormType Form) const;
+
 public:
 	// 상대가 적인지 판정하는 함수
 	UFUNCTION(BlueprintPure, Category = "Combat")

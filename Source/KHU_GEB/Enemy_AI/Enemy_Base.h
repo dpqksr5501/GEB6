@@ -7,6 +7,8 @@
 #include "Animation/AnimMontage.h"
 #include "Skills/SkillDefinition.h"
 #include "EnemyState.h"
+#include "FormDefinition.h"
+#include "StatManagerComponent.h"
 #include "Enemy_Base.generated.h"
 
 class UBlackboardComponent;
@@ -17,6 +19,7 @@ class UFormDefinition;
 class UJumpComponent;
 class USkillBase;
 class UCrowdControlComponent;
+class AKHU_GEBCharacter;
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -96,5 +99,29 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CC")
 	UCrowdControlComponent* CrowdControlComp;
+
+	// 적 레벨(BP에서 적 타입별로 설정)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	int32 EnemyLevel = 1;
+
+	// 이 적의 런타임 스탯 (공격/방어/이동속도 등)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	FFormRuntimeStats EnemyStats;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Form")
+	EFormType EnemyFormType = EFormType::Base;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	EEnemyKind EnemyKind = EEnemyKind::Minion;
+
+	// 런타임 Attack/Defense를 손쉽게 가져다 쓰기 위한 헬퍼
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	float GetAttackStat() const { return EnemyStats.Attack; }
+
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	float GetDefenseStat() const { return EnemyStats.Defense; }
+
+protected:
+	void HandleKilledBy(AActor* Killer);
 
 };

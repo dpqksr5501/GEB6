@@ -23,9 +23,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ManaPerShield = 0.f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
-    float DamagePerShield = 0.f;
-
     /** 우클릭을 떼었을 때, 소모된 보호막 수 × DamagePerSheild 를 줄 광역 공격 반경 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 0.f;

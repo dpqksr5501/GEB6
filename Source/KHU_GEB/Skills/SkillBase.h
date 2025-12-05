@@ -47,6 +47,15 @@ protected:
 
     EFormType GetCurrentFormType() const;
 
+    /** 현재 시전자(플레이어/적)의 "해당 폼 레벨"을 구한다. 최소 1 */
+    float GetCurrentOwnerLevel() const;
+
+    /** 현재 레벨 기준 스킬 대미지 */
+    float GetDamageForCurrentLevel() const;
+
+    /** 현재 레벨 기준 스킬 마나 소모량 */
+    float GetManaCostForCurrentLevel() const;
+
 public:
     // SkillDefinition에서 주입
     virtual void InitializeFromDefinition(const USkillDefinition* Def);

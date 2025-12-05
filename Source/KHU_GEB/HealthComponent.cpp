@@ -3,7 +3,11 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Skills/SkillBase.h" 
-#include "Skills/Skill_Ultimate.h" 
+#include "Skills/Skill_Ultimate.h"
+#include "KHU_GEBCharacter.h"
+#include "Enemy_AI/Enemy_Base.h"
+#include "FormManagerComponent.h"
+#include "StatManagerComponent.h"
 
 #include "Animation/AnimInstance.h"
 
@@ -47,20 +51,72 @@ void UHealthComponent::InitializeHealth(float InMaxHealth, float InStartHealth)
 float UHealthComponent::ApplyDamage(
     float   RawDamage,
     AActor* InstigatorActor,
-    AActor* DamageCauser
-)
+    AActor* DamageCauser)
 {
     if (RawDamage <= 0.f || MaxHealth <= 0.f) return 0.f;
 
-    // 나중에 방어력/저항 등을 여기에서 계산해도 됨
-    const float FinalDamage = RawDamage;
+    // ---------------------------
+    // 1) 피격자의 방어력(%) 가져오기
+    // ---------------------------
+    float DefensePercent = 0.f;
 
+    AActor* OwnerActor = GetOwner();
+    if (OwnerActor)
+    {
+        // 플레이어인 경우: 현재 폼의 StatManager 방어력 사용
+        if (const AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(OwnerActor))
+        {
+            if (Player->StatManager && Player->FormManager)
+            {
+                const FFormRuntimeStats* Stats =
+                    Player->StatManager->GetStats(Player->FormManager->CurrentForm);
+
+                if (Stats)
+                {
+                    DefensePercent = Stats->Defense; // 단위: %
+                }
+            }
+        }
+        // 적인 경우: EnemyStats 방어력 사용
+        else if (const AEnemy_Base* Enemy = Cast<AEnemy_Base>(OwnerActor))
+        {
+            DefensePercent = Enemy->GetDefenseStat(); // 단위: %
+        }
+    }
+
+    // 0 ~ 100% 로 클램프
+    const float ClampedDefense = FMath::Clamp(DefensePercent, 0.f, 100.f);
+
+    // ---------------------------
+    // 2) 최종 대미지 계산
+    //    예) 방어력 60 → 40%만 받음
+    // ---------------------------
+    const float DamageReductionFactor = ClampedDefense / 100.f;        // 0.0 ~ 1.0
+    float       FinalDamage = RawDamage * (1.f - DamageReductionFactor);
+
+    // 방어력 100% 이상이면 데미지 0
+    FinalDamage = FMath::Max(0.f, FinalDamage);
+
+    if (FinalDamage <= 0.f)
+    {
+        UE_LOG(LogTemp, Log,
+            TEXT("[HealthComponent] %s blocked all damage. Raw=%.1f Def=%.1f%%"),
+            *GetNameSafe(OwnerActor), RawDamage, ClampedDefense);
+
+        // 그래도 이벤트는 날려줄 수 있음 (원하면 유지/삭제 선택)
+        OnDamageApplied.Broadcast(Health, RawDamage, 0.f, InstigatorActor, DamageCauser);
+        return 0.f;
+    }
+
+    // ---------------------------
+    // 3) 체력 감소 적용
+    // ---------------------------
     const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
-    const float Delta = NewHealth - Health;
+    const float Delta = NewHealth - Health; // 음수(감소량)
 
     UE_LOG(LogTemp, Log,
-        TEXT("[HealthComponent] %s took damage: Raw=%.1f Final=%.1f NewHealth=%.1f"),
-        *GetNameSafe(GetOwner()), RawDamage, FinalDamage, NewHealth);
+        TEXT("[HealthComponent] %s took damage: Raw=%.1f Def=%.1f%% Final=%.1f NewHealth=%.1f"),
+        *GetNameSafe(OwnerActor), RawDamage, ClampedDefense, FinalDamage, NewHealth);
 
     ApplyHealth(NewHealth, Delta);
     HandleDeathIfNeeded();

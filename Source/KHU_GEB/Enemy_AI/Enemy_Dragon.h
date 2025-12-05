@@ -23,6 +23,9 @@ public:
 
 	virtual void ActivateUltimate() override;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
+		AController* EventInstigator, AActor* DamageCauser) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dragon|Skill")
 	TSubclassOf<AFireballProjectile> FireballClass;
 

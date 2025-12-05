@@ -15,7 +15,6 @@ void USkill_Swift::InitializeFromDefinition(const USkillDefinition* Def)
 {
     Super::InitializeFromDefinition(Def);
 
-    if (Params.Damage > 0.f) { DamagePerSample = Params.Damage; }
     if (Params.Range > 0.f) { DashDistance = Params.Range; }
 }
 
@@ -195,6 +194,9 @@ void USkill_Swift::HandleSwiftDamageTick()
     }
 
     // 타겟 목록을 돌면서 한 번씩 데미지 넣기
+    // 현재 레벨 기준 1타 대미지
+    const float PerHitDamage = GetDamageForCurrentLevel();
+
     for (int32 i = SwiftTargets.Num() - 1; i >= 0; --i)
     {
         AActor* TargetActor = SwiftTargets[i].Get();
@@ -204,7 +206,7 @@ void USkill_Swift::HandleSwiftDamageTick()
             continue;
         }
 
-        if (DamagePerSample <= 0.f) continue;
+        if (PerHitDamage <= 0.f) continue;
 
         // InstigatorController 계산
         AController* InstigatorController = nullptr;
@@ -213,10 +215,9 @@ void USkill_Swift::HandleSwiftDamageTick()
             InstigatorController = PawnOwner->GetController();
         }
 
-        // ApplyDamage 파이프라인
         UGameplayStatics::ApplyDamage(
             TargetActor,
-            DamagePerSample,
+            PerHitDamage,
             InstigatorController,
             Owner,
             UDamageType::StaticClass());
@@ -225,7 +226,7 @@ void USkill_Swift::HandleSwiftDamageTick()
             TEXT("[Skill_Swift] Tick %d -> Hit %s for %.1f"),
             CurrentHitIndex,
             *GetNameSafe(TargetActor),
-            DamagePerSample);
+            PerHitDamage);
 
         // Actor 기준으로 이펙트
         if (HitNS)

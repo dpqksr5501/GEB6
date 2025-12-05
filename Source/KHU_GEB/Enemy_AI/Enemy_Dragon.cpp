@@ -5,6 +5,12 @@
 #include "Skills/FireballProjectile.h"
 #include "FormDefinition.h"
 #include "Skills/Skill_Ultimate.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "EnemyAnimIntance.h"
+#include "KHU_GEBCharacter.h"
+#include "Skills/SkillManagerComponent.h"
+#include "Skills/Skill_Guard.h"
+#include "FormManagerComponent.h"
 
 AEnemy_Dragon::AEnemy_Dragon()
 {
@@ -16,6 +22,71 @@ void AEnemy_Dragon::BeginPlay()
 {
 	Super::BeginPlay();
 	// 스킬 초기화는 부모에서 처리됨
+}
+
+float AEnemy_Dragon::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	// 1. 공격자 Actor 추출 (EventInstigator의 Pawn 또는 DamageCauser)
+	AActor* InstigatorActor = nullptr;
+	if (EventInstigator) 
+	{ 
+		InstigatorActor = EventInstigator->GetPawn(); 
+	}
+	if (!InstigatorActor) 
+	{ 
+		InstigatorActor = DamageCauser; 
+	}
+
+	// 2. 공격자가 플레이어 캐릭터인지 확인
+	AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(InstigatorActor);
+	
+	// 3. Guard 궁극기 사용 중인지 확인
+	bool bIsGuardUltimate = false;
+	if (PlayerChar && PlayerChar->SkillManager)
+	{
+		// Ultimate 슬롯의 스킬 가져오기
+		if (USkillBase* UltimateSkill = PlayerChar->SkillManager->Equipped.FindRef(ESkillSlot::Ultimate))
+		{
+			if (USkill_Ultimate* Ultimate = Cast<USkill_Ultimate>(UltimateSkill))
+			{
+				// 현재 폼 타입 확인
+				EFormType CurrentForm = PlayerChar->FormManager ? 
+					PlayerChar->FormManager->CurrentForm : EFormType::Base;
+				
+				// Guard 폼이고 궁극기가 방금 발동된 경우
+				if (CurrentForm == EFormType::Guard)
+				{
+					UE_LOG(LogTemp, Warning, 
+						TEXT("[Enemy_Dragon] Hit by Guard Ultimate from player: %s"), 
+						*PlayerChar->GetName());
+					bIsGuardUltimate = true;
+				}
+			}
+		}
+	}
+
+	// 4. 자신이 점프 중인지 확인 (AnimInstance의 bIsJumping)
+	bool bIsDragonJumping = false;
+	if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+	{
+		if (UEnemyAnimIntance* EnemyAnim = Cast<UEnemyAnimIntance>(AnimInst))
+		{
+			bIsDragonJumping = EnemyAnim->bIsJumping;
+		}
+	}
+
+	// 5. Guard 궁극기 + 점프 중이면 Groggy 상태로 전환
+	if (bIsGuardUltimate && bIsDragonJumping && BlackboardComp)
+	{
+		BlackboardComp->SetValueAsEnum("EnemyState", static_cast<uint8>(EEnemyState::EES_Groggy));
+		
+		UE_LOG(LogTemp, Warning, 
+			TEXT("[Enemy_Dragon] Hit by Guard Ultimate while jumping! State changed to Groggy"));
+	}
+
+	// 6. 부모 클래스의 TakeDamage 호출 (일반 데미지 처리)
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void AEnemy_Dragon::ActivateSkill()
