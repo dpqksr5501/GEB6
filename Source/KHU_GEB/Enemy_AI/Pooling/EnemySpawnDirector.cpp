@@ -86,6 +86,20 @@ void UEnemySpawnDirector::OnEnemyDied(TSubclassOf<AEnemy_Base> EnemyClass)
 
     UE_LOG(LogTemp, Log, TEXT("EnemySpawnDirector: Enemy died. Total: %d/%d, Alive: %d/%d"), 
            TotalSpawnedCount, MaxTotalSpawns, CurrentAliveCount, MaxConcurrentSpawns);
+
+    // 모든 적이 처치되었는지 확인
+    // 조건: MaxTotalSpawns만큼 스폰되었고, 살아있는 적이 0이며, 아직 이벤트가 발생하지 않았을 때
+    if (!bAllEnemiesDefeated && 
+        TotalSpawnedCount >= MaxTotalSpawns && 
+        CurrentAliveCount == 0)
+    {
+        bAllEnemiesDefeated = true;
+        
+        UE_LOG(LogTemp, Warning, TEXT("EnemySpawnDirector: All enemies defeated! Broadcasting event."));
+        
+        // 델리게이트 브로드캐스트 - BP_PotionSpawner가 구독하고 있으면 SpawnPotion 호출됨
+        OnAllEnemiesDefeated.Broadcast();
+    }
 }
 
 int32 UEnemySpawnDirector::GetCurrentSpawnCountForEnemyType(TSubclassOf<AEnemy_Base> EnemyClass) const

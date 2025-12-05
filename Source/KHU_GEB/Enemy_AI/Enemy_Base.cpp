@@ -209,25 +209,7 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 void AEnemy_Base::OnDeath()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Base::OnDeath - Enemy has died!"));
-
-	// Director에게 사망 알림
-	UGameInstance* GI = GetGameInstance();
-	if (GI)
-	{
-		UEnemySpawnDirector* SpawnDirector = GI->GetSubsystem<UEnemySpawnDirector>();
-		if (SpawnDirector)
-		{
-			SpawnDirector->OnEnemyDied(GetClass());
-		}
-
-		// Pool에 반환
-		UEnemyPoolSubsystem* EnemyPool = GI->GetSubsystem<UEnemyPoolSubsystem>();
-		if (EnemyPool)
-		{
-			EnemyPool->ReturnEnemyToPool(this);
-		}
-	}
+	
 }
 
 bool AEnemy_Base::IsEnemyFor(const AActor* Other) const
