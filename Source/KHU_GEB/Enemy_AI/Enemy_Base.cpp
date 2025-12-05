@@ -215,7 +215,7 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		if (!bJustDied)
 		{
 			// 아직 살아있으면 Damaged 상태로 전환(공격 중이 아닐 때만)
-			if (CurrentState != EEnemyState::EES_Attacking)
+			if (CurrentState != EEnemyState::EES_Attacking && CurrentState != EEnemyState::EES_Groggy)
 			{
 				BlackboardComp->SetValueAsEnum("EnemyState",
 					static_cast<uint8>(EEnemyState::EES_Damaged));

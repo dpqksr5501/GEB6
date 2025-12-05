@@ -35,4 +35,13 @@ private:
 	/** Guard 스킬 참조를 캐싱 */
 	UPROPERTY()
 	class USkill_Guard* CachedGuardSkill = nullptr;
+
+	/** StopSkill 지연 호출을 위한 타이머 핸들 */
+	FTimerHandle StopSkillTimerHandle;
+
+	/** 1초 후 StopSkill을 실행하는 함수 */
+	void ExecuteDelayedStopSkill();
+
+	/** StopSkill 대기 중인지 여부 */
+	bool bIsWaitingToStopSkill = false;
 };
