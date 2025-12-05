@@ -69,6 +69,14 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	// [그룹 1] Base, Guard, Swift 폼일 때 재생할 사운드
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Sound")
+	USoundBase* MeleeHitSound;
+
+	// [그룹 2] Range, Special 폼일 때 재생할 사운드
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Sound")
+	USoundBase* HeavyHitSound;
+
 private:
 	/** 풀에서 사용 가능한 박스 콜리전을 가져옵니다. */
 	UBoxComponent* GetPooledBoxCollider();
