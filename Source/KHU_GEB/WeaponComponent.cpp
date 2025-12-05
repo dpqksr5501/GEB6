@@ -13,6 +13,7 @@
 #include "HealthComponent.h"
 #include "Enemy_AI/Enemy_Base.h"
 #include "Skills/Skill_Ultimate.h"
+#include "FormManagerComponent.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -196,18 +197,23 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 	// 3) 데미지 양 결정 (우선은 임시 값 10 유지)
 	float DamageToApply = 10.f;
 
-	// TODO: 나중에 StatManager/WeaponData에서 공격력을 가져오고 싶으면 여기서 계산
-	// if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
-	// {
-	//     if (OwnerChar->StatManager)
-	//     {
-	//         if (const FFormRuntimeStats* Stats =
-	//             OwnerChar->StatManager->GetStats(OwnerChar->FormManager->CurrentForm))
-	//         {
-	//             DamageToApply = Stats->Attack;
-	//         }
-	//     }
-	// }
+
+	if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(GetOwner()))
+	{
+		if (Player->StatManager && Player->FormManager)
+		{
+			if (const FFormRuntimeStats* Stats =
+				Player->StatManager->GetStats(Player->FormManager->CurrentForm))
+			{
+				DamageToApply = Stats->Attack;
+			}
+		}
+	}
+
+	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(GetOwner()))
+	{
+		DamageToApply = Enemy->GetAttackStat();
+	}
 
 	if (DamageToApply <= 0.f) return;
 

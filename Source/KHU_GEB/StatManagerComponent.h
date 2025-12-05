@@ -11,6 +11,13 @@
 class UFormStatData;
 class UFormSet;
 
+UENUM(BlueprintType)
+enum class EEnemyKind : uint8
+{
+	Minion UMETA(DisplayName = "Minion"),
+	Elite  UMETA(DisplayName = "Elite"),
+	Boss   UMETA(DisplayName = "Boss")
+};
 
 USTRUCT(BlueprintType)
 struct FFormRuntimeStats
@@ -133,7 +140,11 @@ public:
 
 	////
 
+	UFUNCTION(BlueprintCallable, Category = "Stats|Level")
+	void RegisterKill(EFormType FormType, EEnemyKind Kind);
 
-
+protected:
+	/** Base 폼 레벨을 다른 폼들 중 최대 레벨을 기준으로 동기화한다. */
+	void SyncBaseLevelToHighest(bool bBroadcastEvent);
 
 };
