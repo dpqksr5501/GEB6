@@ -7,6 +7,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h" // EPathFollowingRequestResult::Type 사용
 #include "Engine.h" // GEngine (디버그 메시지) 사용을 위해 필요
+#include "Enemy_Base.h"
+#include "CrowdControlComponent.h"
 
 UTMoveTo::UTMoveTo()
 {
@@ -24,6 +26,11 @@ UTMoveTo::UTMoveTo()
 
 EBTNodeResult::Type UTMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	if (auto Owner = Cast<AEnemy_Base>(AIController->GetOwner()))
+	{
+		if (Owner->CrowdControlComp && Owner->CrowdControlComp->IsMoveBlocked()) return EBTNodeResult::Failed;
+	}
+
 	// AIController, Controlled Pawn, Character Movement Component 가져와 변수로 저장
 	AIController = OwnerComp.GetAIOwner();
 	BlackboardComp = OwnerComp.GetBlackboardComponent();
