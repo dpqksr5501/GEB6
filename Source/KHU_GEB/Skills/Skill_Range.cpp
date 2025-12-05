@@ -11,6 +11,8 @@
 #include "KHU_GEBCharacter.h"
 #include "SkillManagerComponent.h"
 #include "FireballProjectile.h"
+#include "Enemy_AI/Enemy_Base.h"
+
 
 USkill_Range::USkill_Range()
 {
@@ -99,27 +101,35 @@ void USkill_Range::ActivateSkill()
         InitialLoc = StartLoc + Forward * (Radius * 0.5f);
 
         // --- 2) 만약 플레이어이고, 락온 타겟이 있다면 → 락온 타겟 위치를 우선 사용 ---
+        AActor* TargetActor = nullptr;
+
         if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OwnerChar))
         {
-            if (AActor* LockOnTarget = PlayerChar->GetLockOnTarget())
+            TargetActor = PlayerChar->GetLockOnTarget();
+        }
+        else if (AEnemy_Base* EnemyChar = Cast<AEnemy_Base>(OwnerChar))
+        {
+            TargetActor = EnemyChar->GetCurrentTarget();
+        }
+
+        if (TargetActor)
+        {
+            InitialLoc = TargetActor->GetActorLocation();
+
+            // 너무 멀면 MaxAimDistance 안으로 클램프 (기존 로직 재사용)
+            if (MaxDist > 0.f)
             {
-                InitialLoc = LockOnTarget->GetActorLocation();
+                FVector FlatOwner(StartLoc.X, StartLoc.Y, 0.f);
+                FVector FlatTarget(InitialLoc.X, InitialLoc.Y, 0.f);
+                FVector FlatDir = FlatTarget - FlatOwner;
+                const float Dist = FlatDir.Size();
 
-                // 너무 멀리 있으면 MaxAimDistance 안으로 클램프
-                if (MaxDist > 0.f)
+                if (Dist > MaxDist && Dist > KINDA_SMALL_NUMBER)
                 {
-                    FVector FlatOwner(StartLoc.X, StartLoc.Y, 0.f);
-                    FVector FlatTarget(InitialLoc.X, InitialLoc.Y, 0.f);
-                    FVector FlatDir = FlatTarget - FlatOwner;
-                    const float Dist = FlatDir.Size();
-
-                    if (Dist > MaxDist && Dist > KINDA_SMALL_NUMBER)
-                    {
-                        FlatDir = FlatDir / Dist * MaxDist;
-                        FlatTarget = FlatOwner + FlatDir;
-                        InitialLoc.X = FlatTarget.X;
-                        InitialLoc.Y = FlatTarget.Y;
-                    }
+                    FlatDir = FlatDir / Dist * MaxDist;
+                    FlatTarget = FlatOwner + FlatDir;
+                    InitialLoc.X = FlatTarget.X;
+                    InitialLoc.Y = FlatTarget.Y;
                 }
             }
         }

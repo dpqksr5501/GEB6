@@ -15,10 +15,10 @@
 #include "HealthComponent.h"
 #include "FormDefinition.h"
 #include "KHU_GEBCharacter.h"
-#include "Enemy_AI/Enemy_Base.h" 
+#include "LockOnComponent.h"
+#include "Enemy_AI/EnemyState.h"
 #include "Enemy_AI/Enemy_Base.h"
-#include "BehaviorTree/BlackboardComponent.h"  
-#include "Enemy_AI/EnemyState.h" 
+#include "BehaviorTree/BlackboardComponent.h"
 
 void USkill_Ultimate::BeginPlay()
 {
@@ -402,6 +402,17 @@ void USkill_Ultimate::ActivateSwiftUltimate()
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Swift stealth activated (Duration=%.2f, MoveMult=%.2f, AtkMult=%.2f)"),
         SwiftDuration, SwiftMoveSpeedMultiplier, SwiftAttackMultiplier);
+
+    // 적이 은신을 쓸 때 플레이어 락온 해제
+    if (OwnerChar->IsA<AEnemy_Base>())
+    {
+        if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(
+            UGameplayStatics::GetPlayerCharacter(World, 0)))
+        {
+            // 플레이어가 현재 이 적을 락온하고 있다면 락온 해제
+            Player->ClearLockOnIfTarget(OwnerChar);
+        }
+    }
 }
 
 void USkill_Ultimate::EndSwiftUltimate()
@@ -457,12 +468,50 @@ void USkill_Ultimate::OnSwiftDurationEnded()
     EndSwiftUltimate();
 }
 
-void USkill_Ultimate::OnAttackFromStealth()
+void USkill_Ultimate::OnAttackFromStealth(AActor* HitActor)
 {
     if (!bSwiftStealthActive) return;
 
+    // 1) 스턴 적용 (공격이 실제로 적중한 경우에만)
+    if (SwiftStunDuration > 0.f && HitActor)
+    {
+        // ACharacter 기준으로 스턴 (플레이어만 스턴하고 싶으면 AKHU_GEBCharacter* 로 캐스팅을 좁히면 됩니다)
+        if (ACharacter* HitChar = Cast<ACharacter>(HitActor))
+        {
+            if (UCharacterMovementComponent* MoveComp = HitChar->GetCharacterMovement())
+            {
+                // 이동 불가
+                MoveComp->DisableMovement();
+
+                // SwiftStunDuration 후에 다시 걷기 모드로 되돌리는 타이머
+                if (UWorld* World = GetWorld())
+                {
+                    FTimerHandle StunTimerHandle;
+                    FTimerDelegate StunEndDelegate;
+                    StunEndDelegate.BindLambda([HitChar]()
+                        {
+                            if (UCharacterMovementComponent* MoveCompInner = HitChar->GetCharacterMovement())
+                            {
+                                // 필요시 원래 모드 저장/복원 로직 추가 가능
+                                MoveCompInner->SetMovementMode(MOVE_Walking);
+                            }
+                        });
+
+                    World->GetTimerManager().SetTimer(
+                        StunTimerHandle,
+                        StunEndDelegate,
+                        SwiftStunDuration,
+                        false);
+                }
+            }
+        }
+    }
+
     UE_LOG(LogTemp, Log,
-        TEXT("[Skill_Ultimate] Swift stealth broken by attacking."));
+        TEXT("[Skill_Ultimate] Swift stealth broken by attacking. Hit: %s"),
+        *GetNameSafe(HitActor));
+
+    // 2) 은신 종료
     EndSwiftUltimate();
 }
 

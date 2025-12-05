@@ -61,18 +61,11 @@ void UJumpComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	// === Range 락온 거리(1200) 보정 ===
 	if (CurrentForm == EFormType::Range && bRangeLockOnAdjusting)
 	{
-		AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter);
-		if (!Player)
-		{
-			bRangeLockOnAdjusting = false;
-		}
-		else if (AActor* Target = Player->GetLockOnTarget())
+		if (!CachedCharacter) { bRangeLockOnAdjusting = false; }
+		else if (AActor* Target = GetCurrentTargetForOwner())
 		{
 			UCharacterMovementComponent* MoveComp = CachedCharacter->GetCharacterMovement();
-			if (!MoveComp)
-			{
-				bRangeLockOnAdjusting = false;
-			}
+			if (!MoveComp) { bRangeLockOnAdjusting = false; }
 			else
 			{
 				const FVector OwnerLoc = CachedCharacter->GetActorLocation();
@@ -408,14 +401,10 @@ void UJumpComponent::HandleRangePressed()
 		// --- Range 락온 거리 보정 플래그 초기화 ---
 		bRangeLockOnAdjusting = false;
 
-		// 락온 타겟이 있을 때만 거리 보정 시작
-		if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter))
+		if (AActor* Target = GetCurrentTargetForOwner())
 		{
-			if (Player->GetLockOnTarget())
-			{
-				bRangeLockOnAdjusting = true;
-				SetComponentTickEnabled(true);
-			}
+			bRangeLockOnAdjusting = true;
+			SetComponentTickEnabled(true);
 		}
 
 		// 기본 점프의 RangeHighJumpMultiplier 배 만큼 위로 발사 (XY는 0)
@@ -496,6 +485,25 @@ void UJumpComponent::HandleRangePressed()
 void UJumpComponent::HandleRangeReleased()
 {
 
+}
+
+AActor* UJumpComponent::GetCurrentTargetForOwner() const
+{
+	if (!CachedCharacter) return nullptr;
+
+	// 1) 플레이어인 경우: LockOn 타겟
+	if (AKHU_GEBCharacter* Player = Cast<AKHU_GEBCharacter>(CachedCharacter))
+	{
+		return Player->GetLockOnTarget();
+	}
+
+	// 2) 적인 경우: Blackboard 타겟
+	if (AEnemy_Base* Enemy = Cast<AEnemy_Base>(CachedCharacter))
+	{
+		return Enemy->GetCurrentTarget();
+	}
+
+	return nullptr;
 }
 
 /* =============== Swift: 더블 점프 =============== */

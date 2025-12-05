@@ -77,6 +77,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
     float SwiftAttackMultiplier = 2.0f;
 
+    /** 은신 중 첫 타격에 맞은 대상 스턴 시간(초) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
+    float SwiftStunDuration = 1.5f;
+
     // ---------------- Guard 설정 값 ----------------
 
     /** 지진 사정거리 (부채꼴의 반지름) */
@@ -148,10 +152,6 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Ultimate|Special")
     FOnSpecialUltimateCompleted OnSpecialUltimateCompleted;
 
-    // Special 궁극기가 현재 활성화되어 있는지 확인
-    UFUNCTION(BlueprintPure, Category = "Ultimate|Special")
-    bool IsSpecialUltimateActive() const { return bSpecialUltimateActive; }
-
 protected:
     virtual void BeginPlay() override;
 
@@ -166,8 +166,12 @@ public:
     bool IsSwiftStealthActive() const { return bSwiftStealthActive; }
     float GetSwiftAttackMultiplier() const { return SwiftAttackMultiplier; }
 
-    /** “공격해서 데미지를 준 순간” 호출 → 은신 해제 */
-    void OnAttackFromStealth();
+    /** 은신 상태에서 공격이 적중한 순간 호출 → 은신 해제 + 스턴 */
+    void OnAttackFromStealth(AActor* HitActor);
+
+    // Special 궁극기가 현재 활성화되어 있는지 확인
+    UFUNCTION(BlueprintPure, Category = "Ultimate|Special")
+    bool IsSpecialUltimateActive() const { return bSpecialUltimateActive; }
 
 private:
     // Range용 헬퍼들

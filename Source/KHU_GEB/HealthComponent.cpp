@@ -55,6 +55,10 @@ float UHealthComponent::ApplyDamage(
     const float NewHealth = FMath::Clamp(Health - FinalDamage, 0.f, MaxHealth);
     const float Delta = NewHealth - Health;
 
+    UE_LOG(LogTemp, Log,
+        TEXT("[HealthComponent] %s took damage: Raw=%.1f Final=%.1f NewHealth=%.1f"),
+        *GetNameSafe(GetOwner()), RawDamage, FinalDamage, NewHealth);
+
     ApplyHealth(NewHealth, Delta);
     HandleDeathIfNeeded();
 

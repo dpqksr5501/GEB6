@@ -85,6 +85,10 @@ public:
 
 	FORCEINLINE USceneComponent* GetMeshRoot() const { return MeshRoot; }
 
+	// 현재 AI가 노리고 있는 타겟 (없으면 nullptr)
+	UFUNCTION(BlueprintPure, Category = "AI")
+	AActor* GetCurrentTarget() const;
+
 	// BlackboardComp를 AI 컨트롤러에서 할당해 줄 수 있도록 UPROPERTY 설정
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BlackboardComp;
