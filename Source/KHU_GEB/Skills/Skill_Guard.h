@@ -27,12 +27,26 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
     float ExplosionRadius = 0.f;
 
+    /** 쉴드가 모두 소진되었을 때 시전자에게 적용할 스턴 시간 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard")
+    float DepletionStunDuration = 5.f;
+
     /** 가동 중 나이아가라 보호막 이펙트 */
     UPROPERTY(EditAnywhere, Category = "Guard|FX")
     TObjectPtr<UNiagaraSystem> SkillNS;
 
-    UPROPERTY()
-    TObjectPtr<UNiagaraComponent> SpawnedNS = nullptr;
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    float SkillReferenceRadius = 100.f;
+
+    /** 폭발 범위를 표시할 나이아가라 (원형/구형) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Guard|FX")
+    TObjectPtr<UNiagaraSystem> ExplosionNS;
+
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    float ExplosionReferenceRadius = 100.f;
+
+    UPROPERTY(EditAnywhere, Category = "Guard|FX")
+    FVector GuardBlockOffset = FVector(0.f, 0.f, -80.f);
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
 

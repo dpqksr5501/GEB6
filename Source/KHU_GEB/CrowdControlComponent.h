@@ -29,12 +29,19 @@ public:
     bool IsMoveBlocked()   const { return bBlockMoveInput; }
     bool IsActionBlocked() const { return bBlockActions; }
 
+    // === CC 면역 토글 ===
+    void SetCCImmune(bool bImmune);
+    bool IsCCImmune() const { return bCCImmune; }
+
 private:
     UPROPERTY(Transient)
     TWeakObjectPtr<ACharacter> CachedCharacter;
 
     bool bBlockMoveInput = false;
     bool bBlockActions = false;
+
+    // CC 면역 여부
+    bool bCCImmune = false;
 
     // 현재 CC가 끝나는 시각(여러 번 Apply될 때 갱신용)
     float CCEndTime = 0.f;

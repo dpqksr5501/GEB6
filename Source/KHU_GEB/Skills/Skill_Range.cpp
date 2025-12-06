@@ -27,40 +27,6 @@ void USkill_Range::InitializeFromDefinition(const USkillDefinition* Def)
     if (Params.Range > 0.f) { TargetRadius = Params.Range; }
 }
 
-void USkill_Range::SpawnOrUpdateIndicator()
-{
-    UWorld* World = GetWorld();
-    if (!World || !TargetAreaNS) return;
-
-    const float Radius = GetCurrentTargetRadius();
-    const float UniformScale = (Radius > 0.f) ? (Radius / 100.f) : 1.f; // 이펙트 사이즈에 맞게 조정
-
-    if (!TargetAreaComp)
-    {
-        TargetAreaComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-            World,
-            TargetAreaNS,
-            CurrentTargetLocation,
-            FRotator::ZeroRotator,
-            FVector(UniformScale)
-        );
-    }
-    else
-    {
-        TargetAreaComp->SetWorldLocation(CurrentTargetLocation);
-        TargetAreaComp->SetWorldScale3D(FVector(UniformScale));
-    }
-}
-
-void USkill_Range::CleanupIndicator()
-{
-    if (TargetAreaComp)
-    {
-        TargetAreaComp->Deactivate();
-        TargetAreaComp = nullptr;
-    }
-}
-
 void USkill_Range::ActivateSkill()
 {
     UWorld* World = GetWorld();
@@ -162,9 +128,6 @@ void USkill_Range::ActivateSkill()
     }
     else { CurrentTargetLocation = Owner->GetActorLocation(); }
 
-    // 범위 표시 이펙트 스폰/갱신
-    SpawnOrUpdateIndicator();
-
     // 입에서 나가는 캐스팅 이펙트
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
@@ -264,8 +227,6 @@ void USkill_Range::TickComponent(
 
     bHasValidTarget = true;
 
-    SpawnOrUpdateIndicator();
-
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     DrawDebugCircle(
         GetWorld(),
@@ -327,7 +288,6 @@ void USkill_Range::StopSkill()
             bIsAiming = false;
             bHasValidTarget = false;
             AimMoveInput = FVector2D::ZeroVector;
-            CleanupIndicator();
             SetComponentTickEnabled(false);
 
             if (USkillManagerComponent* Manager = GetSkillManager())

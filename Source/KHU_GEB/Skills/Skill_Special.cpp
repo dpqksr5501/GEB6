@@ -67,25 +67,16 @@ void USkill_Special::ActivateSkill()
         OwnerChar->SetSkillSpeedMultiplier(SelfMoveSpeedMultiplier);
     }
 
-    // 2) 어디에 붙일지 결정 (가능하면 Mesh, 아니면 루트)
-    USceneComponent* AttachComp = Owner->GetRootComponent();
+    // 2) 어디에 붙일지 결정
 
-    if (ACharacter* OwnerCharacter = Cast<ACharacter>(Owner))
-    {
-        if (USkeletalMeshComponent* Mesh = OwnerCharacter->GetMesh())
-        {
-            AttachComp = Mesh;
-        }
-    }
-
-    if (DarkFogNS && AttachComp)
+    if (DarkFogNS)
     {
         // 플레이어를 따라다니는 원형 흑안개 스폰 & 부착
         SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
             DarkFogNS,
-            AttachComp,
-            AttachSocketName.IsNone() ? NAME_None : AttachSocketName,
-            RelativeOffset,
+            GetOwner()->GetRootComponent(),
+            NAME_None,
+            FVector::ZeroVector,
             FRotator::ZeroRotator,
             EAttachLocation::KeepRelativeOffset,
             true  // AutoDestroy: true → 소유자와 함께 정리
@@ -93,8 +84,7 @@ void USkill_Special::ActivateSkill()
 
         if (SpawnedNS)
         {
-            // Niagara 에서 "기본 반경 = 100" 으로 만들어놨다고 가정
-            const float RadiusScale = FogRadius / 100.f;
+            const float RadiusScale = FogRadius / SkillReferenceRadius;
 
             // XY로만 크게, Z는 아주 얇게
             SpawnedNS->SetWorldScale3D(
@@ -164,20 +154,24 @@ void USkill_Special::UpdateFogEffects()
     // 흑안개 중심 위치
     FVector Center;
     if (SpawnedNS) { Center = SpawnedNS->GetComponentLocation(); }
-    else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
+    else { Center = Owner->GetActorLocation() + RelativeOffset; }
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-    // 흑안개 범위 디버그 표시
-    DrawDebugSphere(
+    // 흑안개 범위 디버그 표시 (구 → 원)
+    // XY 평면에 반지름 FogRadius인 보라색 원을 그림
+    DrawDebugCircle(
         World,
         Center,
         FogRadius,
-        32,
-        FColor::Purple,
+        64,                // 세그먼트 수
+        FColor::Emerald,
         false,
-        SlowTickInterval, // 다음 틱 전에 사라지게 해서 계속 갱신되는 느낌
+        SlowTickInterval,  // 다음 틱 전에 사라지도록
         0,
-        2.f
+        2.f,
+        FVector(1, 0, 0),  // X축 방향
+        FVector(0, 1, 0),  // Y축 방향
+        false              // 두께 있는 라인 (필요하면 true 로 변경)
     );
 #endif
 
@@ -303,11 +297,10 @@ void USkill_Special::OnEffectTick()
     AActor* Owner = GetOwner();
     if (!World || !Owner || !bIsActive) return;
 
-    // 힐은 BaseDamage의 2배, 도트는 1배라고 가정 (지금 데이터와 동일한 비율)
-    const float HealAmount = GetDamageForCurrentLevel();
-    const float DotAmount = GetDamageForCurrentLevel() * 2;
+    const float HealAmount = GetDamageForCurrentLevel();    // 자기 힐
+    const float DotAmount = GetDamageForCurrentLevel() * 2; // 적 도트 (예시)
 
-    // 1) 플레이어 힐
+    // 1) 시전자 힐
     if (HealAmount > 0.f)
     {
         if (UHealthComponent* Health = Owner->FindComponentByClass<UHealthComponent>())
@@ -319,10 +312,10 @@ void USkill_Special::OnEffectTick()
     // 2) 흑안개 안 적들에게 도트 대미지
     if (FogRadius <= 0.f || DotAmount <= 0.f) return;
 
-    // 흑안개 중심 위치는 UpdateFogEffects와 동일한 기준 사용
+    // DoT 영역 중심: 흑안개 NS가 살아있으면 그 위치, 아니면 시전자 + 오프셋
     FVector Center;
     if (SpawnedNS) { Center = SpawnedNS->GetComponentLocation(); }
-    else { Center = Owner->GetActorLocation() + Owner->GetActorRotation().RotateVector(RelativeOffset); }
+    else { Center = Owner->GetActorLocation() + RelativeOffset; }
 
     TArray<FOverlapResult> Overlaps;
     FCollisionObjectQueryParams ObjParams;
@@ -330,7 +323,7 @@ void USkill_Special::OnEffectTick()
 
     FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillSpecialDot), false, Owner);
 
-    const bool bAnyHit = World->OverlapMultiByObjectType(
+    const bool bAnyOverlap = World->OverlapMultiByObjectType(
         Overlaps,
         Center,
         FQuat::Identity,
@@ -338,30 +331,28 @@ void USkill_Special::OnEffectTick()
         FCollisionShape::MakeSphere(FogRadius),
         QueryParams);
 
-    if (!bAnyHit) return;
+    if (!bAnyOverlap) return;
 
     TSet<AActor*> UniqueTargets;
-
     AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner);
+    AController* InstigatorController = OwnerChar ? OwnerChar->GetController() : nullptr;
 
-    for (const FOverlapResult& O : Overlaps)
+    const float RadiusSq = FogRadius * FogRadius;
+    bool bAnyDotHit = false;  // ★ 이 틱에 도트가 한 번이라도 들어갔는지
+
+    for (const FOverlapResult& Result : Overlaps)
     {
-        AActor* OtherActor = O.GetActor();
+        AActor* OtherActor = Result.GetActor();
         if (!OtherActor || OtherActor == Owner) continue;
-
-        // 한 틱에 중복 타격 방지
         if (UniqueTargets.Contains(OtherActor)) continue;
+
+        if (!OwnerChar || !OwnerChar->IsEnemyFor(OtherActor)) continue;
+
+        const FVector Delta = OtherActor->GetActorLocation() - Center;
+        const float DistSq2D = Delta.X * Delta.X + Delta.Y * Delta.Y;
+        if (DistSq2D > RadiusSq) continue;
+
         UniqueTargets.Add(OtherActor);
-
-        // 팀 체크 – 이제 AActor 기준
-        if (OwnerChar && !OwnerChar->IsEnemyFor(OtherActor)) continue;
-
-        // InstigatorController 계산
-        AController* InstigatorController = nullptr;
-        if (APawn* PawnOwner = Cast<APawn>(Owner))
-        {
-            InstigatorController = PawnOwner->GetController();
-        }
 
         UGameplayStatics::ApplyDamage(
             OtherActor,
@@ -369,5 +360,29 @@ void USkill_Special::OnEffectTick()
             InstigatorController,
             Owner,
             UDamageType::StaticClass());
+
+        bAnyDotHit = true;
+    }
+
+    // 3) DotDamage가 한 번이라도 들어갔다면 → 시전자 발밑에서 NS 한 번 재생
+    if (bAnyDotHit && DotHitNS)
+    {
+        float Scale = 1.f;
+        if (SkillReferenceRadius > 0.f && FogRadius > 0.f)
+        {
+            Scale = FogRadius / SkillReferenceRadius;
+        }
+
+        if (UNiagaraComponent* DotFX = UNiagaraFunctionLibrary::SpawnSystemAttached(
+            DotHitNS,
+            Owner->GetRootComponent(),
+            NAME_None,
+            RelativeOffset,          // 발 쪽으로 조금 내리기
+            FRotator::ZeroRotator,
+            EAttachLocation::SnapToTarget,
+            true))                  // AutoDestroy
+        {
+            DotFX->SetWorldScale3D(FVector(Scale, Scale, 1.f));
+        }
     }
 }
