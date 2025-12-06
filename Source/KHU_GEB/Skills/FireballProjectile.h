@@ -50,9 +50,14 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
-    /** 폭발 이펙트 (선택) */
+    /** 폭발 이펙트 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FX")
     TObjectPtr<UNiagaraSystem> ExplosionNS;
+
+    /** ExplosionNS를 1.0 스케일로 둘 때의 기준 반경(cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FX")
+    float ExplosionReferenceRadius = 100.f;
+
 
     /** 구체에 직접 맞았을 때 들어갈 대미지 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (ExposeOnSpawn = "true"))

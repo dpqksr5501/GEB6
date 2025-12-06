@@ -677,19 +677,40 @@ void USkill_Ultimate::ApplySwiftEndExplosion()
         FCollisionShape::MakeSphere(SwiftEndRadius),
         QueryParams);
 
-    // 디버그용 구체
+    // 디버그용 원형 판 (XY 평면 원)
     if (bDrawDebugSwiftEnd)
     {
-        DrawDebugSphere(
+        DrawDebugCircle(
             World,
-            Origin,
-            SwiftEndRadius,
-            24,
-            SwiftEndDebugColor,
-            false,
-            1.5f,
-            0,
-            2.0f);
+            Origin,                  // 중심
+            SwiftEndRadius,          // 반경
+            24,                      // 세그먼트 수
+            SwiftEndDebugColor,      // 색
+            false,                   // 영구 여부
+            1.5f,                    // Duration (초)
+            0,                       // Depth Priority
+            2.0f,                    // 선 두께
+            FVector(1.f, 0.f, 0.f),  // X축
+            FVector(0.f, 1.f, 0.f),  // Y축
+            false                    // Z-test 사용
+        );
+    }
+
+    // Swift 은신 종료 폭발 FX (나이아가라)
+    if (SwiftEndExplosionNS)
+    {
+        float Scale = 1.f;
+        if (SwiftEndReferenceRadius > 0.f)
+        {
+            Scale = SwiftEndRadius / SwiftEndReferenceRadius;
+        }
+
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            World,
+            SwiftEndExplosionNS,
+            Origin + SwiftEndOffset,
+            FRotator::ZeroRotator,
+            FVector(Scale, Scale, 1.f));  // XY만 반경에 맞게
     }
 
     if (!bAnyHit)
@@ -761,6 +782,25 @@ void USkill_Ultimate::ActivateGuardUltimate()
     const FVector Origin = Owner->GetActorLocation();
     const FVector Forward = Owner->GetActorForwardVector();
 
+    // --- Guard 궁극 범위 나이아가라 ---
+    if (GuardAreaNS && GuardRange > 0.f)
+    {
+        const float ScaleX = GuardRange / GuardAreaReferenceDistanceX;
+        const float ScaleY = GuardRange / GuardAreaReferenceDistanceY;
+
+        if (UNiagaraComponent* GuardAreaComp =
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                World,
+                GuardAreaNS,
+                Origin - FVector(0.f, 0.f, 80.f),
+                Owner->GetActorRotation(),  // 부채꼴 방향을 나이아가라에서 쓰고 싶으면 사용
+                FVector(ScaleX, ScaleY, 1.f)))
+        {
+            // 필요하면 파라미터 설정
+            // GuardAreaComp->SetVariableFloat(TEXT("Range"), GuardRange);
+        }
+    }
+
     // 1) 구체 오버랩
     FCollisionObjectQueryParams ObjParams;
     ObjParams.AddObjectTypesToQuery(GuardCollisionChannel);
@@ -812,7 +852,7 @@ void USkill_Ultimate::ActivateGuardUltimate()
 
         // 반지름 원(위에서 내려다본) 대략적인 표시
         const int32 NumSegments = 24;
-        const float StepAngle = (GuardConeHalfAngleDeg * 2.f) / NumSegments;
+        const float StepAngle = (GuardConeHalfAngleDeg * SpecialRadiusMultiplier) / NumSegments;
 
         FVector PrevPoint = Origin + Forward * GuardRange;
         for (int32 i = 1; i <= NumSegments; ++i)
@@ -945,8 +985,11 @@ void USkill_Ultimate::ActivateSpecialUltimate()
         return;
     }
 
-    // [추가] Special 궁극기 시작
+    // Special 궁극기 시작
     bSpecialUltimateActive = true;
+
+    // 궁극기 동안 대미지 + CC 면역
+    SetSpecialUltimateImmunity(true);
 
     SpecialOrbs.Empty();
 
@@ -1021,13 +1064,28 @@ void USkill_Ultimate::ActivateSpecialUltimate()
 
     UE_LOG(LogTemp, Log,
         TEXT("[Skill_Ultimate] Special ultimate activated (Duration=%.2f, Radius=%.1f, SelfDot=%.1f)"),
-        SpecialDuration, SpecialRadius, SpecialSelfDotDamage);
+        SpecialDuration, SpecialRadius, SpecialDotDamage);
 }
 
 void USkill_Ultimate::OnSpecialDurationEnded()
 {
     UWorld* World = GetWorld();
-    if (World) { World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle); }
+    if (!World) return;
+
+    World->GetTimerManager().ClearTimer(SpecialDurationTimerHandle);
+
+    // 궁극기 유지 중이던 대미지/CC 면역 해제
+    SetSpecialUltimateImmunity(false);
+
+    AActor* Owner = GetOwner();
+    if (!Owner)
+    {
+        CompleteSpecialUltimate();
+        return;
+    }
+
+    const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
+    const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
 
     // 아직 살아있는 구체 수 세기
     int32 AliveCount = 0;
@@ -1036,50 +1094,111 @@ void USkill_Ultimate::OnSpecialDurationEnded()
         if (AActor* Orb = WeakOrb.Get()) { ++AliveCount; }
     }
 
-    // 사용 끝났으니 구체들은 제거
-    // 복사본으로 Destroy를 호출해서, Destroy 중에 SpecialOrbs가 바뀌어도 안전하게
+    // 구체들은 제거
     TArray<TWeakObjectPtr<AActor>> OrbsCopy = SpecialOrbs;
     for (const TWeakObjectPtr<AActor>& WeakOrb : OrbsCopy)
     {
         if (AActor* Orb = WeakOrb.Get())
         {
-            Orb->Destroy();   // 여기서 HandleSpecialOrbDestroyed가 SpecialOrbs를 수정해도 OK
+            Orb->Destroy();
         }
     }
     SpecialOrbs.Empty();
 
+    const FVector Origin = Owner->GetActorLocation();
+
+    // ---------------- A) 모든 구체 파괴: 시전자 5초 스턴 ----------------
     if (AliveCount <= 0)
     {
         UE_LOG(LogTemp, Log,
-            TEXT("[Skill_Ultimate] Special: all orbs destroyed -> no penalty to player."));
-        
-        // [수정] 스킬 완료 처리
+            TEXT("[Skill_Ultimate] Special: all orbs destroyed -> caster stunned for 5s."));
+
+        if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+        {
+            if (UCrowdControlComponent* CC =
+                OwnerChar->FindComponentByClass<UCrowdControlComponent>())
+            {
+                CC->ApplyStun(5.f);
+            }
+        }
+
         CompleteSpecialUltimate();
         return;
     }
 
+    // ---------------- B) 구체가 n개 남았을 때 ----------------
+
+    // 오버랩 설정 (SpecialRadius 안의 Pawn)
+    FCollisionObjectQueryParams ObjParams;
+    ObjParams.AddObjectTypesToQuery(ECC_Pawn);
+
+    FCollisionQueryParams QueryParams(
+        SCENE_QUERY_STAT(SkillUltimateSpecialEnd),
+        false,
+        Owner);
+
+    TArray<FOverlapResult> Overlaps;
+
+    // ---------------- B) 구체가 n개 남았을 때 ----------------
+    const int32 N = AliveCount;
+
     UE_LOG(LogTemp, Log,
-        TEXT("[Skill_Ultimate] Special: %d orbs left -> applying self DoT & root to player."),
-        AliveCount);
+        TEXT("[Skill_Ultimate] Special: %d orbs left -> apply %d DoT ticks (1s interval) & %d sec root to enemies."),
+        N, N, N);
 
-    // 플레이어 속박 + 도트 데미지 3틱
-    ApplyRootToPlayer(SpecialRootDuration);
+    SpecialAffectedEnemies.Empty();
 
-    if (SpecialSelfDotDamage > 0.f && SpecialSelfDotInterval > 0.f)
+    const bool bAnyHit2 = World->OverlapMultiByObjectType(
+        Overlaps,
+        Origin,
+        FQuat::Identity,
+        ObjParams,
+        FCollisionShape::MakeSphere(SpecialRadius * 2),
+        QueryParams);
+
+    if (bAnyHit2)
     {
-        SpecialSelfDotTicksRemaining = 3;
+        TSet<ACharacter*> UniqueTargets;
+
+        for (const FOverlapResult& O : Overlaps)
+        {
+            AActor* Other = O.GetActor();
+            ACharacter* TargetChar = Cast<ACharacter>(Other);
+            if (!TargetChar || TargetChar == Owner) continue;
+            if (UniqueTargets.Contains(TargetChar)) continue;
+
+            // 팀 필터
+            if (bOwnerIsPlayer && !TargetChar->IsA<AEnemy_Base>()) continue;
+            if (bOwnerIsEnemy && !TargetChar->IsA<AKHU_GEBCharacter>()) continue;
+
+            UniqueTargets.Add(TargetChar);
+            SpecialAffectedEnemies.Add(TargetChar);
+
+            if (UCrowdControlComponent* CC =
+                TargetChar->FindComponentByClass<UCrowdControlComponent>())
+            {
+                CC->ApplyStun(static_cast<float>(N+1));  // N+1초 스턴
+            }
+        }
+
+        UE_LOG(LogTemp, Log,
+            TEXT("[Skill_Ultimate] Special: stunned %d enemies for %d seconds."),
+            UniqueTargets.Num(), N);
+    }
+
+    // DoT 설정: 1초 간격 N번
+    if (SpecialAffectedEnemies.Num() > 0 && SpecialDotDamage > 0.f)
+    {
+        SpecialSelfDotTicksRemaining = N;
 
         World->GetTimerManager().SetTimer(
             SpecialSelfDotTimerHandle,
             this,
             &USkill_Ultimate::OnSpecialSelfDotTick,
-            SpecialSelfDotInterval,
+            1.0f,      // 항상 1초 간격
             true);
     }
-    else {
-        // 도트 데미지가 0이면 바로 완료 처리
-		CompleteSpecialUltimate();
-    }
+    else { CompleteSpecialUltimate(); }
 }
 
 void USkill_Ultimate::OnSpecialSelfDotTick()
@@ -1087,43 +1206,89 @@ void USkill_Ultimate::OnSpecialSelfDotTick()
     UWorld* World = GetWorld();
     if (!World) return;
 
-    // 0번 플레이어 캐릭터 (주인공)
-    ACharacter* PlayerChar = Cast<ACharacter>(
-        UGameplayStatics::GetPlayerCharacter(World, 0));
-
-    if (!PlayerChar)
+    AActor* Owner = GetOwner();
+    if (!Owner)
     {
         World->GetTimerManager().ClearTimer(SpecialSelfDotTimerHandle);
         SpecialSelfDotTicksRemaining = 0;
-        CompleteSpecialUltimate(); // [추가] 완료 처리
+        SpecialAffectedEnemies.Empty();
+        CompleteSpecialUltimate();
         return;
     }
 
-    if (SpecialSelfDotDamage > 0.f)
+    if (SpecialDotDamage > 0.f && SpecialAffectedEnemies.Num() > 0)
     {
-        // 도트도 결국 "일반 데미지"를 주기적으로 넣는 형태
-        // InstigatorController는 이 스킬의 소유자 기준
-        AActor* Owner = GetOwner();
+        // InstigatorController (누가 때렸는지 표시용)
         AController* InstigatorController = nullptr;
         if (APawn* PawnOwner = Cast<APawn>(Owner))
         {
             InstigatorController = PawnOwner->GetController();
         }
 
-        UGameplayStatics::ApplyDamage(
-            PlayerChar,
-            SpecialSelfDotDamage,
-            InstigatorController,
-            Owner,
-            UDamageType::StaticClass());
+        int32 HitCount = 0;
+
+        for (int32 i = SpecialAffectedEnemies.Num() - 1; i >= 0; --i)
+        {
+            ACharacter* TargetChar = Cast<ACharacter>(SpecialAffectedEnemies[i].Get());
+            if (!TargetChar)
+            {
+                SpecialAffectedEnemies.RemoveAt(i);
+                continue;
+            }
+
+            if (TargetChar == Owner)
+            {
+                SpecialAffectedEnemies.RemoveAt(i);
+                continue;
+            }
+
+            UGameplayStatics::ApplyDamage(
+                TargetChar,
+                SpecialDotDamage,          // 도트 피해량
+                InstigatorController,
+                Owner,
+                UDamageType::StaticClass());
+
+
+            // Special 속박 대상 발밑 마법진 FX (나이아가라)
+            if (SpecialRootedTargetNS)
+            {
+                float Scale = 1.f;
+                if (SpecialRootedReferenceRadius > 0.f)
+                {
+                    Scale = SpecialRootedFXRadius / SpecialRootedReferenceRadius;
+                }
+
+                if (UNiagaraComponent* RootFX = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                    SpecialRootedTargetNS,
+                    TargetChar->GetRootComponent(),
+                    NAME_None,
+                    SpecialRootedOffset,   // 발보다 약간 아래쪽
+                    FRotator::ZeroRotator,
+                    EAttachLocation::KeepRelativeOffset,
+                    true))
+                {
+                    RootFX->SetWorldScale3D(FVector(Scale, Scale, 1.f));
+                }
+            }
+
+            ++HitCount;
+        }
+
+        UE_LOG(LogTemp, Verbose,
+            TEXT("[Skill_Ultimate] Special DoT tick: applied %.1f damage to %d enemies."),
+            SpecialDotDamage, HitCount);
     }
 
     --SpecialSelfDotTicksRemaining;
-    if (SpecialSelfDotTicksRemaining <= 0)
+
+    if (SpecialSelfDotTicksRemaining <= 0 || SpecialAffectedEnemies.Num() == 0)
     {
         World->GetTimerManager().ClearTimer(SpecialSelfDotTimerHandle);
-        // [추가] 도트 완료 후 스킬 종료
-		CompleteSpecialUltimate();
+        SpecialSelfDotTicksRemaining = 0;
+        SpecialAffectedEnemies.Empty();
+
+        CompleteSpecialUltimate();
     }
 }
 
@@ -1256,6 +1421,9 @@ void USkill_Ultimate::CompleteSpecialUltimate()
 {
     if (!bSpecialUltimateActive) return;
 
+    // 무조건 면역 해제 (여러 번 호출되어도 문제 없음)
+    SetSpecialUltimateImmunity(false);
+
     bSpecialUltimateActive = false;
 
     UE_LOG(LogTemp, Log,
@@ -1263,4 +1431,36 @@ void USkill_Ultimate::CompleteSpecialUltimate()
 
     // 델리게이트 브로드캐스트 (TUltimate가 구독 중)
     OnSpecialUltimateCompleted.Broadcast();
+}
+
+void USkill_Ultimate::SetSpecialUltimateImmunity(bool bEnable)
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    AActor* Owner = GetOwner();
+    ACharacter* OwnerChar = Cast<ACharacter>(Owner);
+
+    // 혹시 모를 상황을 대비해서 0번 플레이어 fallback
+    if (!OwnerChar)
+    {
+        OwnerChar = Cast<ACharacter>(
+            UGameplayStatics::GetPlayerCharacter(World, 0));
+    }
+
+    if (!OwnerChar) return;
+
+    // 1) 대미지 면역
+    OwnerChar->SetCanBeDamaged(!bEnable);
+
+    // 2) CC 면역
+    if (UCrowdControlComponent* CC =
+        OwnerChar->FindComponentByClass<UCrowdControlComponent>())
+    {
+        CC->SetCCImmune(bEnable);
+    }
+
+    UE_LOG(LogTemp, Log,
+        TEXT("[Skill_Ultimate] Special: %s damage & CC immunity."),
+        bEnable ? TEXT("Enable") : TEXT("Disable"));
 }
