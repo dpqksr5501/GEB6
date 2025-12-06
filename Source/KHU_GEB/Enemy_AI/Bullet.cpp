@@ -6,6 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
+#include "HealthComponent.h"
+#include "Enemy_AI/Enemy_Base.h"
 
 // Sets default values
 ABullet::ABullet()
@@ -74,32 +76,63 @@ void ABullet::OnAttackOverlap(
 	}
 
 	// Owner나 Instigator와 충돌하면 무시
-	if (OtherActor == GetOwner() || OtherActor == GetInstigator())
+	AActor* BulletOwner = GetOwner();
+	if (OtherActor == BulletOwner || OtherActor == GetInstigator())
 	{
 		return;
 	}
 
-	// 플레이어 캐릭터와 충돌했는지 확인
-	AKHU_GEBCharacter* PlayerCharacter = Cast<AKHU_GEBCharacter>(OtherActor);
-	if (!PlayerCharacter)
+	// 1) Enemy끼리 충돌 무시
+	if (BulletOwner && BulletOwner->IsA(AEnemy_Base::StaticClass()) &&
+		OtherActor->IsA(AEnemy_Base::StaticClass()))
 	{
-		// 플레이어가 아니면 무시하고 계속 비행
+		UE_LOG(LogTemp, Warning, TEXT("[Bullet] Enemy hit Enemy, ignoring"));
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Bullet] Hit player: %s, Damage: %.1f"), *OtherActor->GetName(), Damage);
+	// 2) HealthComponent 존재 여부 확인
+	UHealthComponent* Health = OtherActor->FindComponentByClass<UHealthComponent>();
+	if (!Health)
+	{
+		// HealthComponent가 없으면 데미지 적용 불가
+		return;
+	}
 
-	// 데미지 적용
-	AActor* _Owner = GetOwner();
-	APawn* OwnerPawn = Cast<APawn>(_Owner);
+	// 3) 팀/타입 필터 (적이 아니면 무시)
+	if (AEnemy_Base* OwnerEnemy = Cast<AEnemy_Base>(BulletOwner))
+	{
+		if (!OwnerEnemy->IsEnemyFor(OtherActor))
+		{
+			UE_LOG(LogTemp, Verbose,
+				TEXT("[Bullet] Enemy bullet hit non-enemy: %s -> ignored"),
+				*GetNameSafe(OtherActor));
+			return;
+		}
+	}
+
+	// 4) 데미지 적용 (WeaponComp와 동일한 방식)
+	if (Damage <= 0.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Bullet] Damage is 0 or less, no damage applied"));
+		Destroy();
+		return;
+	}
+
+	APawn* OwnerPawn = Cast<APawn>(BulletOwner);
 	AController* InstigatorController = OwnerPawn ? OwnerPawn->GetController() : nullptr;
 
 	UGameplayStatics::ApplyDamage(
 		OtherActor,
-		Damage,
+		Damage,  // ← Enemy_Minion_Range에서 전달받은 Attack 스탯
 		InstigatorController,
-		_Owner,
+		BulletOwner,
 		UDamageType::StaticClass());
+
+	UE_LOG(LogTemp, Log, 
+		TEXT("[Bullet] %s hit %s for %.1f damage"), 
+		*GetNameSafe(BulletOwner), 
+		*OtherActor->GetName(), 
+		Damage);
 
 	// 피해를 줬으니 총알 제거
 	Destroy();
