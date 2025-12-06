@@ -312,3 +312,11 @@ void AEnemy_Base::HandleKilledBy(AActor* Killer)
 		*GetNameSafe(Player),
 		static_cast<int32>(FormTypeForExp));
 }
+
+void AEnemy_Base::SetLevel(int32 NewLevel)
+{
+	EnemyLevel = NewLevel;
+	EnemyStats.Level = NewLevel;
+	EnemyStats.RecalculateDerivedStats();
+	return;
+}

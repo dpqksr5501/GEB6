@@ -6,10 +6,12 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"   
 #include "KHU_GEBCharacter.h"
+#include "Enemy_Base.h"
 #include "ManaComponent.h"
 #include "SkillManagerComponent.h"
-#include "Enemy_Base.h"
+#include "CrowdControlComponent.h"
 
 void USkill_Guard::InitializeFromDefinition(const USkillDefinition* Def)
 {
@@ -75,23 +77,16 @@ void USkill_Guard::ActivateSkill()
 
     if (UManaComponent* Mana = GetManaComponent()) { Mana->AddRegenBlock(); }
 
+    // Guard 스킬 켜지는 동안 CC 면역
+    if (UCrowdControlComponent* CC =
+        Owner->FindComponentByClass<UCrowdControlComponent>())
+    {
+        CC->SetCCImmune(true);
+    }
+
     if (USkillManagerComponent* Manager = GetSkillManager())
     {
         Manager->OnGuardSkillStarted(this);
-    }
-
-    // 보호막 이펙트 켜기
-    if (SkillNS && !SpawnedNS)
-    {
-        UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Spawning shield effect."));
-        SpawnedNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
-            SkillNS,
-            Owner->GetRootComponent(),
-            NAME_None,
-            FVector::ZeroVector,
-            FRotator::ZeroRotator,
-            EAttachLocation::SnapToTarget,
-            true);
     }
 
     UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Activated: MaxShields=%d"), RemainingShields);
@@ -120,11 +115,54 @@ bool USkill_Guard::HandleIncomingDamage(
         TEXT("[Skill_Guard] Damage absorbed. RemainingShields=%d, Consumed=%d"),
         RemainingShields, ConsumedShields);
 
+    // 보호막 이펙트 켜기
+    if (SkillNS)
+    {
+        UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Spawning shield effect."));
+
+        float Scale = 1.f;
+        if (SkillReferenceRadius > 0.f && ExplosionRadius > 0.f)
+        {
+            Scale = ExplosionRadius / SkillReferenceRadius;
+        }
+
+        if (UNiagaraComponent* ShieldFX = UNiagaraFunctionLibrary::SpawnSystemAttached(
+            SkillNS,
+            GetOwner()->GetRootComponent(),
+            NAME_None,
+            GuardBlockOffset,
+            FRotator::ZeroRotator,
+            EAttachLocation::SnapToTarget,
+            true)) // AutoDestroy
+        {
+            ShieldFX->SetWorldScale3D(FVector(Scale, Scale, 1.f));
+        }
+    }
+
     if (RemainingShields <= 0)
     {
         bEndedByDepletion = true;
         UE_LOG(LogTemp, Log,
             TEXT("[Skill_Guard] Shields depleted. No explosion will occur on stop."));
+
+        // 쉴드가 모두 소진되는 순간, 시전자에게 스턴 적용
+        if (AActor* OwnerActor = GetOwner())
+        {
+            if (UCrowdControlComponent* CC =
+                OwnerActor->FindComponentByClass<UCrowdControlComponent>())
+            {
+                if (DepletionStunDuration > 0.f)
+                {
+                    CC->ApplyStun(DepletionStunDuration);
+                }
+            }
+        }
+
+        // 동시에 스킬 강제 종료
+        StopSkill();
+
+        // 이 히트는 보호막이 막았으므로 체력 데미지는 들어가지 않게 true 반환
+        return true;
     }
 
     if (UManaComponent* Mana = GetManaComponent())
@@ -156,6 +194,16 @@ void USkill_Guard::StopSkill()
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
 
+    // Guard 스킬 종료 시 CC 면역 해제
+    if (Owner)
+    {
+        if (UCrowdControlComponent* CC =
+            Owner->FindComponentByClass<UCrowdControlComponent>())
+        {
+            CC->SetCCImmune(false);
+        }
+    }
+
     if (USkillManagerComponent* Manager = GetSkillManager())
     {
         Manager->OnGuardSkillEnded(this);
@@ -177,13 +225,6 @@ void USkill_Guard::StopSkill()
             // 현재 재생 중인 몽타주가 있다면 0.2초 동안 보간 멈춤
             Anim->Montage_Stop(0.2f, nullptr);
         }
-    }
-
-    // 이펙트 끄기
-    if (SpawnedNS)
-    {
-        SpawnedNS->Deactivate();
-        SpawnedNS = nullptr;
     }
 
     // --- 3-1. 마나를 0으로 설정 ---
@@ -214,18 +255,38 @@ void USkill_Guard::StopSkill()
             TEXT("[Skill_Guard] Stop: ConsumedShields=%d, TotalDamage=%.1f"),
             ConsumedShields, TotalDamage);
 
+        // --- 폭발 범위 나이아가라 ---
+        if (ExplosionNS && ExplosionRadius > 0.f)
+        {
+            const float Scale = ExplosionRadius / ExplosionReferenceRadius; // 나이아가라 기준 단위에 맞게 조절
+            if (UNiagaraComponent* ExplosionComp =
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                    World,
+                    ExplosionNS,
+                    Owner->GetActorLocation(),        // 폭발 중심
+                    FRotator::ZeroRotator,
+                    FVector(Scale, Scale, 1.f)        // XY만 반경 스케일, Z는 1 유지(원판 느낌)
+                ))
+            {
+                // 필요하면 파라미터 추가 세팅
+            }
+        }
+
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-        // 폭발 범위 디버그 표시
-        DrawDebugSphere(
+        // 폭발 범위 디버그 표시 (구 → XY 평면 원)
+        DrawDebugCircle(
             World,
-            Owner->GetActorLocation(), // 폭발 중심
+            Owner->GetActorLocation(), // 중심
             ExplosionRadius,           // 반경
             32,                        // 세그먼트 수
             FColor::Yellow,            // 색
-            false,                     // 영구 여부 (false: Duration 동안만 보임)
+            false,                     // 영구 여부
             1.5f,                      // Duration (초)
             0,                         // Depth Priority
-            3.f                        // 선 두께
+            3.f,                       // 선 두께
+            FVector(1.f, 0.f, 0.f),    // X축
+            FVector(0.f, 1.f, 0.f),    // Y축
+            false                      // Z-test 사용
         );
 #endif
 

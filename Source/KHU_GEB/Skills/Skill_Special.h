@@ -15,21 +15,9 @@ class KHU_GEB_API USkill_Special : public USkillBase
     GENERATED_BODY()
 
 public:
-    /** 플레이어를 중심으로 따라다닐 흑안개 나이아가라 시스템 */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
-    TObjectPtr<UNiagaraSystem> DarkFogNS;
-
-    /** 흑안개를 붙일 소켓 이름 (없으면 루트/메시에 부착) */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
-    FName AttachSocketName = NAME_None;
-
-    /** 플레이어 기준 상대 위치 (기본: 발 밑) */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
-    FVector RelativeOffset = FVector(0.f, 0.f, -30.f);
-
     /** 스킬이 유지되는 시간(초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
-    float Duration = 5.0f;
+    float Duration = 5.f;
 
     /** 스킬이 켜져 있는 동안 플레이어 이동속도 배율 (1.5 = 50% 증가) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Buff")
@@ -50,6 +38,25 @@ public:
     /** 힐/도트 틱 간격(초). 기본 2초 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|Effect")
     float EffectTickInterval = 2.f;
+
+    /** 플레이어를 중심으로 따라다닐 흑안개 나이아가라 시스템 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    TObjectPtr<UNiagaraSystem> DarkFogNS;
+
+    /** 흑안개를 붙일 소켓 이름 (없으면 루트/메시에 부착) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    FName AttachSocketName = NAME_None;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    float SkillReferenceRadius = 100.f;
+
+    /** 플레이어 기준 상대 위치 (기본: 발 밑) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    FVector RelativeOffset = FVector(0.f, 0.f, -30.f);
+
+    /** DotDamage가 들어갈 때마다, 시전자 발밑에서 재생할 나이아가라 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Special|FX")
+    TObjectPtr<UNiagaraSystem> DotHitNS;
 
     virtual void InitializeFromDefinition(const USkillDefinition* Def);
     virtual bool CanActivate() const override;

@@ -97,6 +97,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift")
     TEnumAsByte<ECollisionChannel> SwiftEndCollisionChannel = ECC_Pawn;
 
+    /** Swift 은신 종료 폭발 나이아가라 */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|FX")
+    TObjectPtr<UNiagaraSystem> SwiftEndExplosionNS;
+
+    /** SwiftEndExplosionNS 1.0 스케일일 때 기준 반경(cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|FX")
+    float SwiftEndReferenceRadius = 300.f;
+
+    /** Swift 은신 종료 폭발 FX 오프셋 (발밑/허리 등 위치 조정용) */
+    UPROPERTY(EditAnywhere, Category = "Ultimate|Swift|FX")
+    FVector SwiftEndOffset = FVector(0.f, 0.f, -80.f);
+
     /** 디버그: 폭발 구체를 그릴지 여부 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|Debug")
     bool bDrawDebugSwiftEnd = false;
@@ -104,7 +116,6 @@ public:
     /** 디버그용 구체 색상 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Swift|Debug")
     FColor SwiftEndDebugColor = FColor::Cyan;
-
 
     // ---------------- Guard 설정 값 ----------------
 
@@ -139,31 +150,53 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Guard|Debug")
     FColor GuardDebugColor = FColor::Yellow;
 
+    /** Guard 궁극기 범위를 표시할 나이아가라 (부채꼴/원형 등) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Guard|FX")
+    TObjectPtr<UNiagaraSystem> GuardAreaNS;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Guard|FX")
+    float GuardAreaReferenceDistanceX = 400.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Guard|FX")
+    float GuardAreaReferenceDistanceY = 200.f;
+
     // ---------------- Special 설정 값 ----------------
 
     /** 구체가 유지되는 시간(초) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialDuration = 5.f;
+    float SpecialDuration = 6.f;
 
     /** 구체들이 배치될 반경(범위) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     float SpecialRadius = 600.f;
 
-    /** 플레이어에게 들어가는 도트 데미지 (틱당) */
+    /** Special 종료 후 도트/속박이 들어갈 범위 배수 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialSelfDotDamage = 30.f;
+    float SpecialRadiusMultiplier = 2.f;
 
-    /** 도트 데미지 간격 (초) – 총 3번 들어감 */
+    /** 초당 들어가는 도트 데미지 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialSelfDotInterval = 0.5f;
-
-    /** 플레이어 속박 시간 (초) */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
-    float SpecialRootDuration = 2.0f;
+    float SpecialDotDamage = 30.f;
 
     /** 소환할 오브(구체) 클래스 (BP에서 Health = 1 로 설정해두면 좋음) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special")
     TSubclassOf<AActor> SpecialOrbClass;
+
+    /** Special에서 속박된 적 발밑에 표시할 나이아가라 (마법진 등) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|FX")
+    TObjectPtr<UNiagaraSystem> SpecialRootedTargetNS;
+
+    /** SpecialRootedTargetNS 1.0 스케일일 때 기준 반경(cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|FX")
+    float SpecialRootedReferenceRadius = 100.f;
+
+    /** SpecialRootedTargetNS로 표시할 마법진의 목표 반경(cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|FX")
+    float SpecialRootedFXRadius = 150.f;
+
+    /** Special 속박 FX 오프셋 (발밑/허리 등 위치 조정용) */
+    UPROPERTY(EditAnywhere, Category = "Ultimate|Special|FX")
+    FVector SpecialRootedOffset = FVector(0.f, 0.f, -80.f);
 
     /** 디버그: 오브 위치를 꼭짓점으로 하는 오망성을 바닥에 그릴지 여부 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
@@ -171,11 +204,15 @@ public:
 
     /** 오망성 라인 색상 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Special|Debug")
-    FColor SpecialPentagramColor = FColor::Purple;
+    FColor SpecialPentagramColor = FColor::Emerald;
 
     // Special 궁극기 완료 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "Ultimate|Special")
     FOnSpecialUltimateCompleted OnSpecialUltimateCompleted;
+
+    // Special 종료 후 도트/속박이 들어갈 대상들(적) 목록
+    UPROPERTY(Transient)
+    TArray<TWeakObjectPtr<ACharacter>> SpecialAffectedEnemies;
 
 protected:
     virtual void BeginPlay() override;
@@ -266,8 +303,11 @@ private:
     UFUNCTION()
     void HandleSpecialOrbDestroyed(AActor* DestroyedActor);
 
-    /** [추가] Special 궁극기 완료 처리 */
+    /** Special 궁극기 완료 처리 */
     void CompleteSpecialUltimate();
+
+    // Special 궁극기 동안 대미지/CC 면역 토글
+    void SetSpecialUltimateImmunity(bool bEnable);
 
 private:
     // ---------------- Range 상태 ----------------

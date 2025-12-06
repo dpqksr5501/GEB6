@@ -41,12 +41,12 @@ void ABossMusicTrigger::Tick(float DeltaTime)
 
 void ABossMusicTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//ACharacter가 아니라, 내 게임의 플레이어 클래스(AKHU_GEBCharacter)인지 확인
+	// 1. 닿은 액터가 플레이어 캐릭터인지 확인
 	AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(OtherActor);
 
+	// 2. 플레이어가 맞고 + 매니저가 존재하며 + 재생할 음악이 설정되어 있을 때만 실행
 	if (PlayerChar && MusicManagerRef && LevelBGM)
 	{
-		// 플레이어가 맞고, 매니저와 음악이 있다면 재생 요청
 		MusicManagerRef->PlayMusic(LevelBGM);
 	}
 }

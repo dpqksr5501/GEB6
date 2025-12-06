@@ -153,29 +153,40 @@ void AFireballProjectile::Explode(AActor* DirectHitActor)
             true);
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-        // 폭발 범위를 디버그 구로 표시 (2초 동안)
-        DrawDebugSphere(
+        // 폭발 범위를 디버그 '원'으로 표시 (XY 평면)
+        DrawDebugCircle(
             World,
             GetActorLocation(),
             ExplosionRadius,
             32,
             FColor::Red,
             false,
-            2.0f,   // 지속 시간
+            2.0f,
             0,
-            2.0f    // 선 두께
+            2.0f,
+            FVector(1.f, 0.f, 0.f),
+            FVector(0.f, 1.f, 0.f),
+            false
         );
 #endif
     }
 
-    // 3) 폭발 이펙트
+    // 3) 폭발 이펙트 (나이아가라)
     if (ExplosionNS)
     {
+        float Scale = 1.f;
+        if (ExplosionReferenceRadius > 0.f && ExplosionRadius > 0.f)
+        {
+            Scale = ExplosionRadius / ExplosionReferenceRadius;
+        }
+
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(
             World,
             ExplosionNS,
             GetActorLocation(),
-            GetActorRotation());
+            GetActorRotation(),
+            FVector(Scale, Scale, 1.f) // 바닥 원판처럼 XY만 스케일
+        );
     }
 
     // 4) 화염구 제거

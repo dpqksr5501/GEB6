@@ -119,10 +119,10 @@ private:
     int32 CurrentAliveCount = 0;
 
     /** 동시에 맵에 존재할 수 있는 최대 Enemy 수 */
-    int32 MaxConcurrentSpawns = 30;
+    int32 MaxConcurrentSpawns = 0;
 
     /** 총 누적 소환 한도 */
-    int32 MaxTotalSpawns = 100;
+    int32 MaxTotalSpawns = 0;
 
     /** 모든 적이 처치되었는지 여부 (이벤트 중복 방지) */
     bool bAllEnemiesDefeated = false;

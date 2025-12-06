@@ -58,4 +58,8 @@ private:
     /** 타격 한 번 수행 (타이머 콜백) */
     void HandleSwiftDamageTick();
 
+    /** HitNS를 이미 재생한 타겟들 (각 타겟당 한 번만 실행하기 위함) */
+    UPROPERTY()
+    TSet<TWeakObjectPtr<AActor>> HitFXPlayedTargets;
+
 };
