@@ -341,6 +341,25 @@ void AEnemy_Base::HandleKilledBy(AActor* Killer)
 		FormTypeForExp = DefaultFormDef->FormType;
 	}
 
+	// --- Minion 레벨 < Player 폼 레벨이면 경험치 X ---
+	if (EnemyKind == EEnemyKind::Minion)
+	{
+		// 플레이어 StatManager에서 해당 폼 레벨 가져오기
+		const int32 PlayerFormLevel = Player->StatManager->GetLevelStat(FormTypeForExp); // 
+
+		// Minion 레벨이 더 낮으면 경험치/레벨업 처리 스킵
+		if (EnemyLevel < PlayerFormLevel)
+		{
+			UE_LOG(LogTemp, Log,
+				TEXT("[Enemy_Base] Minion level %d < player form level %d (FormType=%d). No EXP granted."),
+				EnemyLevel,
+				PlayerFormLevel,
+				static_cast<int32>(FormTypeForExp));
+
+			return;
+		}
+	}
+
 	Player->StatManager->RegisterKill(FormTypeForExp, EnemyKind);
 
 	UE_LOG(LogTemp, Log,

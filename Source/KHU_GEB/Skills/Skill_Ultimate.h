@@ -52,6 +52,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
     TObjectPtr<UNiagaraSystem> BreathNS;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
+    float BreathReferenceLength = 1000.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
+    float BreathReferenceRadius = 100.f;
+
     /** 입 소켓 이름 (없으면 Actor 위치 기준) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
     FName MuzzleSocketName = TEXT("MouthSocket");
@@ -59,6 +65,9 @@ public:
     /** 디버그: 브레스 박스를 그릴지 여부 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|Debug")
     bool bDrawDebugBreath = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|Debug")
+    float BreathRadiusMultiplier = 2.f;
 
     /** 디버그 박스 색상 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|Debug")

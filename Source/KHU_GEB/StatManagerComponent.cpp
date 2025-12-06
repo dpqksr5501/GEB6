@@ -3,6 +3,12 @@
 
 #include "StatManagerComponent.h"
 
+namespace
+{
+	// 폼 공통 최대 레벨
+	constexpr int32 GMaxFormLevel = 5;
+}
+
 void FFormRuntimeStats::InitializeFromData(const UFormStatData* Data)
 {
 	if (!Data) return;
@@ -94,14 +100,17 @@ void UStatManagerComponent::AddMinionKill(EFormType FormType)
 
 		if (bShouldLevelUp)
 		{
-			Stats->Level = FMath::Max(1, Stats->Level + 1);
+			// 여기서 최대 5레벨로 클램프
+			const int32 NewLevel = FMath::Clamp(Stats->Level + 1, 1, GMaxFormLevel);
 
-			Stats->RecalculateDerivedStats();
+			// 이미 최대 레벨이면 더 올리지 않음
+			if (NewLevel != Stats->Level)
+			{
+				Stats->Level = NewLevel;
+				Stats->RecalculateDerivedStats();
 
-
-			////
-			OnFormLevelUp.Broadcast(FormType, Stats->Level);
-			////
+				OnFormLevelUp.Broadcast(FormType, Stats->Level);
+			}
 		}
 	}
 
@@ -129,12 +138,17 @@ void UStatManagerComponent::AddLevel(EFormType FormType, int32 Amount)
 {
 	if (FFormRuntimeStats* Stats = RuntimeStats.Find(FormType))
 	{
-		Stats->Level = FMath::Max(1, Stats->Level + Amount);
-		Stats->RecalculateDerivedStats();
+		const int32 OldLevel = Stats->Level;
 
-		////
-		OnFormLevelUp.Broadcast(FormType, Stats->Level);
-		////
+		// 1 ~ GMaxFormLevel 사이로 클램프
+		Stats->Level = FMath::Clamp(Stats->Level + Amount, 1, GMaxFormLevel);
+
+		// 레벨이 실제로 변했을 때만 처리
+		if (Stats->Level != OldLevel)
+		{
+			Stats->RecalculateDerivedStats();
+			OnFormLevelUp.Broadcast(FormType, Stats->Level);
+		}
 	}
 
 	// 퀘스트 보상 등으로 레벨을 직접 올려도 Base가 최고 레벨을 따라가도록 유지
@@ -327,8 +341,9 @@ void UStatManagerComponent::SyncBaseLevelToHighest(bool bBroadcastEvent)
 		}
 	}
 
-	// Base는 항상 최소 1레벨 유지
-	const int32 DesiredLevel = FMath::Max(1, MaxOtherLevel);
+	// Base는 항상 최소 1레벨 유지 + 최대 GMaxFormLevel 제한
+	const int32 DesiredLevel =
+		FMath::Clamp(FMath::Max(1, MaxOtherLevel), 1, GMaxFormLevel);
 
 	// 이미 원하는 레벨이면 건드리지 않는다.
 	if (BaseStats->Level == DesiredLevel) return;

@@ -193,8 +193,8 @@ void USkill_Ultimate::ActivateRangeUltimate()
     // === 3) 브레스 FX 소환 (입 소켓에 붙여서 위치/회전 따라가게) ===
     if (BreathNS && OwnerChar && Mesh)
     {
-        const float LengthScale = BreathLength / 100.f;
-        const float RadiusScale = BreathRadius / 100.f;
+        const float LengthScale = BreathLength / BreathReferenceLength;
+        const float RadiusScale = BreathRadius / BreathReferenceRadius;
 
         SpawnedBreathNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
             BreathNS,
@@ -382,20 +382,39 @@ void USkill_Ultimate::OnBreathTick()
 
     if (DamagePerTick <= 0.f) return;
 
+    // 1) 현재 브레스 박스 정보 구하기 (기존 그대로)
     FVector Center;
     FQuat   Rotation;
     FVector HalfExtent;
 
     if (!GetBreathBox(Center, Rotation, HalfExtent)) return;
 
-    // Overlap 대상: 기본 Pawn
+    // 2) 박스에서 "브레스 축"과 시작/끝 위치를 복원
+    const FVector Axis = Rotation.GetAxisX();     // X축이 브레스 진행 방향
+    const float   HalfLength = HalfExtent.X;      // 길이의 절반
+    const float   FullLength = HalfLength * 2.f;  // 전체 길이
+    const FVector StartLoc = Center - Axis * HalfLength;
+    const FVector EndLoc = Center + Axis * HalfLength;
+
+    // 3) 원뿔대 반경 정의
+    //    - MinRadius: 입 근처(시작점) 반지름
+    //    - MaxRadius: 끝부분 반지름 (= BreathRadius)
+    const float MaxRadius = BreathRadius * BreathRadiusMultiplier;
+    const float MinRadius = BreathRadius;
+
+    // 4) Niagara 회전도 박스 회전에 맞춰줌 (기존 + 회전 동기화)
+    if (SpawnedBreathNS)
+    {
+        SpawnedBreathNS->SetWorldRotation(Rotation);
+    }
+
+    // 5) 박스 안에 겹친 애들 긁어오기 (기존 그대로)
     FCollisionObjectQueryParams ObjParams;
     ObjParams.AddObjectTypesToQuery(BreathCollisionChannel);
 
     FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillUltimateBreath), false, Owner);
 
     TArray<FOverlapResult> Overlaps;
-
     const bool bAnyHit = World->OverlapMultiByObjectType(
         Overlaps,
         Center,
@@ -404,56 +423,116 @@ void USkill_Ultimate::OnBreathTick()
         FCollisionShape::MakeBox(HalfExtent),
         QueryParams);
 
-    // 디버그용 박스
+    // 6) 디버그: 원뿔대 형태로 그려주기
     if (bDrawDebugBreath)
     {
-        DrawDebugBox(
+        const float LifeTime = TickInterval;
+        const float Thickness = 2.f;
+
+        // 축에 수직인 두 축(XAxis, YAxis) 만들기
+        FVector Up = FVector::UpVector;
+        if (FMath::Abs(FVector::DotProduct(Up, Axis)) > 0.99f)
+        {
+            Up = FVector::RightVector;
+        }
+
+        FVector XAxis = FVector::CrossProduct(Axis, Up).GetSafeNormal();
+        FVector YAxis = FVector::CrossProduct(Axis, XAxis).GetSafeNormal();
+
+        // 시작/끝 원
+        DrawDebugCircle(
             World,
-            Center,
-            HalfExtent,
-            Rotation,
+            StartLoc,
+            MinRadius,
+            24,
             DebugBreathColor,
             false,
-            TickInterval, // 다음 틱까지 유지
+            LifeTime,
             0,
-            2.f);
+            Thickness,
+            XAxis,
+            YAxis,
+            false);
+
+        DrawDebugCircle(
+            World,
+            EndLoc,
+            MaxRadius,
+            24,
+            DebugBreathColor,
+            false,
+            LifeTime,
+            0,
+            Thickness,
+            XAxis,
+            YAxis,
+            false);
+
+        // 원뿔대 옆면 4군데 라인
+        for (int32 i = 0; i < 4; ++i)
+        {
+            const float Angle = PI * 0.5f * i; // 0, 90, 180, 270도
+            const FVector Dir = FMath::Cos(Angle) * XAxis + FMath::Sin(Angle) * YAxis;
+
+            DrawDebugLine(
+                World,
+                StartLoc + Dir * MinRadius,
+                EndLoc + Dir * MaxRadius,
+                DebugBreathColor,
+                false,
+                LifeTime,
+                0,
+                Thickness);
+        }
     }
 
     if (!bAnyHit) return;
 
-    // 한 틱에 같은 액터 중복 타격 방지
-    TSet<AActor*> UniqueTargets;
-
     const bool bOwnerIsPlayer = Owner->IsA<AKHU_GEBCharacter>();
     const bool bOwnerIsEnemy = Owner->IsA<AEnemy_Base>();
 
-    // InstigatorController (ApplyDamage용)
+    // ApplyDamage용 컨트롤러
     AController* InstigatorController = nullptr;
     if (APawn* PawnOwner = Cast<APawn>(Owner))
     {
         InstigatorController = PawnOwner->GetController();
     }
 
+    // 한 틱에 같은 액터 여러번 때리지 않게
+    TSet<AActor*> UniqueTargets;
+
     for (const FOverlapResult& O : Overlaps)
     {
         AActor* Other = O.GetActor();
         if (!Other || Other == Owner) continue;
 
+        // === 7) 여기서부터 "원뿔대 안에 있는지" 검사 ===
+        const FVector ToTarget = Other->GetActorLocation() - StartLoc;
+
+        // 축 방향 거리 (0 ~ FullLength)
+        const float AxialDist = FVector::DotProduct(ToTarget, Axis);
+        if (AxialDist <= 0.f || AxialDist >= FullLength) continue;
+
+        // 축에서 떨어진 거리 (반지름)
+        const FVector RadialVec = ToTarget - Axis * AxialDist;
+        const float   RadialSq = RadialVec.SizeSquared();
+
+        // 0~1 구간 비율
+        const float T = AxialDist / FullLength;
+
+        // 해당 위치에서 허용되는 반지름 (선형 보간으로 원뿔대)
+        const float AllowedRadius = FMath::Lerp(MinRadius, MaxRadius, T);
+        if (RadialSq > AllowedRadius * AllowedRadius) continue;
+
+        // === 8) 팀 필터 & 중복 필터 (기존 로직 유지) ===
         if (UniqueTargets.Contains(Other)) continue;
 
-        // === 팀/타입 필터: 플레이어면 Enemy만, Enemy면 플레이어만 ===
-        if (bOwnerIsPlayer)
-        {
-            if (!Other->IsA<AEnemy_Base>()) continue;
-        }
-        else if (bOwnerIsEnemy)
-        {
-            if (!Other->IsA<AKHU_GEBCharacter>()) continue;
-        }
+        if (bOwnerIsPlayer && !Other->IsA<AEnemy_Base>())   continue;
+        if (bOwnerIsEnemy && !Other->IsA<AKHU_GEBCharacter>()) continue;
 
         UniqueTargets.Add(Other);
 
-        // 틱당 일반 데미지 1회
+        // === 9) 데미지 적용 ===
         UGameplayStatics::ApplyDamage(
             Other,
             DamagePerTick,
@@ -462,7 +541,7 @@ void USkill_Ultimate::OnBreathTick()
             UDamageType::StaticClass());
 
         UE_LOG(LogTemp, Verbose,
-            TEXT("[Skill_Ultimate] Range breath tick: ApplyDamage %.1f to %s"),
+            TEXT("[Skill_Ultimate] Range breath tick (cone): ApplyDamage %.1f to %s"),
             DamagePerTick,
             *GetNameSafe(Other));
     }
