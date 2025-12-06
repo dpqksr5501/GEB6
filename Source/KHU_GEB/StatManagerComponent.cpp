@@ -345,7 +345,6 @@ void UStatManagerComponent::SyncBaseLevelToHighest(bool bBroadcastEvent)
 	const int32 DesiredLevel =
 		FMath::Clamp(FMath::Max(1, MaxOtherLevel), 1, GMaxFormLevel);
 
-
 	// 이미 원하는 레벨이면 건드리지 않는다.
 	if (BaseStats->Level == DesiredLevel) return;
 
