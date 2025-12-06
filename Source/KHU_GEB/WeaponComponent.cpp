@@ -383,7 +383,7 @@ UBoxComponent* UWeaponComponent::CreateNewBoxCollider()
 	NewBox->SetCollisionObjectType(ECC_WorldDynamic);
 	NewBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	NewBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	NewBox->SetHiddenInGame(false);
+	NewBox->SetHiddenInGame(true);
 	return NewBox;
 }
 
@@ -401,7 +401,7 @@ USphereComponent* UWeaponComponent::CreateNewSphereCollider()
 	NewSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	NewSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	NewSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	NewSphere->SetHiddenInGame(false);
+	NewSphere->SetHiddenInGame(true);
 	return NewSphere;
 }
 
