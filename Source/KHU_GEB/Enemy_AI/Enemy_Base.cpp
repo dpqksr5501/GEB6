@@ -257,7 +257,11 @@ float AEnemy_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 void AEnemy_Base::OnDeath()
 {
-	
+	// 델리게이트 방송 (나 죽음..)
+	if (OnEnemyDied.IsBound())
+	{
+		OnEnemyDied.Broadcast();
+	}
 }
 
 bool AEnemy_Base::IsEnemyFor(const AActor* Other) const
@@ -307,4 +311,12 @@ void AEnemy_Base::HandleKilledBy(AActor* Killer)
 		TEXT("[Enemy_Base] Killed by %s, registered kill for form %d"),
 		*GetNameSafe(Player),
 		static_cast<int32>(FormTypeForExp));
+}
+
+void AEnemy_Base::SetLevel(int32 NewLevel)
+{
+	EnemyLevel = NewLevel;
+	EnemyStats.Level = NewLevel;
+	EnemyStats.RecalculateDerivedStats();
+	return;
 }

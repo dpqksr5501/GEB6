@@ -1,147 +1,280 @@
 ﻿#include "EnemySpawner.h"
-#include "EnemyPoolSubsystem.h"
-#include "EnemySpawnDirector.h"
 #include "Enemy_AI/Enemy_Base.h"
-#include "Engine/World.h"
-#include "Engine/GameInstance.h"
-#include "CollisionQueryParams.h"
-#include "Engine/OverlapResult.h"
+#include "Enemy_AI/Enemy_Minion.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
+#include "TimerManager.h"
 
 AEnemySpawner::AEnemySpawner()
 {
-    PrimaryActorTick.bCanEverTick = true;
-    // 스포너 자체는 보일 필요가 없을 수 있습니다.
-    // SetActorHiddenInGame(true); 
-    // SetActorEnableCollision(false);
+	PrimaryActorTick.bCanEverTick = true;
+
+	// 루트 컴포넌트로 Scene Component 생성
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
+	// 감지 범위 시각화용 Sphere Component
+	DetectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionSphere"));
+	DetectionSphere->SetupAttachment(RootComponent);
+	DetectionSphere->SetSphereRadius(DetectionRadius);
+	DetectionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DetectionSphere->SetHiddenInGame(true); // 게임 플레이 중 숨김
 }
 
 void AEnemySpawner::BeginPlay()
 {
-    Super::BeginPlay();
+	Super::BeginPlay();
+	
+	// DetectionSphere 반지름을 설정값으로 업데이트
+	if (DetectionSphere)
+	{
+		DetectionSphere->SetSphereRadius(DetectionRadius);
+	}
 
-    // 서브시스템 캐시
-    UGameInstance* GI = GetGameInstance();
-    if (GI)
-    {
-        EnemyPool = GI->GetSubsystem<UEnemyPoolSubsystem>();
-        SpawnDirector = GI->GetSubsystem<UEnemySpawnDirector>();
-    }
-
-    // 첫 스폰 타이머 설정. 첫 스폰은 SpawnInterval 후에 시도
-    SpawnTimer = SpawnInterval;
+	// 소환할 클래스 유효성 검사
+	if (!EnemyClassToSpawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemySpawner [%s]: EnemyClassToSpawn is not set!"), *GetName());
+	}
 }
 
 void AEnemySpawner::Tick(float DeltaTime)
 {
-    Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
-    // 서브시스템이 없거나 스폰할 클래스가 지정되지 않으면 틱 중지
-    if (!EnemyPool || !SpawnDirector || !EnemyClassToSpawn)
-    {
-        SetActorTickEnabled(false);
-		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Missing subsystem or EnemyClassToSpawn. Disabling tick."));
-        return;
-    }
-
-    // 최대 스폰 상태인지 확인 (전체 예산과 타입별 예산 모두 확인)
-    if (SpawnDirector->GetCurrentSpawnCount() >= SpawnDirector->GetMaxTotalSpawns())
-    {
-        // 전체 누적 예산이 모두 소진되었다면 이 스포너의 틱을 영구히 끔
-        SetActorTickEnabled(false);
-        UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Total Spawn reached! Disabling tick."));
-        return;
-    }
-
-    // 해당 타입의 최대 스폰 수 확인 (설정된 경우)
-    int32 MaxForThisType = SpawnDirector->GetMaxSpawnsForEnemyType(EnemyClassToSpawn);
-    if (MaxForThisType >= 0) // -1이 아니면 설정된 것
-    {
-        int32 CurrentForThisType = SpawnDirector->GetCurrentSpawnCountForEnemyType(EnemyClassToSpawn);
-        if (CurrentForThisType >= MaxForThisType)
-        {
-            // 이 타입의 예산이 모두 소진되었다면 이 스포너의 틱을 영구히 끔
-            SetActorTickEnabled(false);
-            UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Max Spawn for type %s reached! Disabling tick."), 
-                   EnemyClassToSpawn ? *EnemyClassToSpawn->GetName() : TEXT("None"));
-            return;
-        }
-    }
-
-    SpawnTimer -= DeltaTime;
-    if (SpawnTimer <= 0.0f)
-    {
-        TrySpawnEnemy();
-        SpawnTimer = SpawnInterval; // 타이머 리셋
-    }
+	CheckPlayerDetection();
 }
 
-void AEnemySpawner::TrySpawnEnemy()
+void AEnemySpawner::CheckPlayerDetection()
 {
-    //위치 점유 확인
-    if (IsOccupied())
-    {
-        // 점유됨, 다음 틱까지 대기
-		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Spawn point occupied. Waiting."));
-        return;
-    }
+	// 플레이어 캐릭터 가져오기
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!PlayerCharacter)
+	{
+		return;
+	}
 
-    //스폰 요청 (타입별 예산 관리 사용)
-    if (SpawnDirector->RequestSpawn(EnemyClassToSpawn))
-    {
-        // 3. 예산 허가됨. 풀에서 적 가져오기
-        AEnemy_Base* EnemyToSpawn = EnemyPool->GetEnemyFromPool(EnemyClassToSpawn);
+	// 플레이어와의 거리 계산
+	float DistanceToPlayer = FVector::Dist(GetActorLocation(), PlayerCharacter->GetActorLocation());
+	bool bPlayerInRange = DistanceToPlayer <= DetectionRadius;
 
-        if (EnemyToSpawn)
-        {
-            // Spawnr의 위치와 회전으로 스폰
-            // 활성화는 Pool에서 처리됨
-            FVector Location = GetActorLocation();
-            FRotator Rotation = GetActorRotation();
-            EnemyToSpawn->SetActorLocationAndRotation(Location, Rotation);
+	// 플레이어가 범위 내에 들어왔을 때
+	if (bPlayerInRange && !bPlayerDetected)
+	{
+		bPlayerDetected = true;
 
-            // 스폰된 Enemy가 할 일이 있다면 이벤트 호출하는 것을 권장
-            UE_LOG(LogTemp, Log, TEXT("EnemySpawner: Successfully spawned %s at location %s"), 
-                   EnemyClassToSpawn ? *EnemyClassToSpawn->GetName() : TEXT("None"),
-                   *Location.ToString());
-        }
-    }
-    // 스폰량이 최대치라면 다음 틱까지 대기
-    // 어차피 Tick에서 최대치 체크되면 틱이 꺼지므로 별도 처리 X
+		// 아직 소환할 Enemy가 남아있으면 타이머 시작
+		if (CurrentSpawnedCount < EnemiesToSpawn)
+		{
+			UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Player detected! Starting spawn sequence..."), *GetName());
+			StartSpawnTimer();
+		}
+	}
+	// 플레이어가 범위를 벗어났을 때
+	else if (!bPlayerInRange && bPlayerDetected)
+	{
+		bPlayerDetected = false;
+
+		// 소환 타이머 중지
+		StopSpawnTimer();
+		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner [%s]: Player left detection range. Spawn paused at %d/%d"), 
+			*GetName(), CurrentSpawnedCount, EnemiesToSpawn);
+	}
 }
 
-bool AEnemySpawner::IsOccupied() const
+void AEnemySpawner::StartSpawnTimer()
 {
-    UWorld* World = GetWorld();
-    if (!World) return false;
+	if (!GetWorld())
+	{
+		return;
+	}
 
-    TArray<FOverlapResult> Overlaps;
-    FCollisionShape Shape = FCollisionShape::MakeSphere(SpawnPointCheckRadius);
+	// 이미 타이머가 활성화되어 있으면 중복 시작 방지
+	if (GetWorld()->GetTimerManager().IsTimerActive(SpawnTimerHandle))
+	{
+		return;
+	}
 
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this); // 스포너 자신은 무시
+	// SpawnInterval 간격으로 반복 타이머 설정
+	GetWorld()->GetTimerManager().SetTimer(
+		SpawnTimerHandle,
+		this,
+		&AEnemySpawner::SpawnEnemyWithTimer,
+		SpawnInterval,
+		true, // 반복
+		SpawnInterval // 첫 실행까지 대기 시간 (SpawnInterval 후 첫 소환)
+	);
 
-    bool bHit = World->OverlapMultiByObjectType(
-        Overlaps,        // 1. 결과를 저장할 배열
-        GetActorLocation(), // 2. 검사할 중심 위치
-        FQuat::Identity,    // 3. 회전값 (Identity = 회전없음)
-        FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), // 4. 검사할 객체 타입
-        Shape,              // 5. 검사할 모양 (구체)
-        QueryParams         // 6. 추가 검사 옵션
-    );
+	UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Spawn timer started. First spawn in %.1f seconds"), 
+		*GetName(), SpawnInterval);
+}
 
-    if (bHit)
-    {
-        for (const FOverlapResult& Result : Overlaps)
-        {
-            AEnemy_Base* HitPawn = Cast<AEnemy_Base>(Result.GetActor());
-            // 부딪힌 Pawn이 있고, 그 Pawn이 비활성(Hidden) 상태가 아니라면
-            // 점유된 것으로 판단
-            if (HitPawn && !HitPawn->IsHidden())
-            {
-                return true;
-            }
-        }
-    }
+void AEnemySpawner::StopSpawnTimer()
+{
+	if (!GetWorld())
+	{
+		return;
+	}
 
-    return false; // 점유되지 않음
+	// 타이머 중지
+	GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+}
+
+void AEnemySpawner::SpawnEnemyWithTimer()
+{
+	// 소환 완료 확인
+	if (CurrentSpawnedCount >= EnemiesToSpawn)
+	{
+		StopSpawnTimer();
+		UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: All enemies spawned (%d/%d)"), 
+			*GetName(), CurrentSpawnedCount, EnemiesToSpawn);
+		return;
+	}
+
+	// 플레이어가 여전히 범위 내에 있는지 확인 (이중 체크)
+	if (!bPlayerDetected)
+	{
+		StopSpawnTimer();
+		return;
+	}
+
+	// Enemy 소환
+	SpawnEnemy();
+	CurrentSpawnedCount++;
+
+	UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Spawned enemy %d/%d"), 
+		*GetName(), CurrentSpawnedCount, EnemiesToSpawn);
+
+	// 마지막 Enemy 소환 후 타이머 정리
+	if (CurrentSpawnedCount >= EnemiesToSpawn)
+	{
+		StopSpawnTimer();
+	}
+}
+
+void AEnemySpawner::SpawnEnemy()
+{
+	if (!EnemyClassToSpawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemySpawner [%s]: Cannot spawn - EnemyClassToSpawn is null!"), *GetName());
+		return;
+	}
+
+	// 랜덤한 소환 위치 계산
+	FVector SpawnLocation = GetRandomSpawnLocation();
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+
+	// SpawnParameters 설정
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	// Enemy 소환
+	AEnemy_Base* SpawnedEnemy = GetWorld()->SpawnActor<AEnemy_Base>(
+		EnemyClassToSpawn,
+		SpawnLocation,
+		SpawnRotation,
+		SpawnParams
+	);
+
+	if (SpawnedEnemy)
+	{
+		// Enemy 레벨 설정
+		SpawnedEnemy->SetLevel(EnemyLevel);
+
+		// 소환된 Enemy 배열에 추가
+		SpawnedEnemies.Add(SpawnedEnemy);
+
+		// Enemy_Minion인 경우 사망 델리게이트 구독
+		AEnemy_Minion* Minion = Cast<AEnemy_Minion>(SpawnedEnemy);
+		if (Minion)
+		{
+			Minion->OnMinionDeath.AddDynamic(this, &AEnemySpawner::OnSpawnedEnemyDied);
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Spawned Enemy [%s] at location %s with Level %.1f"), 
+			*GetName(), *SpawnedEnemy->GetName(), *SpawnLocation.ToString(), EnemyLevel);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemySpawner [%s]: Failed to spawn Enemy!"), *GetName());
+	}
+}
+
+FVector AEnemySpawner::GetRandomSpawnLocation() const
+{
+	// 감지 범위 내에서 랜덤한 2D 위치 생성
+	float RandomAngle = FMath::FRandRange(0.0f, 2.0f * PI);
+	float RandomRadius = FMath::FRandRange(0.0f, DetectionRadius);
+
+	FVector RandomOffset = FVector(
+		FMath::Cos(RandomAngle) * RandomRadius,
+		FMath::Sin(RandomAngle) * RandomRadius,
+		0.0f // Z축은 스포너와 같은 높이
+	);
+
+	return GetActorLocation() + RandomOffset;
+}
+
+void AEnemySpawner::OnSpawnedEnemyDied(AEnemy_Minion* DeadMinion)
+{
+	if (!DeadMinion)
+	{
+		return;
+	}
+
+	// 사망한 Enemy를 배열에서 제거
+	SpawnedEnemies.Remove(DeadMinion);
+
+	UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Enemy [%s] died. Remaining enemies: %d"), 
+		*GetName(), *DeadMinion->GetName(), SpawnedEnemies.Num());
+
+	// 모든 적이 사망했는지 확인
+	CheckAllEnemiesDefeated();
+}
+
+void AEnemySpawner::CheckAllEnemiesDefeated()
+{
+	// 유효한 Enemy가 하나도 남아있지 않고, 모든 소환이 완료되었으면
+	if (SpawnedEnemies.Num() == 0 && 
+		CurrentSpawnedCount >= EnemiesToSpawn && 
+		!bHasNotifiedPotionSpawners)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner [%s]: All enemies defeated!"), *GetName());
+
+		// 포션 스포너들에게 알림
+		NotifyPotionSpawners();
+	}
+}
+
+void AEnemySpawner::NotifyPotionSpawners()
+{
+	if (bHasNotifiedPotionSpawners)
+	{
+		return; // 중복 알림 방지
+	}
+
+	bHasNotifiedPotionSpawners = true;
+
+	// 연결된 모든 포션 스포너에게 알림
+	for (AActor* PotionSpawner : ConnectedPotionSpawners)
+	{
+		if (PotionSpawner)
+		{
+			UE_LOG(LogTemp, Log, TEXT("EnemySpawner [%s]: Notifying PotionSpawner [%s]"), 
+				*GetName(), *PotionSpawner->GetName());
+
+			// BP_PotionSpawner의 SpawnPotion 함수 호출
+			UFunction* SpawnFunction = PotionSpawner->FindFunction(FName(TEXT("SpawnPotion")));
+			if (SpawnFunction)
+			{
+				PotionSpawner->ProcessEvent(SpawnFunction, nullptr);
+			}
+		}
+	}
+
+	if (ConnectedPotionSpawners.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner [%s]: No connected PotionSpawners to notify!"), *GetName());
+	}
 }

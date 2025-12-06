@@ -2,7 +2,9 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
+#include "Delegates/DelegateCombinations.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
 #include "Skills/SkillDefinition.h"
@@ -10,6 +12,8 @@
 #include "FormDefinition.h"
 #include "StatManagerComponent.h"
 #include "Enemy_Base.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDiedDelegate); // 보스가 죽었는지 확인하는 델리게이트
 
 class UBlackboardComponent;
 class UHealthComponent;
@@ -20,6 +24,8 @@ class UJumpComponent;
 class USkillBase;
 class UCrowdControlComponent;
 class AKHU_GEBCharacter;
+
+
 
 UCLASS()
 class KHU_GEB_API AEnemy_Base : public ACharacter
@@ -67,6 +73,9 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	//죽었을 때 방송할 델리게이트
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnEnemyDiedDelegate OnEnemyDied;
 
 protected:
 	// Called when the game starts or when spawned
@@ -120,6 +129,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	float GetDefenseStat() const { return EnemyStats.Defense; }
+
+	UFUNCTION()
+	void SetLevel(int32 NewLevel);
 
 protected:
 	void HandleKilledBy(AActor* Killer);

@@ -18,7 +18,8 @@ void UCrowdControlComponent::BeginPlay()
 
 void UCrowdControlComponent::InternalApplyCC(bool bBlockMove, bool bBlockAct, float Duration)
 {
-    if (Duration <= 0.f) return;
+    // CC 면역이면 아무것도 하지 않음
+    if (bCCImmune || Duration <= 0.f) return;
 
     UWorld* World = GetWorld();
     if (!World) return;
@@ -98,5 +99,16 @@ void UCrowdControlComponent::ClearCC()
     if (UWorld* World = GetWorld())
     {
         World->GetTimerManager().ClearTimer(CCTimerHandle);
+    }
+}
+
+void UCrowdControlComponent::SetCCImmune(bool bImmune)
+{
+    bCCImmune = bImmune;
+
+    if (bCCImmune)
+    {
+        // 이미 걸려 있던 CC는 전부 해제
+        ClearCC();
     }
 }

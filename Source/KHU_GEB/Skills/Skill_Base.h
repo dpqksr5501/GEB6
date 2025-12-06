@@ -14,6 +14,15 @@ class KHU_GEB_API USkill_Base : public USkillBase
 {
     GENERATED_BODY()
 
+protected:
+    /** 검 트레일용 나이아가라 시스템 (리본/트레일 타입 추천) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "VFX")
+    UNiagaraSystem* SwordTrailSystem = nullptr;
+
+    /** 검 트레일을 붙일 소켓 이름 (캐릭터/무기 메시에 존재해야 함) */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "VFX")
+    FName SwordTrailSocketName = TEXT("WeaponTrail");
+
 public:
     USkill_Base();
 

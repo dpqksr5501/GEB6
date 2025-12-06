@@ -61,6 +61,7 @@ void USkill_Swift::ActivateSkill()
 
     SwiftTargets.Reset();
     CurrentHitIndex = 0;
+    HitFXPlayedTargets.Reset();
 
     // ----- 경로 상의 적(ACharacter) 수집용 박스 계산 -----
     if (Distance > KINDA_SMALL_NUMBER)
@@ -228,14 +229,16 @@ void USkill_Swift::HandleSwiftDamageTick()
             *GetNameSafe(TargetActor),
             PerHitDamage);
 
-        // Actor 기준으로 이펙트
-        if (HitNS)
+        // Actor 기준으로 이펙트: 각 타겟당 한 번만 재생
+        if (HitNS && !HitFXPlayedTargets.Contains(TargetActor))
         {
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                 World,
                 HitNS,
                 TargetActor->GetActorLocation(),
                 TargetActor->GetActorRotation());
+
+            HitFXPlayedTargets.Add(TargetActor);
         }
     }
 

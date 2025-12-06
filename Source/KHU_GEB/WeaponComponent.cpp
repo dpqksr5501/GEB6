@@ -12,6 +12,7 @@
 #include "KHU_GEBCharacter.h"		// GetMesh()를 위해 필요시
 #include "HealthComponent.h"
 #include "Enemy_AI/Enemy_Base.h"
+#include "Enemy_AI/Enemy_Minion_Special.h"
 #include "Skills/Skill_Ultimate.h"
 #include "FormManagerComponent.h"
 
@@ -99,11 +100,6 @@ void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 void UWeaponComponent::EnableCollision()
 {
 
-	//디버깅 메시지 콜리전 활성화 로그
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("[WeaponComponent] COLLISION ENABLED"));
-	}
 	// 이 스윙에서 맞은 액터 목록을 초기화
 	HitActorsThisSwing.Empty();
 
@@ -125,11 +121,6 @@ void UWeaponComponent::EnableCollision()
 void UWeaponComponent::DisableCollision()
 {
 
-	//디버깅 메시지 콜리전 비활성화 로그
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("[WeaponComponent] COLLISION DISABLED"));
-	}
 	// 모든 콜리전 볼륨(히트박스)을 비활성화
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
@@ -227,6 +218,61 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		InstigatorController,
 		Owner,
 		UDamageType::StaticClass());
+
+	// ===== [흡혈 로직] Enemy_Minion_Special이 공격 성공 시 체력 회복 =====
+	if (AEnemy_Minion_Special* SpecialMinion = Cast<AEnemy_Minion_Special>(Owner))
+	{
+		// 공격력만큼 자신의 체력 회복
+		if (UHealthComponent* OwnerHealth = SpecialMinion->FindComponentByClass<UHealthComponent>())
+		{
+			OwnerHealth->AddHealth(DamageToApply);
+			
+			UE_LOG(LogTemp, Log, 
+				TEXT("[WeaponComponent] Enemy_Minion_Special healed %.1f HP after attack. Current HP: %.1f"),
+				DamageToApply, OwnerHealth->Health);
+		}
+	}
+	// ===== [흡혈 로직 끝] =====
+
+	// ---------------- [사운드 로직 시작] ----------------
+
+	USoundBase* SoundToPlay = nullptr;
+
+	// 1. 때린 주체가 '플레이어'인지 확인
+	AKHU_GEBCharacter* PlayerOwner = Cast<AKHU_GEBCharacter>(GetOwner());
+
+	// 2. 맞은 대상이 '적(Enemy)'인지 확인
+	AEnemy_Base* HitEnemy = Cast<AEnemy_Base>(OtherActor);
+
+	// [조건] 플레이어가 때렸고 && 적이 맞았을 때만 실행
+	if (PlayerOwner && HitEnemy && PlayerOwner->FormManager)
+	{
+		EFormType CurrentForm = PlayerOwner->FormManager->GetCurrentFormType();
+
+		switch (CurrentForm)
+		{
+			// [그룹 1] 근접 타격감
+		case EFormType::Base:
+		case EFormType::Guard:
+		case EFormType::Swift:
+			SoundToPlay = MeleeHitSound;
+			break;
+
+			// [그룹 2] 원거리/마법 타격감
+		case EFormType::Range:
+		case EFormType::Special:
+			SoundToPlay = HeavyHitSound; // 혹은 MagicHitSound
+			break;
+		}
+
+		// 소리 재생 (위 조건이 맞을 때만 SoundToPlay가 설정됨)
+		if (SoundToPlay)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, SoundToPlay, HitEnemy->GetActorLocation());
+		}
+	}
+	// ---------------- [사운드 로직 끝] ----------------
+
 
 	// === Swift 궁극기 은신 공격 처리 ===
 	if (APawn* InstigatorPawn = Cast<APawn>(Owner))
