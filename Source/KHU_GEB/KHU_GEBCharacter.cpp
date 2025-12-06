@@ -425,8 +425,6 @@ void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 {
-	return;
-
 	// Boss 처치 전에는 스킬 잠금 (폼별로)
 	if (FormManager && StatManager)
 	{
@@ -444,6 +442,7 @@ void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 						static_cast<int32>(CurrentForm));
 					return;
 				}
+				else return;
 			}
 		}
 	}
