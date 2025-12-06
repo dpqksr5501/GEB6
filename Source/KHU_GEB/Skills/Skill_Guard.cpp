@@ -263,7 +263,7 @@ void USkill_Guard::StopSkill()
                 UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                     World,
                     ExplosionNS,
-                    Owner->GetActorLocation(),        // 폭발 중심
+                    Owner->GetActorLocation(),   
                     FRotator::ZeroRotator,
                     FVector(Scale, Scale, 1.f)        // XY만 반경 스케일, Z는 1 유지(원판 느낌)
                 ))

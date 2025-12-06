@@ -371,7 +371,7 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 {
-	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
+	//if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();

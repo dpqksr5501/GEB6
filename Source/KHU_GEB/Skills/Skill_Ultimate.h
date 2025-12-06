@@ -52,6 +52,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
     TObjectPtr<UNiagaraSystem> BreathNS;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Ultimate|FX")
+    float BreathReferenceLength = 1000.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Ultimate|FX")
+    float BreathReferenceRadius = 100.f;
+
     /** 입 소켓 이름 (없으면 Actor 위치 기준) */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ultimate|Range|FX")
     FName MuzzleSocketName = TEXT("MouthSocket");

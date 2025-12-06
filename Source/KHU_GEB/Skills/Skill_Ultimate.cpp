@@ -193,8 +193,8 @@ void USkill_Ultimate::ActivateRangeUltimate()
     // === 3) 브레스 FX 소환 (입 소켓에 붙여서 위치/회전 따라가게) ===
     if (BreathNS && OwnerChar && Mesh)
     {
-        const float LengthScale = BreathLength / 100.f;
-        const float RadiusScale = BreathRadius / 100.f;
+        const float LengthScale = BreathLength / BreathReferenceLength;
+        const float RadiusScale = BreathRadius / BreathReferenceRadius;
 
         SpawnedBreathNS = UNiagaraFunctionLibrary::SpawnSystemAttached(
             BreathNS,
@@ -387,6 +387,16 @@ void USkill_Ultimate::OnBreathTick()
     FVector HalfExtent;
 
     if (!GetBreathBox(Center, Rotation, HalfExtent)) return;
+
+    // 브레스 박스의 회전을 나이아가라에 그대로 반영
+    if (SpawnedBreathNS)
+    {
+        // FQuat → FRotator 변환 후 월드 회전으로 세팅
+        SpawnedBreathNS->SetWorldRotation(Rotation);
+        // 필요하면 위치도 살짝 보정하고 싶다면:
+        // SpawnedBreathNS->SetWorldLocation(SocketTM.GetLocation()); 같은 식으로
+        // (지금은 소켓에 Attach되어 있으니 위치는 붙어다니고, 회전만 덮어쓰면 됩니다)
+    }
 
     // Overlap 대상: 기본 Pawn
     FCollisionObjectQueryParams ObjParams;
