@@ -14,6 +14,7 @@
 #include "Pooling/EnemySpawnDirector.h"
 #include "KHU_GEBCharacter.h"
 #include "StatManagerComponent.h"
+#include "AIController.h"
 
 // Sets default values
 AEnemy_Base::AEnemy_Base()
@@ -67,6 +68,41 @@ void AEnemy_Base::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		BlackboardComp = AIController->GetBlackboardComponent();
+
+		if (BlackboardComp)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] BlackboardComp initialized in BeginPlay for %s"), *GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Enemy_Base] BlackboardComp is null in BeginPlay for %s - AI might not be possessed yet"), *GetName());
+		}
+	}
+	else
+	{
+		// AI Controller가 아직 빙의되지 않았을 경우, 다음 프레임에 재시도
+		UE_LOG(LogTemp, Warning, TEXT("[Enemy_Base] AI Controller not possessed yet in BeginPlay for %s - will retry next frame"), *GetName());
+
+		GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+			{
+				if (AAIController* AIController = Cast<AAIController>(GetController()))
+				{
+					BlackboardComp = AIController->GetBlackboardComponent();
+
+					if (BlackboardComp)
+					{
+						UE_LOG(LogTemp, Log, TEXT("[Enemy_Base] BlackboardComp initialized on next frame for %s"), *GetName());
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("[Enemy_Base] BlackboardComp still null after retry for %s"), *GetName());
+					}
+				}
+			});
+	}
 	if (DefaultFormDef)
 	{
 		EnemyFormType = DefaultFormDef->FormType;
