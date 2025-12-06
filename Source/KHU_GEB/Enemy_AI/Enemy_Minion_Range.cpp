@@ -49,7 +49,7 @@ void AEnemy_Minion_Range::Shot()
 	}
 	else
 	{
-		// 소켓이 없으면 기본 위치 사용 (앞쪽 50유닛,위쪽 50유닛)
+		// 소켓이 없으면 기본 위치 사용 (앞쪽 50유닛, 위쪽 50유닛)
 		SpawnLocation = GetActorLocation() + GetActorForwardVector() * 50.0f + FVector(0.0f, 0.0f, 50.0f);
 		FVector TargetLocation = Target->GetActorLocation();
 		SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
@@ -71,8 +71,11 @@ void AEnemy_Minion_Range::Shot()
 		return;
 	}
 
-	// 총알에 데미지 값 전달
-	Bullet->Damage = BulletDamage;
+	// Enemy의 Attack 스탯을 Bullet에 전달 (WeaponComp 방식과 동일)
+	Bullet->Damage = GetAttackStat();
+		
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Minion_Range] Bullet damage set to: %.1f (from Enemy Attack stat)"), 
+		Bullet->Damage);
 
 	// 발사체 이동 컴포넌트 설정
 	if (UProjectileMovementComponent* ProjectileMovement = Bullet->ProjectileMovement)
@@ -84,6 +87,7 @@ void AEnemy_Minion_Range::Shot()
 		ProjectileMovement->Velocity = Direction * BulletSpeed;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Enemy_Minion_Range] Shot projectile toward %s with damage %.1f"), *Target->GetName(), BulletDamage);
+	UE_LOG(LogTemp, Log, TEXT("[Enemy_Minion_Range] Shot projectile toward %s with damage %.1f"), 
+		*Target->GetName(), Bullet->Damage);
 }
 
