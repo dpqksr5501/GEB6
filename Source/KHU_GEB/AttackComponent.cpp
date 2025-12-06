@@ -228,7 +228,6 @@ void UAttackComponent::PlayCurrentComboMontage(float PlayRate)
     // 3. (필수) 두 슬롯 중 하나라도 비어있으면 공격이 멈추므로, 유효성 검사를 합니다.
     if (!MontageToPlay)
     {
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("[2-ERROR] Montage is MISSING in DA for ComboIndex %d!"), ComboIndex));
         ComboIndex = 0; return;
     }
 
@@ -328,26 +327,12 @@ void UAttackComponent::OnNotifyBeginReceived(FName NotifyName, const FBranchingP
 
     if (NotifyName == TEXT("StartAttack"))
     {
-
-        //디버깅 메시지 "StartAttack" 노티파이 수신 및 위임 로그
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
-                TEXT("[AttackComponent] Notify: StartAttack -> Delegating to WeaponComponent"));
-        }
         //[수정] 콜리전 활성화를 WeaponComponent에 위임
         WeaponComp->EnableCollision();
 
     }
     else if (NotifyName == TEXT("EndAttack"))
     {
-        //디버깅 메시지 "EndAttack" 노티파이 수신 및 위임 로그
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
-                TEXT("[AttackComponent] Notify: EndAttack -> Delegating to WeaponComponent"));
-        }
-
         //[수정] 콜리전 비활성화를 WeaponComponent에 위임
         WeaponComp->DisableCollision();
  
