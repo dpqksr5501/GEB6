@@ -2,8 +2,6 @@
 
 
 #include "Enemy_AI/Enemy_Minion.h"
-#include "Pooling/EnemyPoolSubsystem.h"
-#include "Pooling/EnemySpawnDirector.h"
 #include "TimerManager.h"
 
 void AEnemy_Minion::BeginPlay() {
@@ -35,27 +33,16 @@ void AEnemy_Minion::OnDeath()
 			false  // 한 번만 실행
 		);
 	}
+	UE_LOG(LogTemp, Log, TEXT("AEnemy_Minion::OnDeath - Set timer for delayed death execution in %f seconds."), DeathDelay);
 }
 
 void AEnemy_Minion::ExecuteDelayedDeath()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Minion::ExecuteDelayedDeath - Returning to pool after %f seconds"), DeathDelay);
+	UE_LOG(LogTemp, Warning, TEXT("AEnemy_Minion::ExecuteDelayedDeath - Broadcasting death event and destroying actor."));
 
-	// Director에게 사망 알림
-	UGameInstance* GI = GetGameInstance();
-	if (GI)
-	{
-		UEnemySpawnDirector* SpawnDirector = GI->GetSubsystem<UEnemySpawnDirector>();
-		if (SpawnDirector)
-		{
-			SpawnDirector->OnEnemyDied(GetClass());
-		}
+	// 사망 이벤트 방송 (스포너가 구독 중)
+	OnMinionDeath.Broadcast(this);
 
-		// Pool에 반환
-		UEnemyPoolSubsystem* EnemyPool = GI->GetSubsystem<UEnemyPoolSubsystem>();
-		if (EnemyPool)
-		{
-			EnemyPool->ReturnEnemyToPool(this);
-		}
-	}
+	// 액터 파괴
+	Destroy();
 }
