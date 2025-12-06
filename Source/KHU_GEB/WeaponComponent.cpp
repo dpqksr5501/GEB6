@@ -12,6 +12,7 @@
 #include "KHU_GEBCharacter.h"		// GetMesh()를 위해 필요시
 #include "HealthComponent.h"
 #include "Enemy_AI/Enemy_Base.h"
+#include "Enemy_AI/Enemy_Minion_Special.h"
 #include "Skills/Skill_Ultimate.h"
 #include "FormManagerComponent.h"
 
@@ -217,6 +218,21 @@ void UWeaponComponent::OnAttackOverlap(UPrimitiveComponent* OverlappedComponent,
 		InstigatorController,
 		Owner,
 		UDamageType::StaticClass());
+
+	// ===== [흡혈 로직] Enemy_Minion_Special이 공격 성공 시 체력 회복 =====
+	if (AEnemy_Minion_Special* SpecialMinion = Cast<AEnemy_Minion_Special>(Owner))
+	{
+		// 공격력만큼 자신의 체력 회복
+		if (UHealthComponent* OwnerHealth = SpecialMinion->FindComponentByClass<UHealthComponent>())
+		{
+			OwnerHealth->AddHealth(DamageToApply);
+			
+			UE_LOG(LogTemp, Log, 
+				TEXT("[WeaponComponent] Enemy_Minion_Special healed %.1f HP after attack. Current HP: %.1f"),
+				DamageToApply, OwnerHealth->Health);
+		}
+	}
+	// ===== [흡혈 로직 끝] =====
 
 	// ---------------- [사운드 로직 시작] ----------------
 

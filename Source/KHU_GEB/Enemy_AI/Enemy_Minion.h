@@ -6,6 +6,9 @@
 #include "Enemy_AI/Enemy_Base.h"
 #include "Enemy_Minion.generated.h"
 
+// Enemy_Minion의 사망을 알리는 델리게이트 (자기 자신을 매개변수로 전달)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMinionDeath, AEnemy_Minion*, DeadMinion);
+
 /**
  * 
  */
@@ -14,6 +17,11 @@ class KHU_GEB_API AEnemy_Minion : public AEnemy_Base
 {
 	GENERATED_BODY()
 	
+public:
+	/** 미니언이 사망했을 때 발행되는 델리게이트 */
+	UPROPERTY(BlueprintAssignable, Category = "Enemy Events")
+	FOnMinionDeath OnMinionDeath;
+
 protected:
 	virtual void BeginPlay() override;
 

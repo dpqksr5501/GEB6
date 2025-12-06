@@ -130,6 +130,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	float GetDefenseStat() const { return EnemyStats.Defense; }
 
+	UFUNCTION()
+	void SetLevel(int32 NewLevel);
+
 protected:
 	void HandleKilledBy(AActor* Killer);
 
