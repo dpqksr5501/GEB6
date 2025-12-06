@@ -371,7 +371,7 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::Look(const FInputActionValue& Value)
 {
-	//if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
+	if (CrowdControlComp && CrowdControlComp->IsMoveBlocked()) return;
 
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
@@ -408,7 +408,7 @@ void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 					UE_LOG(LogTemp, Log,
 						TEXT("[Character] Skill locked: Elite not killed yet for form %d"),
 						static_cast<int32>(CurrentForm));
-					//return;
+					return;
 				}
 			}
 		}
@@ -425,6 +425,8 @@ void AKHU_GEBCharacter::SkillEnd(const FInputActionValue& Value)
 
 void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 {
+	return;
+
 	// Boss 처치 전에는 스킬 잠금 (폼별로)
 	if (FormManager && StatManager)
 	{
@@ -440,7 +442,7 @@ void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 					UE_LOG(LogTemp, Log,
 						TEXT("[Character] Skill locked: Boss not killed yet for form %d"),
 						static_cast<int32>(CurrentForm));
-					//return;
+					return;
 				}
 			}
 		}
