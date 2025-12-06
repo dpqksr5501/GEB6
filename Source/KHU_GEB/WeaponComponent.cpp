@@ -100,11 +100,6 @@ void UWeaponComponent::SetWeaponDefinition(const UWeaponData* Def)
 void UWeaponComponent::EnableCollision()
 {
 
-	//디버깅 메시지 콜리전 활성화 로그
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("[WeaponComponent] COLLISION ENABLED"));
-	}
 	// 이 스윙에서 맞은 액터 목록을 초기화
 	HitActorsThisSwing.Empty();
 
@@ -126,11 +121,6 @@ void UWeaponComponent::EnableCollision()
 void UWeaponComponent::DisableCollision()
 {
 
-	//디버깅 메시지 콜리전 비활성화 로그
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("[WeaponComponent] COLLISION DISABLED"));
-	}
 	// 모든 콜리전 볼륨(히트박스)을 비활성화
 	for (UShapeComponent* Collider : ActiveColliders)
 	{
