@@ -914,11 +914,6 @@ void AKHU_GEBCharacter::HandleDeath()
 		CurrentForm = FormManager->CurrentForm;
 	}
 
-	if (BaseDeathMontage)
-	{
-		return;
-	}
-
 	// 2) 폼에 따라 재생할 몽타주 선택
 	UAnimMontage* MontageToPlay = nullptr;
 
