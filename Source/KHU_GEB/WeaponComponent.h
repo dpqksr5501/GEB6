@@ -11,6 +11,7 @@ class UBoxComponent;
 class USphereComponent;
 class UShapeComponent;
 class UWeaponData;
+class UNiagaraComponent;
 
 /**
  * 무기의 물리적인 콜리전과 오버랩 이벤트를 관리하는 컴포넌트입니다.
@@ -36,6 +37,15 @@ public:
 	 * 현재 폼에 맞는 무기(의 히트박스)를 설정합니다.
 	 */
 	void SetWeaponDefinition(const UWeaponData* Def);
+
+	// =========================================================
+	// [추가] VFX 제어 함수 (AnimNotifyState에서 호출)
+	// =========================================================
+	/** 트레일 이펙트를 활성화합니다. */
+	void BeginTrail();
+
+	/** 트레일 이펙트를 비활성화합니다. */
+	void EndTrail();
 
 protected:
 	// Called when the game starts
@@ -64,6 +74,14 @@ protected:
 	/** 소유자(캐릭터)의 스켈레탈 메시 (캐시용) */
 	UPROPERTY(Transient)
 	TWeakObjectPtr<USkeletalMeshComponent> CachedMesh;
+
+
+	// =========================================================
+	// [추가] VFX 컴포넌트 관리
+	// =========================================================
+	/** 현재 생성되어 있는 트레일 이펙트 컴포넌트 */
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UNiagaraComponent>> CurrentTrailVFXs;
 
 public:	
 	// Called every frame

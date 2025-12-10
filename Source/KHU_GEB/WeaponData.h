@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "NiagaraSystem.h"
 #include "WeaponData.generated.h"
 
 /**
@@ -49,6 +50,27 @@ struct FHitboxConfig
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 };
 
+
+// [추가 1] UWeaponData 클래스 선언보다 위에 작성하세요
+USTRUCT(BlueprintType)
+struct FWeaponTrailConfig
+{
+	GENERATED_BODY()
+
+	/** 사용할 나이아가라 이펙트 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UNiagaraSystem> TrailEffect;
+
+	/** 트레일 시작 소켓 (예: FX_Trail_L_Start) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName SocketStart;
+
+	// 필요하다면 End 소켓도 추가 가능하지만, 보통 시작 소켓에 붙이고 이펙트 자체에서 길이를 조절합니다.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName SocketEnd;
+};
+
+
 /**
  * 무기의 콜리전(히트박스) 구성을 정의하는 데이터 에셋입니다.
  */
@@ -62,4 +84,8 @@ public:
 	/** 이 무기를 구성하는 히트박스 목록입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TArray<FHitboxConfig> Hitboxes;
+
+	//이펙트 설정 목록 (배열)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|VFX")
+	TArray<FWeaponTrailConfig> TrailConfigs;
 };
