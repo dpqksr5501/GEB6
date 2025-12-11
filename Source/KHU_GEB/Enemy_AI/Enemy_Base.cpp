@@ -14,6 +14,8 @@
 #include "Pooling/EnemySpawnDirector.h"
 #include "KHU_GEBCharacter.h"
 #include "StatManagerComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "FormManagerComponent.h"
 #include "AIController.h"
 
 // Sets default values
@@ -176,6 +178,14 @@ void AEnemy_Base::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning,
 			TEXT("[Enemy_Base] DefaultFormDef or StatData is null. Stats not initialized."));
+	}
+
+	// 2. [추가됨] 플레이어 레벨업 이벤트 구독 (앞으로의 변화 감지)
+	AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if (PlayerChar && PlayerChar->StatManager)
+	{
+		// "레벨업 하면 내 함수(OnPlayerLevelUp)를 실행해줘!"
+		PlayerChar->StatManager->OnFormLevelUp.AddDynamic(this, &AEnemy_Base::OnPlayerLevelUp);
 	}
 }
 
@@ -348,7 +358,8 @@ void AEnemy_Base::HandleKilledBy(AActor* Killer)
 		const int32 PlayerFormLevel = Player->StatManager->GetLevelStat(FormTypeForExp); // 
 
 		// Minion 레벨이 더 낮으면 경험치/레벨업 처리 스킵
-		if (EnemyLevel < PlayerFormLevel)
+		//수정...
+		if (PlayerFormLevel >= 5)
 		{
 			UE_LOG(LogTemp, Log,
 				TEXT("[Enemy_Base] Minion level %d < player form level %d (FormType=%d). No EXP granted."),
@@ -374,4 +385,62 @@ void AEnemy_Base::SetLevel(int32 NewLevel)
 	EnemyStats.Level = NewLevel;
 	EnemyStats.RecalculateDerivedStats();
 	return;
+}
+
+
+void AEnemy_Base::ApplyHealthScaling()
+{
+	if (!HealthComp) return;
+
+	// 1. 플레이어 정보 가져오기
+	AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+
+	// 플레이어가 없거나 스탯 매니저가 없으면 -> 기본값(100) 유지하고 종료
+	if (!PlayerChar || !PlayerChar->StatManager) return;
+
+	// 2. 플레이어 레벨 가져오기 (Base 폼 기준)
+	int32 PlayerLevel = PlayerChar->StatManager->GetLevelStat(EFormType::Base);
+	if (PlayerLevel < 1) PlayerLevel = 1; // 안전장치
+
+	// 3. [핵심] 보스와 엘리트의 성장 수치 설정
+	float BaseStatsHealth = 0.f;  // 1레벨일 때의 체력 (500)
+	float HealthPerLevel = 0.f;   // 레벨당 증가량 (400)
+
+	if (EnemyKind == EEnemyKind::Boss)
+	{
+		BaseStatsHealth = 500.0f; // [사용자 요청] 1레벨 기본 체력
+		HealthPerLevel = 350.0f;  // [사용자 요청] 레벨업당 증가량
+	}
+	else if (EnemyKind == EEnemyKind::Elite)
+	{
+		// 예: 엘리트는 100에서 시작하고 100씩 증가
+		BaseStatsHealth = 100.0f;
+		HealthPerLevel = 150.0f;
+	}
+	else
+	{
+		return; // 미니언은 스케일링 안 함
+	}
+
+	// 4. 공식 적용
+	// 공식: 기본체력 + (레벨-1 * 증가량)
+	// Lv 1: 500 + (0 * 300) = 500
+	// Lv 2: 500 + (1 * 200) = 700
+	float NewMaxHealth = BaseStatsHealth + ((PlayerLevel - 1) * HealthPerLevel);
+
+	// 5. 체력 적용 (최대 체력과 현재 체력을 꽉 채움)
+	HealthComp->InitializeHealth(NewMaxHealth, NewMaxHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("[Boss Scaling] Level: %d, FinalHP: %.1f"), PlayerLevel, NewMaxHealth);
+}
+
+
+void AEnemy_Base::OnPlayerLevelUp(EFormType FormType, int32 NewLevel)
+{
+	// 우리는 'Base' 폼 레벨을 기준으로 스케일링하기로 했으므로,
+	// Base 폼이 레벨업했을 때만 체력을 갱신합니다.
+	if (FormType == EFormType::Base)
+	{
+		ApplyHealthScaling();
+	}
 }

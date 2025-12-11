@@ -133,7 +133,14 @@ public:
 	UFUNCTION()
 	void SetLevel(int32 NewLevel);
 
+	//레벨에 따른 보스 체력 증가 함수
+	UFUNCTION(BlueprintCallable, Category = "Stats")
+	void ApplyHealthScaling();
+
 protected:
 	void HandleKilledBy(AActor* Killer);
+
+	UFUNCTION()
+	void OnPlayerLevelUp(EFormType FormType, int32 NewLevel);
 
 };

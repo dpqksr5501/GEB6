@@ -276,5 +276,5 @@ float USkillBase::GetDamageForCurrentLevel() const
 float USkillBase::GetManaCostForCurrentLevel() const
 {
     // Params.ManaCost 를 "레벨당 마나 소모"로 해석
-    return Params.ManaCost - (10 * (GetCurrentOwnerLevel() - 1));
+    return FMath::Max(15.f, Params.ManaCost - (10 * (GetCurrentOwnerLevel() - 1)));
 }
