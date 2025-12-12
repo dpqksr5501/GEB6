@@ -403,19 +403,19 @@ void AEnemy_Base::ApplyHealthScaling()
 	if (PlayerLevel < 1) PlayerLevel = 1; // 안전장치
 
 	// 3. [핵심] 보스와 엘리트의 성장 수치 설정
-	float BaseStatsHealth = 0.f;  // 1레벨일 때의 체력 (500)
-	float HealthPerLevel = 0.f;   // 레벨당 증가량 (400)
+	float BaseStatsHealth = 0.f;  // 1레벨일 때의 체력 (300)
+	float HealthPerLevel = 0.f;   // 레벨당 증가량 (250)
 
 	if (EnemyKind == EEnemyKind::Boss)
 	{
-		BaseStatsHealth = 500.0f; // [사용자 요청] 1레벨 기본 체력
-		HealthPerLevel = 350.0f;  // [사용자 요청] 레벨업당 증가량
+		BaseStatsHealth = 300.0f; // [사용자 요청] 1레벨 기본 체력
+		HealthPerLevel = 250.0f;  // [사용자 요청] 레벨업당 증가량
 	}
 	else if (EnemyKind == EEnemyKind::Elite)
 	{
 		// 예: 엘리트는 100에서 시작하고 100씩 증가
 		BaseStatsHealth = 100.0f;
-		HealthPerLevel = 150.0f;
+		HealthPerLevel = 100.0f;
 	}
 	else
 	{
@@ -424,8 +424,8 @@ void AEnemy_Base::ApplyHealthScaling()
 
 	// 4. 공식 적용
 	// 공식: 기본체력 + (레벨-1 * 증가량)
-	// Lv 1: 500 + (0 * 300) = 500
-	// Lv 2: 500 + (1 * 200) = 700
+	// Lv 1: 300 + (0 * 250) = 300
+	// Lv 2: 300 + (1 * 250) = 550
 	float NewMaxHealth = BaseStatsHealth + ((PlayerLevel - 1) * HealthPerLevel);
 
 	// 5. 체력 적용 (최대 체력과 현재 체력을 꽉 채움)
