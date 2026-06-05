@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -62,6 +62,7 @@ public:
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override; // 입력 해제용 (지속 스킬이라 무시할 예정)
+    virtual bool IsBlockingFormChange() const override;
 
 private:
     /** 현재 Special 이 켜져 있는지 여부 */

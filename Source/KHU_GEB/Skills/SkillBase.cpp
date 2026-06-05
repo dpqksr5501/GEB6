@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/SkillBase.h"
@@ -277,4 +277,19 @@ float USkillBase::GetManaCostForCurrentLevel() const
 {
     // Params.ManaCost 를 "레벨당 마나 소모"로 해석
     return Params.ManaCost - (10 * (GetCurrentOwnerLevel() - 1));
+}
+
+bool USkillBase::IsBlockingFormChange() const
+{
+    // 기본적으로 스킬은 폼 변경을 막지 않음. 파생 스킬에서 필요에 따라 오버라이드.
+    return false;
+}
+
+bool USkillBase::IsAiming() const
+{
+    return false;
+}
+
+void USkillBase::HandleAimMoveInput(const FVector2D& Input)
+{
 }

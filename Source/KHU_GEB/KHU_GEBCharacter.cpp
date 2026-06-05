@@ -346,12 +346,9 @@ void AKHU_GEBCharacter::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	// Range 조준 중이면, 이동 대신 스킬에 입력 전달
-	if (SkillManager && SkillManager->IsRangeAiming())
+	if (SkillManager && SkillManager->IsAiming())
 	{
-		if (SkillManager->GetActiveRangeSkill().IsValid())
-		{
-			SkillManager->GetActiveRangeSkill()->HandleAimMoveInput(MovementVector);
-		}
+		SkillManager->HandleAimMoveInput(MovementVector);
 		// 캐릭터는 실제로는 움직이지 않음
 		return;
 	}
@@ -398,7 +395,7 @@ void AKHU_GEBCharacter::SkillStart(const FInputActionValue& Value)
 	{
 		const EFormType CurrentForm = FormManager->CurrentForm;
 
-		// Base 폼은 항상 허용하고, 나머지 폼은 Elite를 잡아야 스킬 해제
+		// Base 폼은 항상 허용하고, 나머지 폼은 Elite를 잡아야 스킬 해제 (기획 의도 동기화)
 		if (CurrentForm != EFormType::Base)
 		{
 			if (const FFormRuntimeStats* Stats = StatManager->GetStats(CurrentForm))
@@ -442,7 +439,6 @@ void AKHU_GEBCharacter::UltimateStart(const FInputActionValue& Value)
 						static_cast<int32>(CurrentForm));
 					return;
 				}
-				else return;
 			}
 		}
 	}
@@ -851,7 +847,7 @@ void AKHU_GEBCharacter::RefreshRotationMode()
 		bShouldUseControllerYaw = true;
 	}
 
-	if (SkillManager && SkillManager->IsRangeAiming())
+	if (SkillManager && SkillManager->IsAiming())
 	{
 		bShouldUseControllerYaw = true;
 	}
@@ -973,7 +969,7 @@ bool AKHU_GEBCharacter::CanSwitchToForm(EFormType Form) const
 
 	if (const FFormRuntimeStats* Stats = StatManager->GetStats(Form))
 	{
-		return (Stats->Level > 0);
+		return Stats->bKilledElite;
 	}
 
 	// 해당 폼 정보가 없으면 일단 막는 쪽으로

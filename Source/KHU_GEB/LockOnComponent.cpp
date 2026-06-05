@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LockOnComponent.h"
@@ -72,7 +72,7 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	{
 		if (USkillManagerComponent* Manager = Owner->GetComponentByClass<USkillManagerComponent>())
 		{
-			if (Manager->IsRangeAiming())
+			if (Manager->IsAiming())
 			{
 				// 락온 타겟은 유지하지만, 카메라 회전은 건드리지 않음
 				return;

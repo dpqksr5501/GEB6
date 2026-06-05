@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Guard.h"
@@ -82,11 +82,6 @@ void USkill_Guard::ActivateSkill()
         Owner->FindComponentByClass<UCrowdControlComponent>())
     {
         CC->SetCCImmune(true);
-    }
-
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnGuardSkillStarted(this);
     }
 
     UE_LOG(LogTemp, Log, TEXT("[Skill_Guard] Activated: MaxShields=%d"), RemainingShields);
@@ -204,11 +199,6 @@ void USkill_Guard::StopSkill()
         }
     }
 
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnGuardSkillEnded(this);
-    }
-
     //우클릭 떼면 몽타주 재생 해제
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
     {
@@ -314,4 +304,9 @@ void USkill_Guard::StopSkill()
     bEndedByDepletion = false;
 
     Super::StopSkill();
+}
+
+bool USkill_Guard::IsBlockingFormChange() const
+{
+    return bIsActive;
 }

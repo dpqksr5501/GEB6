@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -39,6 +39,7 @@ public:
     virtual bool CanActivate() const override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
+    virtual bool IsBlockingFormChange() const override;
 
 private:
     /** Swift에 맞은 타겟들 (10타 동안 계속 두들길 대상) */

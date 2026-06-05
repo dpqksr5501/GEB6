@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Range.h"
@@ -9,6 +9,7 @@
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "KHU_GEBCharacter.h"
+#include "LockOnComponent.h"
 #include "SkillManagerComponent.h"
 #include "FireballProjectile.h"
 #include "Enemy_AI/Enemy_Base.h"
@@ -44,9 +45,14 @@ void USkill_Range::ActivateSkill()
     AimMoveInput = FVector2D::ZeroVector;
     SetComponentTickEnabled(true);
 
-    if (USkillManagerComponent* Manager = GetSkillManager())
+    SetComponentTickEnabled(true);
+
+    if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
     {
-        Manager->OnRangeAimingStarted(this);
+        if (PlayerChar->LockOnComp)
+        {
+            SavedLockOnTarget = PlayerChar->LockOnComp->GetCurrentTarget();
+        }
     }
 
     if (ACharacter* OwnerChar = Cast<ACharacter>(Owner))
@@ -290,10 +296,16 @@ void USkill_Range::StopSkill()
             AimMoveInput = FVector2D::ZeroVector;
             SetComponentTickEnabled(false);
 
-            if (USkillManagerComponent* Manager = GetSkillManager())
+            SetComponentTickEnabled(false);
+
+            if (AKHU_GEBCharacter* PlayerChar = Cast<AKHU_GEBCharacter>(Owner))
             {
-                Manager->OnRangeAimingEnded(this);
+                if (PlayerChar->LockOnComp && SavedLockOnTarget.IsValid())
+                {
+                    PlayerChar->LockOnComp->LockOnToTarget(SavedLockOnTarget.Get());
+                }
             }
+            SavedLockOnTarget = nullptr;
         };
 
     if (!World || !Owner)
@@ -503,3 +515,13 @@ void USkill_Range::SpawnDefaultProjectile()
 float USkill_Range::GetCurrentTargetRadius() const { return TargetRadius; }
 float USkill_Range::GetMaxAimDistance() const { return MaxAimDistance; }
 void USkill_Range::HandleAimMoveInput(const FVector2D& Input) { AimMoveInput = Input; }
+
+bool USkill_Range::IsBlockingFormChange() const
+{
+    return bIsAiming;
+}
+
+bool USkill_Range::IsAiming() const
+{
+    return bIsAiming;
+}

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -67,5 +67,14 @@ public:
     virtual void ActivateSkill();
 
     virtual void StopSkill();
+
+    // 폼 변경을 막아야 하는 상태인지 여부
+    virtual bool IsBlockingFormChange() const;
+
+    // 조준 중인지 여부 (이동 입력을 가로챌지 결정)
+    virtual bool IsAiming() const;
+
+    // 조준 중 이동 입력 처리
+    virtual void HandleAimMoveInput(const FVector2D& Input);
 
 };

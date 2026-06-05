@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Special.h"
@@ -55,10 +55,7 @@ void USkill_Special::ActivateSkill()
 
     bIsActive = true;
 
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnSpecialSkillStarted(this);
-    }
+    bIsActive = true;
 
     // 1) 플레이어 이동속도 배율 적용
     if (AKHU_GEBCharacter* OwnerChar = Cast<AKHU_GEBCharacter>(Owner))
@@ -242,10 +239,7 @@ void USkill_Special::EndSpecial()
 
     bIsActive = false;
 
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnSpecialSkillEnded(this);
-    }
+    bIsActive = false;
 
     UWorld* World = GetWorld();
     AActor* Owner = GetOwner();
@@ -385,4 +379,9 @@ void USkill_Special::OnEffectTick()
             DotFX->SetWorldScale3D(FVector(Scale, Scale, 1.f));
         }
     }
+}
+
+bool USkill_Special::IsBlockingFormChange() const
+{
+    return bIsActive;
 }

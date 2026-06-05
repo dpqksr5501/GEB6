@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -61,13 +61,16 @@ public:
     virtual void InitializeFromDefinition(const USkillDefinition* Def) override;
     virtual void ActivateSkill() override;
     virtual void StopSkill() override;
+    virtual bool IsBlockingFormChange() const override;
+
     virtual void TickComponent(
         float DeltaTime,
         ELevelTick TickType,
         FActorComponentTickFunction* ThisTickFunction) override;
 
     /** 조준 중 이동 입력을 받아 저장 (캐릭터 Move에서 호출) */
-    void HandleAimMoveInput(const FVector2D& Input);
+    virtual void HandleAimMoveInput(const FVector2D& Input) override;
+    virtual bool IsAiming() const override;
 
 private:
     bool bIsAiming = false;
@@ -77,6 +80,8 @@ private:
     UPROPERTY() TObjectPtr<UNiagaraComponent> TargetAreaComp = nullptr;
 
     FVector2D AimMoveInput = FVector2D::ZeroVector;
+    
+    TWeakObjectPtr<AActor> SavedLockOnTarget;
 
     float GetCurrentTargetRadius() const;
     float GetMaxAimDistance() const;

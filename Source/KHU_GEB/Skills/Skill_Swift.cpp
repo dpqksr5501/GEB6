@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Skills/Skill_Swift.h"
@@ -41,10 +41,7 @@ void USkill_Swift::ActivateSkill()
     // 쿨타임 시작 + 마나 1회 소모.
     Super::ActivateSkill();
 
-    if (USkillManagerComponent* Manager = GetSkillManager())
-    {
-        Manager->OnSwiftStrikeStarted(this);
-    }
+    Super::ActivateSkill();
 
     // ----- 시작/끝 위치 계산 -----
     const FVector StartLocation = Owner->GetActorLocation();
@@ -145,11 +142,6 @@ void USkill_Swift::ActivateSkill()
     else
     {
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] No targets found for multi hit."));
-
-        if (USkillManagerComponent* Manager = GetSkillManager())
-        {
-            Manager->OnSwiftStrikeEnded(this);
-        }
     }
 }
 
@@ -169,12 +161,6 @@ void USkill_Swift::HandleSwiftDamageTick()
     if (!World || !Owner)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
-
-        if (USkillManagerComponent* Manager = GetSkillManager())
-        {
-            Manager->OnSwiftStrikeEnded(this);
-        }
-
         return;
     }
 
@@ -184,11 +170,6 @@ void USkill_Swift::HandleSwiftDamageTick()
     if (CurrentHitIndex > DamageSamples)
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
-
-        if (USkillManagerComponent* Manager = GetSkillManager())
-        {
-            Manager->OnSwiftStrikeEnded(this);
-        }
 
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit finished."));
         return;
@@ -247,11 +228,15 @@ void USkill_Swift::HandleSwiftDamageTick()
     {
         World->GetTimerManager().ClearTimer(SwiftDamageTimerHandle);
 
-        if (USkillManagerComponent* Manager = GetSkillManager())
-        {
-            Manager->OnSwiftStrikeEnded(this);
-        }
-
         UE_LOG(LogTemp, Log, TEXT("[Skill_Swift] Multi hit stopped (no more targets)."));
     }
+}
+
+bool USkill_Swift::IsBlockingFormChange() const
+{
+    if (UWorld* World = GetWorld())
+    {
+        return World->GetTimerManager().IsTimerActive(SwiftDamageTimerHandle);
+    }
+    return false;
 }
